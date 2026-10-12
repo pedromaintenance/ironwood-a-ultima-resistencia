@@ -1,0 +1,6 @@
+const CACHE='ironwood-offline-v1-20261012';
+const FILES=['./','./index.html','./style.css','./app.js','./manifest.webmanifest','./icons/icon-192.png','./icons/icon-512.png'];
+self.addEventListener('install',event=>event.waitUntil((async()=>{const c=await caches.open(CACHE);await c.addAll(FILES);await self.skipWaiting()})()));
+self.addEventListener('activate',event=>event.waitUntil((async()=>{let keys=await caches.keys();await Promise.all(keys.filter(k=>k.startsWith('ironwood-')&&k!==CACHE).map(k=>caches.delete(k)));await self.clients.claim()})()));
+self.addEventListener('fetch',event=>{let req=event.request;if(req.method!=='GET')return;const url=new URL(req.url);if(url.origin!==self.location.origin)return;event.respondWith((async()=>{let cached=await caches.match(req);if(cached)return cached;try{let response=await fetch(req);if(response.ok){let c=await caches.open(CACHE);c.put(req,response.clone())}return response}catch(e){return await caches.match('./index.html')||Response.error()}})())});
+self.addEventListener('message',event=>{if(event.data?.type==='CHECK_CACHE'){event.waitUntil((async()=>{let c=await caches.open(CACHE);let ready=(await Promise.all(FILES.map(f=>c.match(f)))).every(Boolean);event.source?.postMessage({type:'CACHE_STATUS',ready})})())}});
