@@ -1,4 +1,4 @@
-const CACHE='ironwood-offline-v1-20261012';
+const CACHE='ironwood-offline-v2-20261012';
 const FILES=['./','./index.html','./style.css','./app.js','./manifest.webmanifest','./icons/icon-192.png','./icons/icon-512.png'];
 self.addEventListener('install',event=>event.waitUntil((async()=>{const c=await caches.open(CACHE);await c.addAll(FILES);await self.skipWaiting()})()));
 self.addEventListener('activate',event=>event.waitUntil((async()=>{let keys=await caches.keys();await Promise.all(keys.filter(k=>k.startsWith('ironwood-')&&k!==CACHE).map(k=>caches.delete(k)));await self.clients.claim()})()));
