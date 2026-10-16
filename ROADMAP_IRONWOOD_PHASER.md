@@ -36,7 +36,22 @@ A M3d foi compilada do commit imutável **`16c73ea5`**, aprovado no [CI #3896116
 | **M5 parcial — Distribuição segura no Pages** | Build testado compilado de SHA fixo, pasta independente `phaser-preview/`, limpeza de assets obsoletos e SW Canvas não intercepta preview | [Deploy](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/actions/runs/38955974230) · [Workflow](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/blob/main/.github/workflows/publish-phaser-beta.yml) |
 | **M3c — Pool de sprites dos combatentes** | **Implementado, testado e distribuído como beta:** sprite e contêiner persistentes, cache de terreno, contadores de alocação e testes de estabilidade | [PR #14](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/pull/14) · [CI 24/24](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/actions/runs/38957047595) |
 | **M3d — Travamento seguro de comandos durante animações** | **Implementado, 24/24 testes e CI/browser aprovados, build beta publicado:** o jogador não gasta PA ou RNG em clique repetido durante movimento; inspeção e seleção continuam | [PR #16](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/pull/16) · [CI](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/actions/runs/38961163306) · [publicação](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/actions/runs/38961411555) |
-| Próximos M3e–M5 — HUD/VFX, campanha e QA físico | Pendentes: render incremental do HUD, pool de VFX, benchmark FPS/memória, missão 1 completa, oito missões, PWA próprio e QA Android/iOS | [Roadmap Phaser](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/blob/feat/phaser-command-lock-m3d/phaser/ROADMAP.md) |
+| **M3e — HUD incremental e feedback** | **Código implementado, CI pendente**: reuso dos botões e foco de teclado, alertas de ações recusadas, save preservado em tentativas inválidas | [PR #18](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/pull/18) · [Roadmap técnico](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/blob/feat/phaser-hud-feedback-m3e/phaser/ROADMAP.md) |
+| Próximos M3f–M5 — overlays, campanha e QA físico | Pendentes: pool de VFX, benchmark FPS/memória, missão 1 completa, oito missões, PWA próprio e QA Android/iOS | [Backlog](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/issues/19) |
+
+### M3e — HUD incremental e mensagens acessíveis (CI pendente)
+
+**Em desenvolvimento:** [PR #18](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/pull/18) · [Issue #19](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/issues/19) · [Documentação técnica](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/blob/feat/phaser-hud-feedback-m3e/docs/M3E_HUD_FEEDBACK.md).
+
+- [x] Reaproveitar os botões de habilidades e seus listeners no DOM enquanto o conjunto de magias não muda; atualizar apenas `disabled`, `active` e `aria-pressed`.
+- [x] Preservar o foco do teclado após escolher uma magia; reforçar indicação visual de foco.
+- [x] Exibir alerta de movimento, ataque ou magia indisponível com motivos do próprio motor; anunciar por `role=status`.
+- [x] Evitar atualizar o save em seleção de herói, movimento inválido ou magia fora de alcance.
+- [x] Adicionar testes Chromium de identidade funcional dos botões, contador de reconstruções `#skills[data-builds]`, foco e save.
+- [ ] CI verde do **commit final**: 24 testes de core, build Vite e Chromium desktop/mobile.
+- [ ] Publicar apenas depois da CI, em `main/phaser-preview/`, e homologar no navegador e em aparelho físico.
+
+**Até que esses gates passem, o Pages mantém a M3d** publicada no mesmo link. O Canvas original permanece intocado.
 
 ### Próxima entrega — M3e e M4
 
