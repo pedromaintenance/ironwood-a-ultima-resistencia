@@ -6,6 +6,14 @@
 **Planejamento:** 15/10/2026  
 **Estado:** execução sequencial; não substituir o jogo publicado antes de validar a nova versão.
 
+## Prévia pública de testes — 16/10/2026
+
+**[Jogar o Ironwood Phaser no Pages](https://pedromaintenance.github.io/ironwood-a-ultima-resistencia/phaser-preview/)** — build independente de `feat/phaser-combat-ux-m3`, publicado em `phaser-preview/`, sem substituir `/index.html`, `app.js` ou `sw.js` da versão Canvas. O processo de CI compilou o Phaser e publicou os arquivos com sucesso. A implantação do Pages deve estar verde antes da homologação no navegador do jogador.
+
+**Teste rápido sugerido:** selecionar equipe, mover personagens, usar magia, inspecionar terreno, encerrar turno, salvar, recarregar e continuar. **Não é release final:** dispositivos físicos, oito missões e PWA offline do Phaser ainda pendentes. A chave de save `ironwood_phaser_preview_v1` permanece diferente da versão original.
+
+**Publicação:** [workflow automatizado](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/actions/workflows/publish-phaser-beta.yml) · [código da prévia](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/tree/main/phaser-preview) · [PR #11 (fonte)](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/pull/11).
+
 ## Painel de execução — atualização de 16/10/2026
 
 | Marco | Status verificável | Links |
