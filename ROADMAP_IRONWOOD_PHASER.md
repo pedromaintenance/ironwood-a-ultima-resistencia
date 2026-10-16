@@ -6,21 +6,21 @@
 **Planejamento:** 15/10/2026  
 **Estado:** execução sequencial; não substituir o jogo publicado antes de validar a nova versão.
 
-## Beta M3c distribuída para testes — 16/10/2026
+## Beta M3d — comandos sincronizados com animações (16/10/2026)
 
-**[JOGAR IRONWOOD PHASER — BETA M3c](https://pedromaintenance.github.io/ironwood-a-ultima-resistencia/phaser-preview/)**
+**[JOGAR IRONWOOD PHASER — BETA M3d](https://pedromaintenance.github.io/ironwood-a-ultima-resistencia/phaser-preview/)**
 
-Build isolado, criado a partir do commit **`32cbfd7b`** do PR #14. A validação [CI #38957047595](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/actions/runs/38957047595) passou com **24/24 testes de core**, build e smoke Chromium desktop/mobile; a [publicação #38957277789](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/actions/runs/38957277789) copiou os arquivos compilados para `main/phaser-preview/`. Verificar o status do job de Pages antes de confirmar a disponibilidade pública.
+A M3d foi compilada do commit imutável **`16c73ea5`**, aprovado no [CI #38961163306](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/actions/runs/38961163306): **24/24 testes de core**, build Phaser/Vite e smoke Chromium desktop/mobile, incluindo comando duplicado durante tween e salvamento intacto. A [publicação #38961411555](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/actions/runs/38961411555) copiou a nova versão para `main/phaser-preview/`. A atualização da URL depende da finalização do job `pages build and deployment` do commit final.
 
-**Novidade principal:** personagens agora têm contêineres Phaser persistentes, evitando a recriação de imagens a cada seleção, inspeção e movimento. O painel **“Como testar esta versão · M3c”** expõe quantas unidades estão visíveis e o total de contêineres criados. Os **144 tiles de terreno** permanecem em cache. As magias 3×3/5×5/linha, o aviso de fogo amigo e a confirmação em dois toques da M3b continuam presentes.
+**Novidade:** os comandos de combate **não são processados durante movimentos e animações de dano**. O botão ENCERRAR TURNO fica temporariamente indisponível, enquanto seleção de aliados e inspeção continuam funcionais. A interface mostra status **ANIMANDO / PRONTO**, sem depender de cores. Cliques recusados não alteram PA, mana, RNG ou salvamento.
 
-**Roteiro rápido de teste:** selecione equipe e dificuldade, inicie a missão, abra “Como testar”, anote o total de objetos criados, inspecione e selecione unidades, mova um aliado e confira que esse total não cresce por essas ações. Em seguida, teste encerrar turno, lançar Bola de Fogo com Vaelis, salvar, recarregar, continuar e exportar JSON.
+**Como testar:** abra uma campanha, clique para mover Morna (coluna 2 → 3 da linha inicial), tente clicar de novo imediatamente enquanto aparecer **ANIMANDO** e verifique que só o primeiro deslocamento foi realizado. O botão **ENCERRAR TURNO** deverá ficar disponível ao final da animação. Selecione outro aliado ou inspecione o terreno enquanto a animação ocorre; depois teste as magias, o alerta de fogo amigo, a confirmação em dois toques, salvar e recarregar.
 
-**Proteção:** o Canvas original continua na [raiz do Pages](https://pedromaintenance.github.io/ironwood-a-ultima-resistencia/). O Phaser usa `/phaser-preview/` e grava em `ironwood_phaser_preview_v1`, separadamente de `ironwood_campaign_v1`. O service worker do Canvas não intercepta o beta, que ainda **não oferece PWA/offline independente**.
+**Conservação:** Canvas original em [página principal](https://pedromaintenance.github.io/ironwood-a-ultima-resistencia/), Phaser em `/phaser-preview/`. Chaves de save isoladas (`ironwood_campaign_v1` e `ironwood_phaser_preview_v1`). Os arquivos da versão Canvas não são substituídos.
 
-**Estado de entrega:** M3c técnica aprovada automaticamente; o [PR #14](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/pull/14) continua em draft para QA humano. A melhoria reduz **criação de objetos**, mas ainda não existe benchmark físico de FPS ou consumo de memória/bateria. Playthrough de 8 missões, 3 finais e dispositivos reais continuam pendentes.
+**O que ainda falta:** playthrough integral das oito missões e três finais, aparelhos Android/iOS reais, otimização do HUD/VFX, benchmark FPS/memória e PWA/offline independente. O [PR #16](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/pull/16) está em draft para QA humano.
 
-**Documentação:** [Guia M3c](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/blob/feat/phaser-unit-pooling-m3c/docs/M3C_RENDER_POOL.md) · [Roadmap detalhado](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/blob/feat/phaser-unit-pooling-m3c/phaser/ROADMAP.md) · [Issue #15](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/issues/15).
+**Referências:** [Guia técnico M3d](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/blob/feat/phaser-command-lock-m3d/docs/M3D_COMMAND_LOCK.md) · [Roadmap detalhado](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/blob/feat/phaser-command-lock-m3d/phaser/ROADMAP.md) · [Issue #17](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/issues/17).
 
 ## Painel de execução — atualização de 16/10/2026
 
@@ -35,25 +35,28 @@ Build isolado, criado a partir do commit **`32cbfd7b`** do PR #14. A validação
 | **M3b — Mira de área e proteção contra fogo amigo** | **Publicada em beta:** AOE inicial, avisos de aliados atingíveis, duplo toque, guia de playtest, save protegido no primeiro toque; 24 testes e Chromium aprovados | [PR #13](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/pull/13) · [CI](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/actions/runs/38955658327) · [Pages](https://pedromaintenance.github.io/ironwood-a-ultima-resistencia/phaser-preview/) |
 | **M5 parcial — Distribuição segura no Pages** | Build testado compilado de SHA fixo, pasta independente `phaser-preview/`, limpeza de assets obsoletos e SW Canvas não intercepta preview | [Deploy](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/actions/runs/38955974230) · [Workflow](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/blob/main/.github/workflows/publish-phaser-beta.yml) |
 | **M3c — Pool de sprites dos combatentes** | **Implementado, testado e distribuído como beta:** sprite e contêiner persistentes, cache de terreno, contadores de alocação e testes de estabilidade | [PR #14](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/pull/14) · [CI 24/24](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/actions/runs/38957047595) |
-| Próximos M3c–M5 — Input, desempenho físico e campanha | Pendentes: fila/trava de comandos durante tweens, pool de VFX, benchmark FPS/memória, missões 1–8, PWA próprio e QA Android/iOS | [Roadmap Phaser](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/blob/feat/phaser-unit-pooling-m3c/phaser/ROADMAP.md) |
+| **M3d — Travamento seguro de comandos durante animações** | **Implementado, 24/24 testes e CI/browser aprovados, build beta publicado:** o jogador não gasta PA ou RNG em clique repetido durante movimento; inspeção e seleção continuam | [PR #16](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/pull/16) · [CI](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/actions/runs/38961163306) · [publicação](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/actions/runs/38961411555) |
+| Próximos M3e–M5 — HUD/VFX, campanha e QA físico | Pendentes: render incremental do HUD, pool de VFX, benchmark FPS/memória, missão 1 completa, oito missões, PWA próprio e QA Android/iOS | [Roadmap Phaser](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/blob/feat/phaser-command-lock-m3d/phaser/ROADMAP.md) |
 
-### Prioridades seguintes — M3c complementar e M4
+### Próxima entrega — M3e e M4
 
-**Já entregue:** reutilização dos sprites/contêineres de combatentes (PR #14), com teste automatizado e beta separado no Pages. A M3b permanece integrada nessa prévia; os PRs de código-fonte ainda são dependentes e draft.
+**M3d concluída nos testes automatizados:** o combate agora recusa ordens mutantes durante os tweens e expõe o motivo; nenhuma ação é enfileirada para execução futura, evitando alvo obsoleto. O código permanece em PR draft; o beta foi distribuído somente como artefato isolado.
 
-**M3c complementar:**
-- [x] Reutilizar sprites dos personagens e medir o número de objetos instanciados após seleção, inspeção e movimento.
-- [ ] Adicionar fila/intertravamento seguro de comandos durante tweens críticos, sem mudar a sequência determinística do core.
-- [ ] Reduzir redesenho de HUD e overlays; fazer pool de VFX.
-- [ ] Medir FPS/memória/bateria em Android e desktop reais; conferir contraste e movimento reduzido.
+**M3e — UX e desempenho:**
+- [x] M3c: cache de 144 tiles e objetos persistentes de personagens.
+- [x] M3d: bloquear movimentos, ataques, magias e encerramento de turno durante animações, mantendo inspeção e seleção.
+- [ ] Reduzir reconstrução de botões do HUD e redesenho de overlays; realizar pooling de VFX.
+- [ ] Melhorar feedback de alvo inválido, erro/dano, visualização de cobertura e teclado para mira em grade.
+- [ ] Medir FPS/memória/bateria em hardware real e validar opção de movimento reduzido.
 
-**M4 — campanha e homologação:**
-- [ ] Concluir a primeira missão manualmente; depois validar as oito missões e os três finais.
-- [ ] Validar importação de save real da versão Canvas e recuperação de saves corrompidos.
-- [ ] Testar orientação, toque, acessibilidade e performance em dispositivos Android/iOS físicos.
-- [ ] Criar PWA independente do beta Phaser, instalável com botão manual e teste offline.
+**M4/M5 — campanha e release:**
+- [ ] Jogar a missão 1 inteira com objetivos reais, depois oito missões e três finais.
+- [ ] Validar saves reais de Canvas e casos de corrupção/interrupção.
+- [ ] Testar Android/iOS físico (incluindo toques rápidos) e acessibilidade.
+- [ ] Instalação do beta como PWA próprio e teste offline seguro.
+- [ ] Preparar critérios de substituição da versão Canvas somente após homologação.
 
-**Regra de publicação:** novos builds somente de commits aprovados no CI e compilados na subpasta `phaser-preview/`, preservando todos os arquivos e saves da versão Canvas. A publicação beta não implica merge ou homologação final.
+**Regra:** `main` continua hospedando o Canvas original; publicar betas Phaser na subpasta não equivale a mesclar os PRs ou concluir QA físico.
 
 ## 1. Objetivo
 
