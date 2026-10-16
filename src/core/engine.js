@@ -72,7 +72,7 @@ const spellSystem = createSpellSystem({
   getState: () => G, man, unitAt, terrainBlocked, cell, occupied,
   toast, los, log, damage, push, aoeDamage, heroes, coordsArea,
   ign, r, freeze, heal, clearCorrupt, hurtStructure, bresenham,
-  floodElectric, soak, updateObjectives, afterAction,
+  floodElectric, soak, enterTile, updateObjectives, afterAction,
   resetCommandMode: () => { mode = 'move'; pendingSkill = null; },
 });
 
