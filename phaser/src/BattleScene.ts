@@ -60,6 +60,13 @@ export class BattleScene extends Phaser.Scene {
   private skillButtons = new Map<string, HTMLButtonElement>();
   private skillLayout = '';
   private skillBuilds = 0;
+  // M3f: skip costly overlay geometry and DOM rebuilds when inputs are unchanged.
+  private overlaySignature = '';
+  private overlayDraws = 0;
+  private battleLogSignature = '';
+  private logBuilds = 0;
+  private upgradeSignature = '';
+  private upgradeBuilds = 0;
 
   constructor() { super('Battle'); }
 
@@ -507,6 +514,10 @@ export class BattleScene extends Phaser.Scene {
       view.container.destroy();
     }
     this.actorViews.clear();
+    // Invalidate all visual calculations when replacing a campaign or mission.
+    this.overlaySignature = '';
+    this.battleLogSignature = '';
+    this.upgradeSignature = '';
     const game = document.getElementById('game');
     if (game) game.dataset.unitObjects = '0';
     this.showCommandState();
@@ -544,59 +555,70 @@ export class BattleScene extends Phaser.Scene {
     }
     const game = document.getElementById('game');
     if (game) game.dataset.terrainUpdates = String(this.terrainUpdates);
-    const graphics = this.worldOverlay!;
-    graphics.clear();
-    // Unit containers persist. Only disappeared actors are removed after sync.
-    for (const tile of state.board as Tile[]) {
-      const left = tile.x * CELL, top = tile.y * CELL;
-      if (tile.web > 0) {
-        graphics.lineStyle(2, 0xb7b5a8, .7);
-        graphics.lineBetween(left + 4, top + 4, left + 36, top + 36);
-        graphics.lineBetween(left + 36, top + 4, left + 4, top + 36);
+    // Changes to layout, weather, terrain, unit/AP/mana/status or aim validity
+    // invalidate this cache. Inspection and other HUD-only work do not.
+    const visualSignature = JSON.stringify([
+      state.mission, state.round, state.phase, state.weather,
+      state.board, state.actors, this.selected, this.selectedSkill,
+    ]);
+    if (visualSignature !== this.overlaySignature) {
+      this.overlaySignature = visualSignature;
+      this.overlayDraws++;
+      const graphics = this.worldOverlay!;
+      graphics.clear();
+      // Unit containers persist. Only disappeared actors are removed after sync.
+      for (const tile of state.board as Tile[]) {
+        const left = tile.x * CELL, top = tile.y * CELL;
+        if (tile.web > 0) {
+          graphics.lineStyle(2, 0xb7b5a8, .7);
+          graphics.lineBetween(left + 4, top + 4, left + 36, top + 36);
+          graphics.lineBetween(left + 36, top + 4, left + 4, top + 36);
+        }
+        if (tile.ice > 0) { graphics.fillStyle(0x99d6e2, .35); graphics.fillRect(left, top, CELL, CELL); }
+        if (tile.corrupt > 0) { graphics.fillStyle(0x79365e, .37); graphics.fillRect(left, top, CELL, CELL); }
+        if (tile.fire > 0) {
+          graphics.fillStyle(0xee782c, .9);
+          graphics.fillRect(left + 13, top + 20, 8, 14);
+          graphics.fillStyle(0xf9cc75, .9);
+          graphics.fillRect(left + 17, top + 15, 7, 10);
+        }
+        if (tile.charge > 0) {
+          graphics.lineStyle(3, 0xb6dbec);
+          graphics.lineBetween(left + 5, top + 32, left + 18, top + 14);
+          graphics.lineBetween(left + 18, top + 14, left + 30, top + 20);
+        }
+        if (tile.objective && !tile.cleared) {
+          graphics.lineStyle(2, 0xd5b16d, .95);
+          graphics.strokeRect(left + 6, top + 6, CELL - 12, CELL - 12);
+        }
+        if (tile.fog > 0) { graphics.fillStyle(0xa2b3b5, .3); graphics.fillRect(left, top, CELL, CELL); }
+        graphics.lineStyle(1, 0x060f10, .32);
+        graphics.strokeRect(left, top, CELL, CELL);
       }
-      if (tile.ice > 0) { graphics.fillStyle(0x99d6e2, .35); graphics.fillRect(left, top, CELL, CELL); }
-      if (tile.corrupt > 0) { graphics.fillStyle(0x79365e, .37); graphics.fillRect(left, top, CELL, CELL); }
-      if (tile.fire > 0) {
-        graphics.fillStyle(0xee782c, .9);
-        graphics.fillRect(left + 13, top + 20, 8, 14);
-        graphics.fillStyle(0xf9cc75, .9);
-        graphics.fillRect(left + 17, top + 15, 7, 10);
-      }
-      if (tile.charge > 0) {
-        graphics.lineStyle(3, 0xb6dbec);
-        graphics.lineBetween(left + 5, top + 32, left + 18, top + 14);
-        graphics.lineBetween(left + 18, top + 14, left + 30, top + 20);
-      }
-      if (tile.objective && !tile.cleared) {
-        graphics.lineStyle(2, 0xd5b16d, .95);
-        graphics.strokeRect(left + 6, top + 6, CELL - 12, CELL - 12);
-      }
-      if (tile.fog > 0) { graphics.fillStyle(0xa2b3b5, .3); graphics.fillRect(left, top, CELL, CELL); }
-      graphics.lineStyle(1, 0x060f10, .32);
-      graphics.strokeRect(left, top, CELL, CELL);
-    }
 
-    if (state.phase === 'player' && selectedActor?.hp > 0) {
-      if (!this.selectedSkill) {
-        graphics.lineStyle(2, 0x7ab995, .75);
-        for (const p of this.engine.reachable(selectedActor.id)) {
-          graphics.strokeRect(p.x * CELL + 3, p.y * CELL + 3, CELL - 6, CELL - 6);
-        }
-      } else {
-        // Shared headless engine gate is authoritative for mana, target and LOS.
-        const skill = SKILLS[this.selectedSkill as keyof typeof SKILLS];
-        if (skill) for (const tile of state.board as Tile[]) {
-          const preview = this.engine.previewSkill(selectedActor.id, this.selectedSkill, tile.x, tile.y);
-          if (!preview.allowed) continue;
-          const hue = skill.target === 'enemy' ? 0xd17681 :
-            this.selectedSkill === 'interact' ? 0xd9ba6e : 0x8cb8c8;
-          graphics.lineStyle(2, hue, .9);
-          graphics.strokeRect(tile.x * CELL + 4, tile.y * CELL + 4, CELL - 8, CELL - 8);
-          graphics.fillStyle(hue, .07);
-          graphics.fillRect(tile.x * CELL + 4, tile.y * CELL + 4, CELL - 8, CELL - 8);
+      if (state.phase === 'player' && selectedActor?.hp > 0) {
+        if (!this.selectedSkill) {
+          graphics.lineStyle(2, 0x7ab995, .75);
+          for (const p of this.engine.reachable(selectedActor.id)) {
+            graphics.strokeRect(p.x * CELL + 3, p.y * CELL + 3, CELL - 6, CELL - 6);
+          }
+        } else {
+          // Shared headless engine gate is authoritative for mana, target and LOS.
+          const skill = SKILLS[this.selectedSkill as keyof typeof SKILLS];
+          if (skill) for (const tile of state.board as Tile[]) {
+            const preview = this.engine.previewSkill(selectedActor.id, this.selectedSkill, tile.x, tile.y);
+            if (!preview.allowed) continue;
+            const hue = skill.target === 'enemy' ? 0xd17681 :
+              this.selectedSkill === 'interact' ? 0xd9ba6e : 0x8cb8c8;
+            graphics.lineStyle(2, hue, .9);
+            graphics.strokeRect(tile.x * CELL + 4, tile.y * CELL + 4, CELL - 8, CELL - 8);
+            graphics.fillStyle(hue, .07);
+            graphics.fillRect(tile.x * CELL + 4, tile.y * CELL + 4, CELL - 8, CELL - 8);
+          }
         }
       }
     }
+    if (game) game.dataset.overlayDraws = String(this.overlayDraws);
 
     const liveIds = new Set<string>();
     const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -702,39 +724,52 @@ export class BattleScene extends Phaser.Scene {
     if (nextMission) nextMission.hidden = true;
     const upgrades = document.getElementById('upgradeOptions');
     if (upgrades) {
-      upgrades.replaceChildren();
       upgrades.hidden = state.phase !== 'between';
       if (state.phase === 'between') {
         const indices = [(state.mission * 2) % UPGRADES.length,
           (state.mission * 2 + 3) % UPGRADES.length,
           (state.mission * 2 + 5) % UPGRADES.length];
-        for (const index of indices) {
-          const upgrade = UPGRADES[index];
-          const button = document.createElement('button');
-          button.textContent = `${upgrade.name} — ${upgrade.desc}`;
-          button.addEventListener('click', () => {
-            this.engine.advanceMission(upgrade.id);
-            this.engine.deployMission();
-            this.resetActorViews();
-            this.selected = 'a0';
-            this.selectedSkill = null;
-            this.note = '';
-            this.persist();
-            this.renderBattle();
-          });
-          upgrades.appendChild(button);
+        const upgradeSignature = `${state.mission}:${indices.join(',')}`;
+        if (upgradeSignature !== this.upgradeSignature) {
+          this.upgradeSignature = upgradeSignature;
+          this.upgradeBuilds++;
+          upgrades.replaceChildren();
+          for (const index of indices) {
+            const upgrade = UPGRADES[index];
+            const button = document.createElement('button');
+            button.textContent = `${upgrade.name} — ${upgrade.desc}`;
+            button.addEventListener('click', () => {
+              this.engine.advanceMission(upgrade.id);
+              this.engine.deployMission();
+              this.resetActorViews();
+              this.selected = 'a0';
+              this.selectedSkill = null;
+              this.note = '';
+              this.persist();
+              this.renderBattle();
+            });
+            upgrades.appendChild(button);
+          }
         }
       }
+      upgrades.dataset.builds = String(this.upgradeBuilds);
     }
 
     const lines = document.getElementById('battleLog');
     if (lines) {
-      lines.replaceChildren();
-      for (const entry of (state.logs ?? []).slice(0, 5)) {
-        const p = document.createElement('p');
-        p.textContent = entry;
-        lines.appendChild(p);
+      const recent = (state.logs ?? []).slice(0, 5);
+      const signature = JSON.stringify(recent);
+      if (signature !== this.battleLogSignature) {
+        this.battleLogSignature = signature;
+        this.logBuilds++;
+        lines.replaceChildren();
+        for (const entry of recent) {
+          const p = document.createElement('p');
+          p.textContent = entry;
+          lines.appendChild(p);
+        }
       }
+      lines.dataset.builds = String(this.logBuilds);
     }
   }
 }
