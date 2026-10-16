@@ -42,6 +42,9 @@ export class BattleScene extends Phaser.Scene {
   private worldOverlay: Phaser.GameObjects.Graphics | null = null;
   private unitsLayer: Phaser.GameObjects.Container | null = null;
   private terrainUpdates = 0;
+  private aimLayer: Phaser.GameObjects.Graphics | null = null;
+  private aimCell: { x: number; y: number } | null = null;
+  private armedSpell: string | null = null;
 
   constructor() { super('Battle'); }
 
@@ -58,10 +61,20 @@ export class BattleScene extends Phaser.Scene {
     this.input.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
       this.onBoardPress(pointer.worldX, pointer.worldY);
     });
+    this.input.on('pointermove', (pointer: Phaser.Input.Pointer) => {
+      if (!this.active || !this.selectedSkill) return;
+      const x = Math.floor(pointer.worldX / CELL), y = Math.floor(pointer.worldY / CELL);
+      if (x < 0 || x >= SIZE || y < 0 || y >= SIZE) return;
+      if (this.aimCell?.x === x && this.aimCell?.y === y) return;
+      this.aimCell = { x, y };
+      this.paintAim();
+    });
 
     document.getElementById('endTurn')?.addEventListener('click', () => {
       if (this.engine.endTurn()) {
         this.selectedSkill = null;
+        this.armedSpell = null;
+        this.aimCell = null;
         this.note = '';
       }
       this.persist();
@@ -90,6 +103,8 @@ export class BattleScene extends Phaser.Scene {
     this.input.keyboard?.on('keydown-ESC', () => {
       this.selectedSkill = null;
       this.inspectMode = false;
+      this.armedSpell = null;
+      this.aimCell = null;
       this.note = '';
       if (this.active) this.renderBattle();
     });
@@ -180,6 +195,8 @@ export class BattleScene extends Phaser.Scene {
     this.active = false;
     this.selectedSkill = null;
     this.inspectMode = false;
+    this.armedSpell = null;
+    this.aimCell = null;
     this.renderTeamSelection();
     this.setLobbyError('');
     const resume = document.getElementById('continueCampaign') as HTMLButtonElement;
@@ -207,6 +224,8 @@ export class BattleScene extends Phaser.Scene {
     this.selected = candidate.snapshot().selected || 'a0';
     this.selectedSkill = null;
     this.inspectMode = false;
+    this.armedSpell = null;
+    this.aimCell = null;
     this.note = '';
     this.hideLobby();
     this.persist();
@@ -245,8 +264,18 @@ export class BattleScene extends Phaser.Scene {
     const clicked = (state.actors as Actor[]).find(a => a.hp > 0 && a.x === x && a.y === y);
 
     if (this.selectedSkill) {
+      const preview = this.engine.previewImpact(this.selected, this.selectedSkill, x, y);
+      this.aimCell = { x, y };
+      if (preview.allowed && preview.confirm && this.armedSpell !== `${this.selectedSkill}:${x},${y}`) {
+        // First touch previews potentially dangerous multi-tile attacks.
+        // The second touch of the same cell executes them.
+        this.armedSpell = `${this.selectedSkill}:${x},${y}`;
+        this.paintAim();
+        return;
+      }
       const performed = this.engine.useSkill(this.selected, this.selectedSkill, x, y);
       if (performed) this.selectedSkill = null;
+      this.armedSpell = null;
     } else if (clicked?.side === 'ally') {
       this.selected = clicked.id;
     } else if (clicked?.side === 'enemy') {
@@ -259,6 +288,44 @@ export class BattleScene extends Phaser.Scene {
     this.note = messageEvents.at(-1)?.message || '';
     this.persist();
     this.renderBattle();
+  }
+
+  private paintAim(): void {
+    const overlay = this.aimLayer;
+    if (!overlay) return;
+    overlay.clear();
+    const report = document.getElementById('impactInfo');
+    const game = document.getElementById('game');
+    if (!this.active || !this.selectedSkill || !this.aimCell) {
+      if (game) game.dataset.impactTiles = '0';
+      if (report) report.textContent = 'Passe o cursor sobre uma casa ou toque para pré-visualizar magias de área.';
+      return;
+    }
+    const p = this.engine.previewImpact(this.selected, this.selectedSkill, this.aimCell.x, this.aimCell.y);
+    if (!p.allowed) {
+      if (game) game.dataset.impactTiles = '0';
+      if (report) report.textContent = 'Alvo indisponível: fora de alcance, bloqueado ou sem recursos. Nenhum recurso foi gasto.';
+      return;
+    }
+    const state = this.engine.snapshot();
+    const risk = new Set<string>(p.allyIds);
+    for (const tile of p.tiles) {
+      const alliesHere = (state.actors as Actor[]).some(u =>
+        u.hp > 0 && risk.has(u.id) && u.x === tile.x && u.y === tile.y);
+      const tint = alliesHere ? 0xf16a64 : 0xd8a95c;
+      overlay.fillStyle(tint, alliesHere ? .35 : .17);
+      overlay.fillRect(tile.x * CELL + 2, tile.y * CELL + 2, CELL - 4, CELL - 4);
+      overlay.lineStyle(alliesHere ? 3 : 2, tint, .9);
+      overlay.strokeRect(tile.x * CELL + 2, tile.y * CELL + 2, CELL - 4, CELL - 4);
+    }
+    if (game) game.dataset.impactTiles = String(p.tiles.length);
+    const armed = this.armedSpell === `${this.selectedSkill}:${this.aimCell.x},${this.aimCell.y}`;
+    const info = `Área inicial: ${p.tiles.length} casa(s).` +
+      (risk.size ? ` ALERTA: ${risk.size} aliado(s) sujeito(s) ao efeito.` : '') +
+      (p.note ? ` ${p.note}` : '') +
+      (p.confirm ? armed ? ' TOQUE NOVAMENTE NA MESMA CASA PARA CONFIRMAR.' :
+        ' Primeiro toque pré-visualiza; segundo toque confirma.' : ' Um toque executa.');
+    if (report) report.textContent = info;
   }
 
   private inspectTile(x: number, y: number, state: any): void {
@@ -297,6 +364,7 @@ export class BattleScene extends Phaser.Scene {
       }
       this.worldOverlay = this.add.graphics();
       this.unitsLayer = this.add.container(0, 0);
+      this.aimLayer = this.add.graphics();
       const game = document.getElementById('game');
       if (game) game.dataset.terrainObjects = String(this.terrainSprites.length);
     }
@@ -410,6 +478,7 @@ export class BattleScene extends Phaser.Scene {
     }
 
     this.drawHud(state, selectedActor);
+    this.paintAim();
   }
 
   private drawHud(state: any, actor?: Actor): void {
@@ -447,6 +516,8 @@ export class BattleScene extends Phaser.Scene {
         button.disabled = state.phase !== 'player' || !actor || actor.ap <= 0 || actor.mp < skill.cost;
         button.addEventListener('click', () => {
           this.inspectMode = false;
+          this.armedSpell = null;
+          this.aimCell = null;
           this.selectedSkill = this.selectedSkill === key ? null : key;
           this.note = this.selectedSkill ? `Selecione alvo para ${skill.name}` : '';
           this.renderBattle();

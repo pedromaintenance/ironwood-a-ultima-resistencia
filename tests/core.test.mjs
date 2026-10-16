@@ -199,3 +199,33 @@ test('previewSkill shares cast target/line-of-sight gates without spending AP or
   assert.equal(engine.snapshot().actors.find(a => a.id === 'a1').ap, 1);
   assert.equal(engine.snapshot().casts, before.casts + 1);
 });
+
+test('previewImpact matches fireball 5x5 footprint and reports friendly-fire without mutation', () => {
+  const engine = deployed(77, ['guardian', 'mage', 'druid']);
+  const before = engine.snapshot();
+  const mage = before.actors.find(a => a.kind === 'mage');
+  const preview = engine.previewImpact(mage.id, 'fireball', mage.x, mage.y - 1);
+  assert.equal(preview.allowed, true);
+  assert.equal(preview.scope, 'square5');
+  assert.equal(preview.tiles.length, 25);
+  assert.equal(preview.confirm, true);
+  assert.ok(preview.allyIds.includes(mage.id), 'mage is caught in his own blast');
+  assert.deepEqual(engine.snapshot(), before, 'preview cannot draw RNG or alter save state');
+  const unknown = engine.previewImpact(mage.id, 'nonsense', mage.x, mage.y);
+  assert.equal(unknown.allowed, false);
+  assert.deepEqual(unknown.tiles, []);
+});
+
+test('spell footprints respect board edges and line stops without touching state', async () => {
+  const { skillImpact } = await import('../src/core/targeting.js');
+  const state = deployed(78, ['guardian','mage','runesmith']).snapshot();
+  const rune = state.actors.find(a => a.kind === 'runesmith');
+  const single = skillImpact(state, rune, 'icewall', 0, 0);
+  assert.deepEqual(single.tiles, [{x:0,y:0},{x:1,y:0}]);
+  const fire = skillImpact(state, rune, 'fireball', 0, 0);
+  assert.equal(fire.tiles.length, 9, '5x5 square must clamp to 12x12 map');
+  const line = skillImpact(state, rune, 'lightning', rune.x, 0);
+  assert.equal(line.scope, 'line');
+  assert.ok(line.note.includes('água'));
+  assert.ok(line.tiles.every(({x,y}) => x >= 0 && y >= 0 && x < 12 && y < 12));
+});

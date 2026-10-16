@@ -5,11 +5,18 @@ on:
       - feat/phaser-battle-preview
       - feat/phaser-pixel-art-m2
       - feat/phaser-combat-ux-m3
+      - feat/phaser-impact-preview-m3b
   pull_request:
     branches:
       - feat/ironwood-core-phase1
       - feat/phaser-battle-preview
   workflow_dispatch:
+
+
+# New push cancels stale jobs from the same preview branch; the last commit wins.
+concurrency:
+  group: phaser-preview-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   phaser-preview:

@@ -10,8 +10,8 @@
 <body>
   <main class="shell">
     <header class="mast">
-      <div><span class="eyebrow">A ÚLTIMA RESISTÊNCIA</span><h1>IRONWOOD <small>• PHASER PREVIEW</small></h1></div>
-      <span class="branch">PROTÓTIPO · NÃO PUBLICADO</span>
+      <div><span class="eyebrow">A ÚLTIMA RESISTÊNCIA</span><h1>IRONWOOD <small>• BETA M3b</small></h1></div>
+      <span class="branch">PRÉVIA DE TESTE · PAGES</span>
     </header>
     <section id="lobby" class="lobby" role="dialog" aria-modal="true" aria-labelledby="lobbyTitle">
       <div class="lobbyBody panel">
@@ -39,12 +39,17 @@
     <div class="layout">
       <div class="boardFrame">
         <div id="game" aria-label="Mapa de batalha com grade 12 por 12"></div>
-        <p class="helper">Toque num aliado para selecioná-lo; toque numa casa para mover, num inimigo para atacar ou escolha uma habilidade.</p>
+        <p class="helper">Toque num aliado para selecioná-lo; toque numa casa para mover ou num inimigo para atacar. Magias de área mostram a zona afetada; um segundo toque confirma habilidades perigosas.</p>
+        <details class="playtestGuide"><summary>Como testar esta versão · M3b</summary>
+          <p>1. Escolha três heróis e inicie uma campanha. 2. Mova-se e encerre um turno. 3. Selecione a maga Vaelis e lance Bola de Fogo: observe o destaque e o aviso de fogo amigo. 4. Inspecione uma casa e experimente salvar e recarregar.</p>
+          <p>Esta é uma prévia: o jogo Canvas original continua disponível na <a href="../">página principal</a>. Seus salvamentos são independentes.</p>
+          <p>Encontrou um problema? <a href="https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/issues/new" target="_blank" rel="noopener noreferrer">Relate um bug no GitHub</a>, informando navegador, dispositivo e os passos para reproduzir.</p>
+        </details>
       </div>
       <aside class="sidebar">
         <section class="panel"><span class="eyebrow">OPERAÇÃO ATUAL</span><h2 id="missionTitle">A Trilha Fechada</h2>
           <p id="missionDesc"></p><p id="phaseStatus" class="status">Preparando resistência...</p></section>
-        <section class="panel"><span class="eyebrow">COMPANHIA</span><h3 id="unitName">Selecione um herói</h3><p id="unitStats"></p><div id="skills" class="skillList"></div><p id="skillHelp" class="skillHelp" aria-live="polite">Selecione uma habilidade para visualizar seu alcance.</p></section>
+        <section class="panel"><span class="eyebrow">COMPANHIA</span><h3 id="unitName">Selecione um herói</h3><p id="unitStats"></p><div id="skills" class="skillList"></div><p id="skillHelp" class="skillHelp" aria-live="polite">Selecione uma habilidade para visualizar seu alcance.</p><p id="impactInfo" class="impactInfo" aria-live="polite">Passe o cursor sobre uma casa para inspecionar sua área de efeito. Em magias ofensivas de área, toque duas vezes para confirmar.</p></section>
         <section class="panel inspect"><button id="inspectMode" aria-pressed="false" type="button">INSPECIONAR CASA / UNIDADE</button><p id="tileInfo" role="status" aria-live="polite">Inspeção disponível sem gastar pontos de ação.</p></section>
         <section class="panel controls"><button id="endTurn" class="accent">ENCERRAR TURNO</button>
           <div id="upgradeOptions" class="upgradeOptions" hidden aria-label="Melhorias após vitória"></div>
@@ -56,7 +61,7 @@
         <section class="panel report"><span class="eyebrow">REGISTRO DE CAMPO</span><div id="battleLog" aria-live="polite"></div></section>
       </aside>
     </div>
-    <footer>Protótipo de renderização em Phaser 4.2.1 · Regras importadas do motor original · Arte pixelada autoral gerada localmente · inspeção e prévia de alvos.</footer>
+    <footer>Beta M3b em Phaser 4.2.1 · motor tático independente · arte pixelada autoral · save separado da versão Canvas.</footer>
   </main>
   <script type="module" src="/src/main.ts"></script>
 </body>

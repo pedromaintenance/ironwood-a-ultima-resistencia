@@ -1,6 +1,8 @@
-# Ironwood — Phaser preview
+# Ironwood — Phaser beta M3b (testável no Pages)
 
-Primeira visualização da batalha usando **Phaser 4.2.1 + Vite + TypeScript**, importando o motor headless da branch de desenvolvimento. O site Canvas publicado continua intacto.
+Prévia jogável e independente da batalha usando **Phaser 4.2.1 + Vite + TypeScript**, importando o motor headless da branch de desenvolvimento. O site Canvas publicado continua intacto.
+
+**[Testar a prévia M3b no GitHub Pages](https://pedromaintenance.github.io/ironwood-a-ultima-resistencia/phaser-preview/)**. O beta foi compilado do commit `9ffc7029` com 24 testes de core e smoke Chromium aprovados; o Canvas original continua disponível em [página principal](https://pedromaintenance.github.io/ironwood-a-ultima-resistencia/). Não há garantia de PWA offline ou funcionamento em celular físico ainda.
 
 ## Testar localmente
 
@@ -34,12 +36,14 @@ O pacote é compilado para `phaser/dist/`, separado do aplicativo legado. O work
 - Prévia **precisa dos alvos legais** de habilidades (alcance, recursos e linha de visão), consultando as mesmas regras do core.
 - Modo **INSPECIONAR** via botão ou atalho `I`, com leitura de terreno, efeitos e unidades sem gastar PA; `Esc` cancela.
 - **144 sprites de terreno em cache**: o renderizador altera suas texturas somente quando os dados mudam, sem reconstruir o mapa em cada clique.
+- **Mira de área:** destaque 3×3/5×5/linha, aviso de fogo amigo, confirmação em dois toques para magias perigosas e texto de propagação condicional.
+- **Guia de teste** no próprio beta, versão visível no cabeçalho e link de bugs no GitHub.
 - Interface responsiva e controles touch para celular.
 
 ## O que ainda falta
 
 - **Assets CC0 de terceiros:** ainda não incorporados. A arte autoral 16×16 já é renderizada, mas pode receber acabamento e substituição posterior por pacotes externos devidamente auditados.
-- Sprites animados reais, efeitos de magia, som, transições e **prévia da área afetada (AOE)**. O alvo inicial já é verificado corretamente.
+- Sprites animados reais, efeitos de magia, som, transições e previsão de **propagação ambiental secundária**. A geometria inicial de AOE e a validação do alvo já são mostradas.
 - Menus narrativos completos, seleção de upgrade com sprites, créditos e resultados finais.
 - Importação de saves reais da versão Canvas testada com arquivos de usuário, sem afetar o jogo publicado.
 - PWA da versão Phaser, instalação/offline, revisão completa da campanha e QA físico.

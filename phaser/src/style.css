@@ -30,3 +30,13 @@
 .inspect{display:grid;gap:7px}
 .inspect button[aria-pressed="true"]{background:#455844;border:2px solid #c7ae79;color:#fae6c0}
 #tileInfo{min-height:30px;color:#cbd2c6!important;font:12px/1.5 system-ui,sans-serif!important;overflow-wrap:anywhere}
+
+.impactInfo{border:1px dashed #a77d57;background:#342923;color:#f0d7ad;font:12px/1.6 system-ui,sans-serif;padding:9px 11px;margin:8px 0 0;min-height:35px}
+#game canvas{image-rendering:pixelated;touch-action:manipulation}
+
+/* M3b public playtest notes: collapsible on small devices. */
+.playtestGuide{max-width:480px;margin:10px auto 0;padding:8px 11px;background:#1b2a28;border:1px solid #486054;border-radius:5px;color:#d3d9d0;font:12px/1.55 system-ui,sans-serif}
+.playtestGuide summary{cursor:pointer;font-weight:700;color:#eddbb5;min-height:26px}
+.playtestGuide p{margin:8px 0}
+.playtestGuide a{color:#c6dea2;text-decoration:underline}
+.playtestGuide a:focus-visible,.playtestGuide summary:focus-visible{outline:2px solid #ebcb7d;outline-offset:3px}
