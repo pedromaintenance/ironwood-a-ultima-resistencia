@@ -17,7 +17,7 @@ async function cell(canvas, x, y) {
 try {
   await page.goto('http://127.0.0.1:4173/', { waitUntil: 'networkidle' });
   assert.equal(await page.locator('#lobby').isVisible(), true, 'lobby should open first');
-  assert.match(await page.locator('.mast').innerText(), /BETA M3g/);
+  assert.match(await page.locator('.mast').innerText(), /BETA M4a/);
   assert.equal(await page.locator('.playtestGuide summary').isVisible(), true);
   assert.equal(await page.locator('#teamCount').innerText(), '3/3');
   await page.locator('#startCampaign').click();
@@ -269,8 +269,51 @@ try {
   assert.match(await page.locator('#missionTitle').innerText(), /Os Nomes dos Desaparecidos/);
   await page.screenshot({ path: 'artifacts/preview/08-mission-two.png', fullPage: true });
 
+  // M4a: tap an actual totem using the normal Phaser input path.
+  // Save has valid v1 schema and is deployed using the original engine.
+  const chapter3 = structuredClone(missionTwo);
+  chapter3.mission = 2;
+  chapter3.phase = 'brief';
+  chapter3.board = null;
+  chapter3.actors = null;
+  await page.locator('#restart').click();
+  await page.locator('#importFile').setInputFiles({
+    name: 'chapter3-brief.json', mimeType: 'application/json',
+    buffer: Buffer.from(JSON.stringify(chapter3)),
+  });
+  await page.locator('#lobby').waitFor({ state: 'hidden', timeout: 15000 });
+  assert.match(await page.locator('#missionTitle').innerText(), /Totens da Servidão/);
+  assert.equal(await page.locator('#goalPanel').getAttribute('data-goal-kind'), 'totem');
+  assert.equal(await page.locator('#goalPanel').getAttribute('data-goal-total'), '3');
+  const importedTotems = await page.evaluate(() => JSON.parse(localStorage.getItem('ironwood_phaser_preview_v1')));
+  const prior = importedTotems.board.find(t => t.objective === 'totem');
+  prior.objective = '';
+  const near = importedTotems.board[9 * 12 + 2];
+  Object.assign(near, {
+    base: 'grass', wall: 0, fire: 0, corrupt: 0, objective: 'totem',
+    objhp: 18, cleared: false,
+  });
+  await page.locator('#restart').click();
+  await page.locator('#importFile').setInputFiles({
+    name: 'chapter3-totem-adjacent.json', mimeType: 'application/json',
+    buffer: Buffer.from(JSON.stringify(importedTotems)),
+  });
+  await page.locator('#lobby').waitFor({ state: 'hidden', timeout: 15000 });
+  const beforeStrike = await page.evaluate(() => localStorage.getItem('ironwood_phaser_preview_v1'));
+  await canvas.click({ position: await cell(canvas, 2, 9) });
+  assert.match(await page.locator('#actionFeedback').innerText(), /Totem atingido/);
+  assert.equal(await page.locator('#goalPanel').getAttribute('data-goal-completed'), '0');
+  const damaged = await page.evaluate(() => JSON.parse(localStorage.getItem('ironwood_phaser_preview_v1')));
+  assert.equal(damaged.board[9 * 12 + 2].objhp, 9);
+  assert.notEqual(JSON.stringify(damaged), beforeStrike, 'successful attack is persisted');
+  await canvas.click({ position: await cell(canvas, 2, 9) });
+  const destroyedTotem = await page.evaluate(() => JSON.parse(localStorage.getItem('ironwood_phaser_preview_v1')));
+  assert.equal(destroyedTotem.board[9 * 12 + 2].cleared, true);
+  assert.equal(await page.locator('#goalPanel').getAttribute('data-goal-completed'), '1');
+  await page.screenshot({ path: 'artifacts/preview/09-totem-strike.png', fullPage: true });
+
   assert.deepEqual(errors, [], 'Phaser should not throw browser errors');
-  console.log('PASS: core parity, M3g goals/victory/upgrades/mission2, M3f cache, HUD, tween lock, pooled units, AOE, mobile');
+  console.log('PASS: core parity, M4a totem attacks, M3g goals/victory/upgrades/mission2, M3f cache, HUD, tween lock, pooled units, AOE, mobile');
 } finally {
   await browser.close();
 }
