@@ -6,17 +6,22 @@
 **Planejamento:** 15/10/2026  
 **Estado:** execução sequencial; não substituir o jogo publicado antes de validar a nova versão.
 
-## Painel de execução — 15/10/2026
+## Painel de execução — atualizado em 16/10/2026
 
-| Fase | Situação | Evidências |
+| Fase | Estado confirmado | Referências |
 |---|---|---|
-| Fase 0 — Preservação | Testes estáticos e browser mobile emulado aprovados; teste em aparelho físico pendente | [PR #3](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/pull/3) · [Issue #2](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/issues/2) |
-| Fase 1 — Motor independente | **Implementado e testes diferenciais verdes**; homologação completa de campanha pendente | [PR #5](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/pull/5) · [Issue #4](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/issues/4) · [CI](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/actions/runs/38835392027) |
-| Fase 2 — Batalha Phaser | **Primeira prévia funcional**: Phaser 4.2.1, batalha integrada ao core, input e teste Chromium; ainda sem arte CC0 e sem publicação | [PR #7](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/pull/7) · [Issue #6](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/issues/6) · [CI](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/actions/runs/38835951063) |
-| Fase 3 — Free-assets | Manifest criado, sem arquivos importados ainda; licença de cada pacote será verificada | [Manifest](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/blob/feat/phaser-battle-preview/docs/assets-manifest.json) |
-| Fases 4–8 | Não iniciadas | Acompanhar gates e implementar em PRs sequenciais |
+| Fase 0 — Preservação | Baseline estático, smoke do jogo Canvas emulado e saves de teste aprovados; celular físico pendente | [PR #3](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/pull/3), [Issue #2](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/issues/2) |
+| Fase 1 — Core independente | Regras extraídas, RNG determinístico, saves validados; testes diferenciais de 8 missões e 32 ações verdes | [PR #5](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/pull/5), [CI](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/actions/runs/38835392027) |
+| Fase 2 — Preview Phaser | Cena Phaser + combate, **lobby de 6 heróis/equipe de 3, dificuldades, autosave isolado, continuar, importar/exportar JSON e escolha das 3 opções de upgrade**. Teste browser/mobile emulado aprovado para esses fluxos. Feedback de movimento/dano em desenvolvimento na branch | [PR #7](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/pull/7), [CI validado](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/actions/runs/38837769725) |
+| Fase 3 — Arte/free-assets | Origem e CC0 do pacote Kenney Roguelike/RPG confirmados; **nenhum sprite de terceiros incorporado ainda**. Manifest vazio até importar arquivos reais | [Manifest](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/blob/feat/phaser-battle-preview/docs/assets-manifest.json), [Kenney CC0](https://kenney.nl/assets/roguelike-rpg-pack) |
+| Fase 4 — Paridade audiovisual | Apenas primeiras animações experimentais; faltam atlas, VFX, inspeção, som e cobertura abrangente | [Roadmap detalhado da prévia](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/blob/feat/phaser-battle-preview/phaser/ROADMAP.md) |
+| Fases 5–8 — Campanha/PWA/QA | Pendentes. O protótipo Phaser não substituiu nem foi publicado sobre o jogo Canvas | [Roadmap detalhado da prévia](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/blob/feat/phaser-battle-preview/phaser/ROADMAP.md) |
 
-**Regra de segurança:** `main` mantém o jogo original. O protótipo Phaser está em branch dependente do novo motor e os PRs continuam em rascunho. Os assets externos só entrarão após revisão da procedência/licença.
+### Próximo marco priorizado
+
+**M2 — pipeline visual CC0**: selecionar arquivos oficiais de terreno e personagens, registrar licença/proveniência individualmente, criar atlas local e substituir marcadores do protótipo. Em seguida, completar animações/feedback de habilidades e realizar playthrough manual integral da missão 1.
+
+**Proteção do projeto:** nenhum arquivo executável da `main` foi substituído. PRs #3, #5 e #7 permanecem separados/em rascunho. Saves do Phaser usam `ironwood_phaser_preview_v1`, preservando `ironwood_campaign_v1` do Canvas.
 
 ## 1. Objetivo
 
