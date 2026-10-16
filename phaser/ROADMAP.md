@@ -58,7 +58,7 @@ Este roteiro diferencia funcionalidades **implementadas**, **validadas em CI**, 
 
 **Aceite:** toda arte incorporada tem origem documentada, é carregada localmente e é legível no celular; nenhum pacote externo sem licença auditada. **Gate parcial:** arte autoral e renderização passaram no CI; revisão visual humana e assets externos continuam pendentes.
 
-### M3 — Combate legível e input robusto (**M3a implementado/testado; M3b pendente**)
+### M3 — Combate legível e input robusto (**M3a publicado como beta; M3b implementado na branch de desenvolvimento**)
 - [x] **M3a:** `previewSkill` no core consulta as mesmas verificações de alvo e linha de visão da magia executada; sem gastar PA/mana/RNG.
 - [x] **M3a:** destacar apenas casas legalmente selecionáveis; mostrar nome, mana, alcance e descrição no celular.
 - [x] **M3a:** botão INSPECIONAR e atalho `I`, cancelamento por `Esc`, relatório de terreno, efeitos, objetivos e personagens; inspeção não consome turno.
@@ -66,12 +66,15 @@ Este roteiro diferencia funcionalidades **implementadas**, **validadas em CI**, 
 - [x] **M3a:** separar overlay e unidades do terreno; preservar animação de deslocamento.
 - [x] **M3a:** executar testes de paridade do core **no mesmo workflow** do build/smoke Phaser.
 - [x] **M3a:** testes E2E de inspeção desktop e mobile emulado, preservação de save e cache de 144 tiles.
-- [ ] **M3b:** pré-visualizar área **afetada** de magias e propagação elétrica, além da validade do alvo inicial.
+- [x] **M3b:** pré-visualizar a geometria **inicial** afetada (3×3, 5×5, linhas, paredes e rajadas) ao mirar, sem consumo de RNG. *A propagação secundária de fogo/eletricidade é condicional e ainda não previsível*.
+- [x] **M3b:** avisar quando aliados estão na área de dano e exigir **segundo toque de confirmação** para magias de área ofensivas.
+- [x] **M3b:** adicionar testes de AOE 5×5, bordas do mapa, risco a aliados e imutabilidade do estado, além de smoke de duplo toque.
+- [ ] **M3b:** validar o commit final no CI e revisar screenshots desktop/mobile, antes de integrar ao beta público.
 - [ ] **M3b:** fila de ações durante tweens, hit/miss, objetivos, sprites de unidades em pool e feedback de custos.
 - [ ] **M3b:** acessibilidade com anúncios descritivos, teclado completo, tablet, física de render e benchmark FPS/memória.
 - [ ] Testar uma missão integral sem atalhos de QA, em Android/iOS físico.
 
-**Aceite parcial:** motor e Phaser passaram em testes unitários/de paridade e smoke; o cache de terreno é real, porém o renderer **ainda recria unidades e overlays a cada ação**. A visualização de alvo é precisa, mas **não** mostra todo o dano/área de efeito. [Guia técnico M3a](../docs/M3_COMBAT_UX.md).
+**Aceite parcial:** motor e Phaser passaram em testes unitários/de paridade e smoke; o cache de terreno é real, porém o renderer **ainda recria unidades e overlays a cada ação**. A visualização de alvo e da **área geométrica inicial** existe. A propagação ambiental e danos finais continuam sendo resolvidos pelo motor no momento da ação. [Guia técnico M3a](../docs/M3_COMBAT_UX.md).
 
 ### M4 — Campanha 8 missões
 - [ ] Telas de briefing, vitória, derrota, retry e progressão.
@@ -83,7 +86,8 @@ Este roteiro diferencia funcionalidades **implementadas**, **validadas em CI**, 
 **Aceite:** concluir as 8 missões e atingir os três finais por escolhas/estatísticas correspondentes.
 
 ### M5 — PWA e release
-- [ ] Publicar build Vite em subdiretório isolado e testar GitHub Pages `base`.
+- [x] Compilar e copiar o **beta M3a** do Phaser em `main/phaser-preview/` por GitHub Actions, preservando os arquivos da versão Canvas.
+- [ ] Homologar disponibilidade pública no Pages, `base`, cache e compatibilidade de atualização em dispositivos físicos.
 - [ ] Service Worker versionado, assets cacheados, limpeza de caches antigos.
 - [ ] Web Manifest e botão manual de instalação onde for possível.
 - [ ] Teste em modo avião e atualização sem perder saves.
@@ -112,6 +116,17 @@ npm run dev
 
 Para testar o pacote compilado, execute `npm run build` e `npm run preview`. [README](README.md) explica o fluxo. O workflow `Ironwood Phaser preview` publica o build e screenshots como artefatos de cada execução (não se trata de uma página pública).
 
+
+## Playtest público — beta M3a
+
+**URL:** [https://pedromaintenance.github.io/ironwood-a-ultima-resistencia/phaser-preview/](https://pedromaintenance.github.io/ironwood-a-ultima-resistencia/phaser-preview/)
+
+O workflow `.github/workflows/publish-phaser-beta.yml`, presente na `main`, construiu a branch **M3a** testada e fez commit dos arquivos prontos na subpasta `phaser-preview/`. A versão antiga continua na raiz do Pages. Este **não** é um merge do novo motor com o Canvas: é um compilado independente e reversível.
+
+A nova interface de mira **M3b** está em `feat/phaser-impact-preview-m3b` e entra no beta público **somente após testes e uma nova execução da publicação**.
+
+**Roteiro de teste:** escolher três heróis, inspecionar uma unidade, mover, atacar, conjurar, encerrar turno, salvar e recarregar. Problemas conhecidos: sem PWA offline independente, sem QA físico, sem playthrough integral e nenhuma garantia de balanceamento das oito missões.
+
 ## Histórico de entregas
 
 | Incremento | Branch | Evidência |
@@ -121,3 +136,5 @@ Para testar o pacote compilado, execute `npm run build` e `npm run preview`. [RE
 | M3a — inspeção, cache estático, previewSkill no core, smoke mobile | `feat/phaser-combat-ux-m3` | [Guia M3a](../docs/M3_COMBAT_UX.md), [CI](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/actions/runs/38880712097) |
 
 O compromisso de manter o jogo Canvas original publicado na `main` permanece. As novas texturas não fazem reivindicação de vínculo ou origem nos packs Kenney.
+
+| M3b — área inicial de magias, risco a aliados e confirmação dupla | `feat/phaser-impact-preview-m3b` | [Especificação M3b](../docs/M3B_IMPACT_PREVIEW.md), CI aguardando validação |
