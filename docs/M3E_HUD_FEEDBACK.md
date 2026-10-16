@@ -1,6 +1,6 @@
 # M3e — HUD incremental e feedback de ações inválidas
 
-**Estado:** implementação em `feat/phaser-hud-feedback-m3e`, baseada na M3d; **não publicar antes do CI verde**.
+**Estado:** M3e testada e compilada no Pages a partir do commit `fd27434a` após [24/24 testes, build e Chromium aprovados](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/actions/runs/38964097106). O [workflow de publicação](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/actions/runs/38964449033) terminou com sucesso. Código-fonte no PR #18 ainda draft para QA físico.
 
 ## Problema identificado
 
@@ -25,8 +25,8 @@ A interface também não informava claramente por que um movimento, ataque ou ma
 - [x] Não sobrescrever o save em comando inválido, inspeção ou seleção de outro aliado.
 - [x] Preservar os gates anteriores: proteção M3d durante tweens, cache M3c de unidades, mira M3b.
 - [x] Ampliar smoke Playwright para `data-builds`, foco da magia e save intacto após alvo fora do alcance.
-- [ ] CI completo verde do commit de publicação (24 testes headless + Vite + Chromium desktop/mobile).
-- [ ] Publicação isolada em `main/phaser-preview/` com SHA exato validado.
+- [x] CI completo verde do commit de publicação (24 testes headless + Vite + Chromium desktop/mobile).
+- [x] Publicação isolada em `main/phaser-preview/` com SHA exato validado.
 - [ ] QA humano em desktop e Android/iOS físico.
 
 ## Fora deste incremento
