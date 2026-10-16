@@ -53,8 +53,40 @@ export class BattleScene extends Phaser.Scene {
   private aimLayer: Phaser.GameObjects.Graphics | null = null;
   private aimCell: { x: number; y: number } | null = null;
   private armedSpell: string | null = null;
+  // Critical animations fence gameplay commands; inspection and selection stay usable.
+  private motionTweens = new Set<Phaser.Tweens.Tween>();
+  private ignoredCommands = 0;
 
   constructor() { super('Battle'); }
+
+  private commandLocked(): boolean { return this.motionTweens.size > 0; }
+
+  private showCommandState(): void {
+    const board = document.getElementById('game');
+    if (board) {
+      board.dataset.inputLocked = String(this.commandLocked());
+      board.dataset.ignoredCommands = String(this.ignoredCommands);
+    }
+    const status = document.getElementById('commandStatus');
+    if (status) status.textContent = this.commandLocked()
+      ? 'ANIMANDO — ações de combate aguardam o fim do movimento ou dano. Inspeção e seleção continuam disponíveis.'
+      : 'PRONTO — escolha uma unidade, um movimento ou uma habilidade.';
+    const endTurn = document.getElementById('endTurn') as HTMLButtonElement | null;
+    if (endTurn && this.active) endTurn.disabled =
+      this.engine.snapshot().phase !== 'player' || this.commandLocked();
+  }
+
+  private trackCombatTween(tween: Phaser.Tweens.Tween): void {
+    this.motionTweens.add(tween);
+    const done = () => {
+      this.motionTweens.delete(tween);
+      this.showCommandState();
+    };
+    tween.once('complete', done);
+    tween.once('stop', done);
+    this.showCommandState();
+  }
+
 
   create(): void {
     const count = installPixelAtlas(this);
@@ -79,6 +111,10 @@ export class BattleScene extends Phaser.Scene {
     });
 
     document.getElementById('endTurn')?.addEventListener('click', () => {
+      if (!this.active || this.commandLocked()) {
+        this.showCommandState();
+        return;
+      }
       if (this.engine.endTurn()) {
         this.selectedSkill = null;
         this.armedSpell = null;
@@ -201,6 +237,8 @@ export class BattleScene extends Phaser.Scene {
 
   private showLobby(): void {
     this.active = false;
+    this.motionTweens.clear();
+    this.showCommandState();
     this.selectedSkill = null;
     this.inspectMode = false;
     this.armedSpell = null;
@@ -228,6 +266,7 @@ export class BattleScene extends Phaser.Scene {
     this.engine = candidate;
     this.resetActorViews();
     this.active = true;
+    this.ignoredCommands = 0;
     this.selected = candidate.snapshot().selected || 'a0';
     this.selectedSkill = null;
     this.inspectMode = false;
@@ -246,6 +285,7 @@ export class BattleScene extends Phaser.Scene {
     this.engine.deployMission();
     this.resetActorViews();
     this.active = true;
+    this.ignoredCommands = 0;
     this.selected = 'a0';
     this.selectedSkill = null;
     this.note = '';
@@ -268,6 +308,19 @@ export class BattleScene extends Phaser.Scene {
       return;
     }
     const clicked = (state.actors as Actor[]).find(a => a.hp > 0 && a.x === x && a.y === y);
+    if (this.commandLocked()) {
+      if (!this.selectedSkill && clicked?.side === 'ally') {
+        // Read-only ally selection never interrupts a movement tween.
+        this.selected = clicked.id;
+        this.renderBattle();
+      } else {
+        // Never queue a stale target after enemy AI has possibly moved units.
+        // Explicitly reject mutating commands; no AP, mana, save or RNG changes.
+        this.ignoredCommands++;
+        this.showCommandState();
+      }
+      return;
+    }
 
     if (this.selectedSkill) {
       const preview = this.engine.previewImpact(this.selected, this.selectedSkill, x, y);
@@ -357,6 +410,8 @@ export class BattleScene extends Phaser.Scene {
   // Reset only on a different campaign or mission. In a normal render the
   // existing sprite and container retain their identity and running tweens.
   private resetActorViews(): void {
+    for (const tween of this.motionTweens) tween.stop();
+    this.motionTweens.clear();
     for (const view of this.actorViews.values()) {
       this.tweens.killTweensOf(view.container);
       view.container.destroy();
@@ -364,6 +419,7 @@ export class BattleScene extends Phaser.Scene {
     this.actorViews.clear();
     const game = document.getElementById('game');
     if (game) game.dataset.unitObjects = '0';
+    this.showCommandState();
   }
 
   private renderBattle(): void {
@@ -487,15 +543,15 @@ export class BattleScene extends Phaser.Scene {
       if (view.x !== actor.x || view.y !== actor.y) {
         this.tweens.killTweensOf(view.container);
         if (reduceMotion) view.container.setPosition(x, y);
-        else this.tweens.add({
-          targets: view.container, x, y, duration: 220, ease: 'Sine.easeOut',
-        });
+        else this.trackCombatTween(this.tweens.add({
+          targets: view.container, x, y, duration: 300, ease: 'Sine.easeOut',
+        }));
       }
       if (view.hp > actor.hp && !reduceMotion) {
         // Keep the very same container alive for the damage tween.
-        this.tweens.add({
+        this.trackCombatTween(this.tweens.add({
           targets: view.container, alpha: .42, duration: 85, yoyo: true, repeat: 2,
-        });
+        }));
       }
       view.x = actor.x;
       view.y = actor.y;
@@ -517,6 +573,7 @@ export class BattleScene extends Phaser.Scene {
 
     this.drawHud(state, selectedActor);
     this.paintAim();
+    this.showCommandState();
   }
 
   private drawHud(state: any, actor?: Actor): void {
@@ -572,7 +629,7 @@ export class BattleScene extends Phaser.Scene {
     }
     const endTurn = document.getElementById('endTurn') as HTMLButtonElement | null;
     const nextMission = document.getElementById('nextMission') as HTMLButtonElement | null;
-    if (endTurn) endTurn.disabled = state.phase !== 'player';
+    if (endTurn) endTurn.disabled = state.phase !== 'player' || this.commandLocked();
     if (nextMission) nextMission.hidden = true;
     const upgrades = document.getElementById('upgradeOptions');
     if (upgrades) {
