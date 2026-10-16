@@ -8,20 +8,21 @@
 
 ## Painel de execução — atualização de 16/10/2026
 
-| Marco | Estado atual | Evidência |
+| Marco | Status verificável | Links |
 |---|---|---|
-| Fase 0 — Baseline Canvas | Testes estáticos, browser e save legados aprovados; teste físico pendente | [PR #3](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/pull/3) |
-| Fase 1 — Core sem navegador | Seis heróis, oito missões e 32 ações extraídos e comparados com legado; testes diferenciais aprovados | [PR #5](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/pull/5) |
-| Fase 2 / M1 — Preview Phaser | Primeira batalha, lobby com seleção de equipe e dificuldade, saves isolados, import/export JSON, upgrades e mobile emulado, verdes em CI | [PR #7](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/pull/7) · [CI](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/actions/runs/38838046451) |
-| Fase 3 / M2a — Pixel-art e legibilidade | **36 texturas originais locais de 16×16** (24 terrenos, 12 personagens), renderização Phaser, barras de PV, feedback de alcance e orientação de habilidade em toque; CI Chromium aprovado | [PR #8](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/pull/8) · [Guia M2](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/blob/feat/phaser-pixel-art-m2/docs/PIXEL_ART_M2.md) · [CI](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/actions/runs/38839068717) |
-| M2b — Assets externos licenciados | **Pendente:** nenhum arquivo Kenney/Tiddybub foi incorporado; registrar licença por arquivo antes de importar | [Manifest](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/blob/feat/phaser-pixel-art-m2/docs/assets-manifest.json) |
-| Fases seguintes — Magias animadas, campanha, PWA/QA | Pendentes: VFX, controle completo de câmera/inspeção, campanha integral, offline e teste em aparelho físico | [Roadmap executivo Phaser](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/blob/feat/phaser-pixel-art-m2/phaser/ROADMAP.md) |
+| Fase 0 — Preservação Canvas | Baseline e browser emulado aprovados; teste em aparelho físico pendente | [PR #3](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/pull/3) |
+| Fase 1 — Core sem navegador | Regras extraídas, RNG reprodutível, saves verificados; testes diferenciais das 8 missões e 32 ações | [PR #5](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/pull/5) |
+| Fase 2 / M1 — Batalha Phaser e campanha | Phaser 4.2.1, lobby de seis heróis/equipe de três, dificuldades, autosave, importar/exportar, upgrades; Chromium desktop/mobile emulado | [PR #7](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/pull/7) |
+| Fase 3 / M2a — Identidade pixel-art | 36 texturas originais 16×16, tiles/figuras Phaser, efeitos do terreno sobrepostos; testes aprovados | [PR #8](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/pull/8) |
+| **M3a — Inspeção e renderização incremental** | **Implementado e validado automaticamente:** preview de magia compartilha LOS e validação com o core, inspeção de tile/unidade sem custo, cache permanente dos 144 tiles, layers de overlay/unidades, atalhos `I`/`Esc`; workflow roda testes core+Phaser | [PR #11](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/pull/11) · [Issue #10](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/issues/10) · [CI](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/actions/runs/38880712097) |
+| M2b — Assets de terceiros | **Pendente**: Kenney/Tiddybub não incorporados; manifest de terceiros vazio. Arte atual é autoral local | [Manifest](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/blob/feat/phaser-combat-ux-m3/docs/assets-manifest.json) |
+| M3b–M5 — AOE, animações, campanha integral, PWA | Pendentes: prévia de área inteira, pool de unidades, animação com trava de input, playthrough, saves físicos, offline e QA real | [Roadmap detalhado](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/blob/feat/phaser-combat-ux-m3/phaser/ROADMAP.md) |
 
-### Próximo objetivo
+### Prioridade seguinte — M3b
 
-**M2b + M3:** refinar assets próprios, importar apenas pacotes externos com origem e licença auditadas, destacar áreas reais de magia e atacar dívida de performance (renderer recria objetos por ação). Depois, completar a primeira missão sem atalhos e validar saves reais, mobile físico, cache offline e os oito cenários.
+O caminho recomendado é **prévia fiel da área afetada por magias**, reutilizando a geometria do motor; depois, pool de personagens/efeitos e fila de comandos durante os tweens. O marco só pode ser concluído após playthrough real da missão 1, testes de performance e dispositivos físicos. A camada de terreno já é persistente, mas a camada dos atores **ainda é reconstruída** em cada ação. Os sprites externos ainda dependem de auditoria individual de licença.
 
-**Política de branches:** `main` ainda publica exclusivamente o Canvas original. Os PRs #3 → #5 → #7 → #8 são incrementais e permanecem em revisão. O Phaser guarda saves em `ironwood_phaser_preview_v1`, sem substituir `ironwood_campaign_v1`. Testes de Chromium emulado não equivalem a homologação física.
+**Proteção:** `main` segue com o jogo Canvas original publicado e com seus saves. Pull requests #3, #5, #7, #8 e #11 continuam independentes/em revisão; o Phaser usa `ironwood_phaser_preview_v1`. Testes emulados não equivalem à homologação física.
 
 ## 1. Objetivo
 
