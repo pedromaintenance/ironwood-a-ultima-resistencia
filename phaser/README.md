@@ -1,4 +1,4 @@
-# Ironwood — Phaser beta M3b (testável no Pages)
+# Ironwood — Phaser beta M3d (em validação para Pages)
 
 Prévia jogável e independente da batalha usando **Phaser 4.2.1 + Vite + TypeScript**, importando o motor headless da branch de desenvolvimento. O site Canvas publicado continua intacto.
 
@@ -39,6 +39,13 @@ O pacote é compilado para `phaser/dist/`, separado do aplicativo legado. O work
 - **Mira de área:** destaque 3×3/5×5/linha, aviso de fogo amigo, confirmação em dois toques para magias perigosas e texto de propagação condicional.
 - **Guia de teste** no próprio beta, versão visível no cabeçalho e link de bugs no GitHub.
 - Interface responsiva e controles touch para celular.
+
+## M3d — comandos e animações
+
+- O combate recusa cliques de movimento, ataque e magia enquanto o tween de movimento ou dano não termina; fim de turno desabilitado até a conclusão.
+- Inspeção, seleção de aliado e hover de área de magia permanecem disponíveis durante animações.
+- Um indicador sob o tabuleiro sinaliza **ANIMANDO** ou **PRONTO**, e `data-ignored-commands` conta cliques bloqueados sem custo de AP/mana/salvamento.
+- Veja [detalhes e limitações](../docs/M3D_COMMAND_LOCK.md). O beta público ainda pode estar na M3c até que a M3d passe nos testes e seja publicada.
 
 ## O que ainda falta
 

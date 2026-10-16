@@ -17,7 +17,7 @@ async function cell(canvas, x, y) {
 try {
   await page.goto('http://127.0.0.1:4173/', { waitUntil: 'networkidle' });
   assert.equal(await page.locator('#lobby').isVisible(), true, 'lobby should open first');
-  assert.match(await page.locator('.mast').innerText(), /BETA M3c/);
+  assert.match(await page.locator('.mast').innerText(), /BETA M3d/);
   assert.equal(await page.locator('.playtestGuide summary').isVisible(), true);
   assert.equal(await page.locator('#teamCount').innerText(), '3/3');
   await page.locator('#startCampaign').click();
@@ -49,7 +49,20 @@ try {
   assert.equal(Number(await page.locator('#game').getAttribute('data-unit-allocations')), initialAllocations,
     'inspect mode must not allocate replacement sprites');
 
-  await canvas.click({ position: await cell(canvas, 3, 10) });
+  // Rapid input during a 300ms movement tween must never spend extra AP.
+  const boardBounds = await canvas.boundingBox();
+  const firstCell = await cell(canvas, 3, 10), blockedCell = await cell(canvas, 4, 10);
+  await page.mouse.click(boardBounds.x + firstCell.x, boardBounds.y + firstCell.y);
+  assert.equal(await page.locator('#game').getAttribute('data-input-locked'), 'true',
+    'critical movement tween fences commands immediately');
+  assert.equal(await page.locator('#endTurn').isDisabled(), true);
+  assert.match(await page.locator('#commandStatus').innerText(), /ANIMANDO/);
+  const saveDuringMove = await page.evaluate(() => localStorage.getItem('ironwood_phaser_preview_v1'));
+  await page.mouse.click(boardBounds.x + blockedCell.x, boardBounds.y + blockedCell.y);
+  assert.equal(await page.evaluate(() => localStorage.getItem('ironwood_phaser_preview_v1')), saveDuringMove,
+    'rapid second movement must not alter save or core state');
+  assert.ok(Number(await page.locator('#game').getAttribute('data-ignored-commands')) >= 1,
+    'ignored gameplay inputs are tracked visibly');
   assert.equal(await page.locator('#game').getAttribute('data-terrain-objects'), '144');
   assert.equal(Number(await page.locator('#game').getAttribute('data-terrain-updates')), tilesBefore);
   assert.match(await page.locator('#unitStats').innerText(), /PA 1\/2/);
@@ -61,6 +74,7 @@ try {
   assert.equal(Number(await page.locator('#game').getAttribute('data-unit-allocations')), initialAllocations);
   assert.equal(await page.locator('#game').getAttribute('data-unit-objects'), '7');
 
+  // Playwright waits for the disabled end-turn button to become enabled again.
   await page.locator('#endTurn').click();
   assert.match(await page.locator('#phaseStatus').innerText(), /Rodada 2/);
   assert.ok(Number(await page.locator('#game').getAttribute('data-unit-allocations')) >= initialAllocations,
@@ -175,7 +189,7 @@ try {
   assert.match(await page.locator('#battleLog').innerText(), /Bola de Fogo/);
 
   assert.deepEqual(errors, [], 'Phaser should not throw browser errors');
-  console.log('PASS: core parity, cached 144 tiles, pooled units, inspection, AOE double-tap, saves and mobile touch');
+  console.log('PASS: core parity, tween command lock, reused units, inspection, AOE double-tap, saves and mobile touch');
 } finally {
   await browser.close();
 }

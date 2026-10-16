@@ -10,7 +10,7 @@
 <body>
   <main class="shell">
     <header class="mast">
-      <div><span class="eyebrow">A ÚLTIMA RESISTÊNCIA</span><h1>IRONWOOD <small>• BETA M3c</small></h1></div>
+      <div><span class="eyebrow">A ÚLTIMA RESISTÊNCIA</span><h1>IRONWOOD <small>• BETA M3d</small></h1></div>
       <span class="branch">PRÉVIA DE TESTE · PAGES</span>
     </header>
     <section id="lobby" class="lobby" role="dialog" aria-modal="true" aria-labelledby="lobbyTitle">
@@ -40,8 +40,9 @@
       <div class="boardFrame">
         <div id="game" aria-label="Mapa de batalha com grade 12 por 12"></div>
         <p class="helper">Toque num aliado para selecioná-lo; toque numa casa para mover ou num inimigo para atacar. Magias de área mostram a zona afetada; um segundo toque confirma habilidades perigosas.</p>
-        <details class="playtestGuide"><summary>Como testar esta versão · M3c</summary>
-          <p>1. Escolha três heróis e inicie uma campanha. 2. Mova-se e encerre um turno. 3. Selecione a maga Vaelis e lance Bola de Fogo: observe o destaque e o aviso de fogo amigo. 4. Inspecione uma casa e experimente salvar e recarregar.</p>
+        <p id="commandStatus" class="commandStatus" role="status" aria-live="polite">PRONTO — escolha uma ação.</p>
+        <details class="playtestGuide"><summary>Como testar esta versão · M3d</summary>
+          <p>1. Escolha três heróis e inicie uma campanha. 2. Mova uma unidade e note o aviso ANIMANDO: comandos de combate ficam suspensos por uma fração de segundo, mas inspeção e seleção continuam. Depois encerre o turno. 3. Selecione a maga Vaelis e lance Bola de Fogo: observe o destaque e o aviso de fogo amigo. 4. Inspecione uma casa e experimente salvar e recarregar.</p>
           <p id="renderStats">Renderizador de unidades: métricas disponíveis ao iniciar uma campanha.</p>
           <p>Esta é uma prévia: o jogo Canvas original continua disponível na <a href="../">página principal</a>. Seus salvamentos são independentes.</p>
           <p>Encontrou um problema? <a href="https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/issues/new" target="_blank" rel="noopener noreferrer">Relate um bug no GitHub</a>, informando navegador, dispositivo e os passos para reproduzir.</p>
@@ -62,7 +63,7 @@
         <section class="panel report"><span class="eyebrow">REGISTRO DE CAMPO</span><div id="battleLog" aria-live="polite"></div></section>
       </aside>
     </div>
-    <footer>Beta M3b em Phaser 4.2.1 · motor tático independente · arte pixelada autoral · save separado da versão Canvas.</footer>
+    <footer>Beta M3d em Phaser 4.2.1 · motor tático independente · arte pixelada autoral · save separado da versão Canvas.</footer>
   </main>
   <script type="module" src="/src/main.ts"></script>
 </body>
