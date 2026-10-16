@@ -30,3 +30,6 @@
 .inspect{display:grid;gap:7px}
 .inspect button[aria-pressed="true"]{background:#455844;border:2px solid #c7ae79;color:#fae6c0}
 #tileInfo{min-height:30px;color:#cbd2c6!important;font:12px/1.5 system-ui,sans-serif!important;overflow-wrap:anywhere}
+
+.impactInfo{border:1px dashed #a77d57;background:#342923;color:#f0d7ad;font:12px/1.6 system-ui,sans-serif;padding:9px 11px;margin:8px 0 0;min-height:35px}
+#game canvas{image-rendering:pixelated;touch-action:manipulation}
