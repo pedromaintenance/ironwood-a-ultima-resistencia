@@ -26,13 +26,18 @@ jobs:
       - name: Checkout tested Phaser preview independently
         uses: actions/checkout@v4
         with:
-          ref: feat/phaser-combat-ux-m3
+          # Immutable, CI-verified M3b release candidate.
+          # tests/build/browser: https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/actions/runs/38955658327
+          ref: 9ffc702962102c27da66c14bc881a2a859fd1af5
           path: .phaser-build-src
           persist-credentials: false
       - name: Node 22
         uses: actions/setup-node@v4
         with:
           node-version: '22'
+      - name: Assert exactly the commit tested in CI
+        run: |
+          test "$(git -C .phaser-build-src rev-parse HEAD)" = "9ffc702962102c27da66c14bc881a2a859fd1af5"
       - name: Verify core regressions
         run: npm test
         working-directory: .phaser-build-src
@@ -44,21 +49,22 @@ jobs:
       - name: Copy build to own Pages subdirectory only
         run: |
           mkdir -p phaser-preview
+          rm -rf phaser-preview/assets
           cp -R .phaser-build-src/phaser/dist/. phaser-preview/
           test -s phaser-preview/index.html
           test -f index.html
           test -f sw.js
-          printf '%s\n' 'Phaser beta from feat/phaser-combat-ux-m3. Canvas main root retained.' > phaser-preview/DEPLOYMENT.txt
+          printf '%s\n' 'Phaser M3b beta: 9ffc702962102c27da66c14bc881a2a859fd1af5 (CI 38955658327). Canvas main root retained.' > phaser-preview/DEPLOYMENT.txt
       - name: Commit the generated standalone preview to main
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add -f phaser-preview
+          git add -A -f phaser-preview
           if git diff --cached --quiet; then
             echo 'Published preview is already up to date.'
             exit 0
           fi
-          git commit -m 'build(pages): publish Phaser beta under phaser-preview only'
+          git commit -m 'build(pages): publish tested M3b beta under phaser-preview'
           git pull --rebase origin main
           git push origin HEAD:main
       - name: Note preview path
