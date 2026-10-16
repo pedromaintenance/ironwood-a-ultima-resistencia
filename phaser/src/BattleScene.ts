@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { createIronwoodEngine } from '../../src/core/engine.js';
 import { HEROES, MISSIONS, SKILLS, UPGRADES } from '../../src/core/data.js';
+import { installPixelAtlas } from './PixelAtlas';
 import { readPreviewSave, writePreviewSave, exportCampaign, parseImportedSave } from './PreviewSave';
 
 const CELL = 40;
@@ -21,7 +22,7 @@ type Actor = {
 };
 
 type Tile = {
-  x: number; y: number; base: string; wall: number;
+  x: number; y: number; base: string; texture: number; wall: number;
   fire: number; wet: number; ice: number; fog: number; web: number;
   vines: number; thorns: number; charge: number; corrupt: number;
   objective: string; cleared: boolean;
@@ -40,6 +41,12 @@ export class BattleScene extends Phaser.Scene {
   constructor() { super('Battle'); }
 
   create(): void {
+    const count = installPixelAtlas(this);
+    const boardElement = document.getElementById('game');
+    if (boardElement) {
+      boardElement.dataset.art = 'original-16px-pixel-atlas';
+      boardElement.dataset.textures = String(count);
+    }
     this.bindLobby();
     this.showLobby();
 
@@ -236,31 +243,19 @@ export class BattleScene extends Phaser.Scene {
     if (!state?.board) return;
 
     const selectedActor = (state.actors as Actor[]).find(a => a.id === this.selected);
-    const graphics = this.add.graphics();
 
-    // Tilemap placeholder: one mutable tile per core coordinate. An atlas replaces
-    // these vector textures in Phase 3, without touching rules or tile state.
+    // Texture palette is generated from original 16x16 pixel matrices at startup.
+    // Position/terrain identity continues to come exclusively from the game core.
+    for (const tile of state.board as Tile[]) {
+      const variant = ((state.board[tile.y * SIZE + tile.x].texture || 0) % 4 + 4) % 4;
+      const kind = Object.hasOwn(COLORS, tile.base) ? tile.base : 'grass';
+      const key = `ironwood-ground-${kind}-${variant}`;
+      this.add.image(tile.x * CELL + CELL / 2, tile.y * CELL + CELL / 2, key)
+        .setDisplaySize(CELL, CELL);
+    }
+    const graphics = this.add.graphics();
     for (const tile of state.board as Tile[]) {
       const left = tile.x * CELL, top = tile.y * CELL;
-      graphics.fillStyle(COLORS[tile.base] ?? COLORS.grass, 1);
-      graphics.fillRect(left, top, CELL, CELL);
-
-      if (tile.base === 'tree') {
-        graphics.fillStyle(0x42664b, .9);
-        graphics.fillRect(left + 8, top + 10, 22, 18);
-        graphics.fillStyle(0x1c3027, 1);
-        graphics.fillRect(left + 16, top + 27, 6, 11);
-      } else if (tile.base === 'bush') {
-        graphics.fillStyle(0x547558, .6);
-        graphics.fillRect(left + 7, top + 22, 26, 8);
-      } else if (tile.base === 'water') {
-        graphics.fillStyle(0x4b8291, .65);
-        graphics.fillRect(left + 5, top + 12, 18, 3);
-      } else if (tile.base === 'rock') {
-        graphics.fillStyle(0x798079, .7);
-        graphics.fillRect(left + 10, top + 12, 21, 13);
-      }
-
       if (tile.web > 0) {
         graphics.lineStyle(2, 0xb7b5a8, .7);
         graphics.lineBetween(left + 4, top + 4, left + 36, top + 36);
@@ -302,26 +297,19 @@ export class BattleScene extends Phaser.Scene {
       liveIds.add(actor.id);
       const x = actor.x * CELL + CELL / 2, y = actor.y * CELL + CELL / 2;
       const prev = this.lastPositions.get(actor.id);
-      const color = parseInt(actor.color.slice(1), 16);
-      const drawing = this.add.graphics();
-
-      // Placeholder silhouettes; replace these with CC0 sprite atlas entries in Phase 3.
-      drawing.fillStyle(0x11191a, 1);
-      drawing.fillCircle(0, 0, 17);
-      drawing.fillStyle(color, 1);
-      drawing.fillCircle(0, 0, 14);
-      drawing.lineStyle(actor.id === this.selected ? 3 : 2,
-        actor.id === this.selected ? 0xfce0a6 : 0x28312b);
-      drawing.strokeCircle(0, 0, 16);
-      drawing.fillStyle(0x111b1c, 1);
-      drawing.fillRect(-16, 17, 32, 4);
-      drawing.fillStyle(actor.side === 'ally' ? 0x8cbd99 : 0xc46f76, 1);
-      drawing.fillRect(-16, 17, Math.max(0, 32 * actor.hp / actor.maxhp), 4);
-
-      const label = this.add.text(0, -1, actor.glyph, {
-        fontSize: '19px', color: '#121916', fontFamily: 'Georgia, serif',
-      }).setOrigin(.5);
-      const container = this.add.container(x, y, [drawing, label]);
+      const spriteKey = `ironwood-unit-${actor.kind}`;
+      const outline = this.add.graphics();
+      outline.fillStyle(actor.side === 'ally' ? 0x1b4235 : 0x542a39, .9);
+      outline.fillRect(-19, -19, 38, 38);
+      outline.lineStyle(actor.id === this.selected ? 3 : 1,
+        actor.id === this.selected ? 0xfce0a6 : actor.side === 'ally' ? 0x71977b : 0xae6d72);
+      outline.strokeRect(-19, -19, 38, 38);
+      outline.fillStyle(0x101a1b, 1);
+      outline.fillRect(-18, 16, 36, 5);
+      outline.fillStyle(actor.side === 'ally' ? 0x8cbd99 : 0xc46f76, 1);
+      outline.fillRect(-18, 16, Math.max(0, 36 * actor.hp / actor.maxhp), 5);
+      const sprite = this.add.image(0, -2, spriteKey).setDisplaySize(36, 36);
+      const container = this.add.container(x, y, [outline, sprite]);
       if (prev && (prev.x !== actor.x || prev.y !== actor.y) && !reduceMotion) {
         container.setPosition(prev.x * CELL + CELL / 2, prev.y * CELL + CELL / 2);
         this.tweens.add({ targets: container, x, y, duration: 220, ease: 'Sine.easeOut' });
