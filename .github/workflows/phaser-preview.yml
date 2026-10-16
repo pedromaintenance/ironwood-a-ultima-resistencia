@@ -12,6 +12,12 @@ on:
       - feat/phaser-battle-preview
   workflow_dispatch:
 
+
+# New push cancels stale jobs from the same preview branch; the last commit wins.
+concurrency:
+  group: phaser-preview-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   phaser-preview:
     runs-on: ubuntu-latest
