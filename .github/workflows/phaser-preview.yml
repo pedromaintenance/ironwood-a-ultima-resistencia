@@ -23,6 +23,9 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+      - name: Test legacy/core parity before rendering
+        working-directory: .
+        run: npm test
       - name: Install Phaser, Vite and TypeScript
         run: npm install --no-audit --no-fund
       - name: Build independent Phaser preview
