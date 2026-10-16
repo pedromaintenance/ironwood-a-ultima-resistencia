@@ -34,6 +34,8 @@ export class BattleScene extends Phaser.Scene {
   private note = '';
   private team = ['guardian', 'ranger', 'druid'];
   private active = false;
+  private lastPositions = new Map<string, { x: number; y: number }>();
+  private lastHealth = new Map<string, number>();
 
   constructor() { super('Battle'); }
 
@@ -173,6 +175,8 @@ export class BattleScene extends Phaser.Scene {
       candidate.deployMission();
     }
     this.engine = candidate;
+    this.lastPositions.clear();
+    this.lastHealth.clear();
     this.active = true;
     this.selected = candidate.snapshot().selected || 'a0';
     this.selectedSkill = null;
@@ -187,6 +191,8 @@ export class BattleScene extends Phaser.Scene {
     this.engine = createIronwoodEngine({ seed });
     this.engine.startCampaign({ team, difficulty, seed });
     this.engine.deployMission();
+    this.lastPositions.clear();
+    this.lastHealth.clear();
     this.active = true;
     this.selected = 'a0';
     this.selectedSkill = null;
@@ -289,24 +295,52 @@ export class BattleScene extends Phaser.Scene {
       }
     }
 
+    const liveIds = new Set<string>();
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     for (const actor of state.actors as Actor[]) {
       if (actor.hp <= 0) continue;
+      liveIds.add(actor.id);
       const x = actor.x * CELL + CELL / 2, y = actor.y * CELL + CELL / 2;
+      const prev = this.lastPositions.get(actor.id);
       const color = parseInt(actor.color.slice(1), 16);
-      graphics.fillStyle(0x11191a, 1);
-      graphics.fillCircle(x, y, 17);
-      graphics.fillStyle(color, 1);
-      graphics.fillCircle(x, y, 14);
-      graphics.lineStyle(actor.id === this.selected ? 3 : 2, actor.id === this.selected ? 0xfce0a6 : 0x28312b);
-      graphics.strokeCircle(x, y, 16);
-      graphics.fillStyle(0x111b1c, 1);
-      graphics.fillRect(x - 16, y + 17, 32, 4);
-      graphics.fillStyle(actor.side === 'ally' ? 0x8cbd99 : 0xc46f76, 1);
-      graphics.fillRect(x - 16, y + 17, Math.max(0, 32 * actor.hp / actor.maxhp), 4);
+      const drawing = this.add.graphics();
 
-      this.add.text(x, y - 1, actor.glyph, {
+      // Placeholder silhouettes; replace these with CC0 sprite atlas entries in Phase 3.
+      drawing.fillStyle(0x11191a, 1);
+      drawing.fillCircle(0, 0, 17);
+      drawing.fillStyle(color, 1);
+      drawing.fillCircle(0, 0, 14);
+      drawing.lineStyle(actor.id === this.selected ? 3 : 2,
+        actor.id === this.selected ? 0xfce0a6 : 0x28312b);
+      drawing.strokeCircle(0, 0, 16);
+      drawing.fillStyle(0x111b1c, 1);
+      drawing.fillRect(-16, 17, 32, 4);
+      drawing.fillStyle(actor.side === 'ally' ? 0x8cbd99 : 0xc46f76, 1);
+      drawing.fillRect(-16, 17, Math.max(0, 32 * actor.hp / actor.maxhp), 4);
+
+      const label = this.add.text(0, -1, actor.glyph, {
         fontSize: '19px', color: '#121916', fontFamily: 'Georgia, serif',
       }).setOrigin(.5);
+      const container = this.add.container(x, y, [drawing, label]);
+      if (prev && (prev.x !== actor.x || prev.y !== actor.y) && !reduceMotion) {
+        container.setPosition(prev.x * CELL + CELL / 2, prev.y * CELL + CELL / 2);
+        this.tweens.add({ targets: container, x, y, duration: 220, ease: 'Sine.easeOut' });
+      }
+
+      const lastHp = this.lastHealth.get(actor.id);
+      if (lastHp !== undefined && lastHp > actor.hp && !reduceMotion) {
+        this.tweens.add({
+          targets: container, alpha: .42, duration: 85, yoyo: true, repeat: 2,
+        });
+      }
+      this.lastPositions.set(actor.id, { x: actor.x, y: actor.y });
+      this.lastHealth.set(actor.id, actor.hp);
+    }
+    for (const id of this.lastPositions.keys()) {
+      if (!liveIds.has(id)) {
+        this.lastPositions.delete(id);
+        this.lastHealth.delete(id);
+      }
     }
 
     this.drawHud(state, selectedActor);
