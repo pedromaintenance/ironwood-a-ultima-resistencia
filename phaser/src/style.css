@@ -48,3 +48,11 @@
 .actionFeedback{font:600 12px/1.5 system-ui,sans-serif;margin:8px auto;padding:9px 11px;max-width:480px;background:#1c302b;border-left:3px solid #a1c7a3;color:#e6ecd9;min-height:20px}
 .actionFeedback[data-kind="warning"]{background:#302a25;border-left-color:#f1b76f;color:#ffe0ac}
 #skills button:focus-visible{outline:2px solid #eed68a;outline-offset:2px}
+
+/* M3g — missão exibida a partir do mesmo estado que determina a vitória no core. */
+.goalTracker{padding:12px 10px;margin:12px 0 7px;border:1px solid #766b4f;background:#192923}
+.goalTracker strong{display:block;font:700 13px/1.5 system-ui,sans-serif;color:#ecd5a6}
+.goalTracker progress{display:block;appearance:auto;width:100%;height:13px;margin:10px 0 6px;accent-color:#a9c89b}
+.goalTracker p{font:12px/1.45 system-ui,sans-serif!important;color:#d1cab0!important}
+#goalPanel[data-goal-status="victory"] .goalTracker{border-color:#99b887;background:#213a31}
+#goalPanel[data-goal-status="defeat"] .goalTracker{border-color:#b77778;background:#392a2d}

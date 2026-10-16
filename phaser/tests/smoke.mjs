@@ -17,7 +17,7 @@ async function cell(canvas, x, y) {
 try {
   await page.goto('http://127.0.0.1:4173/', { waitUntil: 'networkidle' });
   assert.equal(await page.locator('#lobby').isVisible(), true, 'lobby should open first');
-  assert.match(await page.locator('.mast').innerText(), /BETA M3f/);
+  assert.match(await page.locator('.mast').innerText(), /BETA M3g/);
   assert.equal(await page.locator('.playtestGuide summary').isVisible(), true);
   assert.equal(await page.locator('#teamCount').innerText(), '3/3');
   await page.locator('#startCampaign').click();
@@ -231,8 +231,46 @@ try {
   assert.equal(fired.casts, 1);
   assert.match(await page.locator('#battleLog').innerText(), /Bola de Fogo/);
 
+  // M3g full transition: an imported, valid near-victory fixture still has to
+  // complete a REAL core action before the engine enters the upgrade phase.
+  await page.locator('#restart').click();
+  await page.locator('#startCampaign').click();
+  assert.match(await page.locator('#goalName').innerText(), /Expulsar a patrulha/);
+  assert.equal(await page.locator('#goalPanel').getAttribute('data-goal-kind'), 'kill');
+  assert.equal(await page.locator('#goalPanel').getAttribute('data-goal-total'), '4');
+  assert.equal(await page.locator('#goalPanel').getAttribute('data-goal-completed'), '0');
+  const fixture = await page.evaluate(() => JSON.parse(localStorage.getItem('ironwood_phaser_preview_v1')));
+  fixture.actors.filter(a => a.side === 'enemy').forEach(a => { a.hp = 0; });
+  await page.locator('#restart').click();
+  await page.locator('#importFile').setInputFiles({
+    name: 'near-victory-v1.json', mimeType: 'application/json',
+    buffer: Buffer.from(JSON.stringify(fixture)),
+  });
+  await page.locator('#lobby').waitFor({ state: 'hidden', timeout: 15000 });
+  const beforeFinish = await page.evaluate(() => JSON.parse(localStorage.getItem('ironwood_phaser_preview_v1')));
+  assert.equal(beforeFinish.phase, 'player', 'import alone does not award victory');
+  await canvas.click({ position: await cell(canvas, 3, 10) });
+  await page.waitForFunction(() => document.getElementById('goalPanel')?.dataset.goalStatus === 'victory');
+  const afterFinish = await page.evaluate(() => JSON.parse(localStorage.getItem('ironwood_phaser_preview_v1')));
+  assert.equal(afterFinish.phase, 'between', 'legitimate movement awards victory through the engine');
+  assert.equal(afterFinish.wins, 1);
+  assert.match(await page.locator('#goalDetail').innerText(), /OBJETIVO CONCLUÍDO/);
+  assert.equal(await page.locator('#upgradeOptions').isVisible(), true);
+  assert.equal(await page.locator('#upgradeOptions button').count(), 3);
+  await page.screenshot({ path: 'artifacts/preview/07-victory-upgrades.png', fullPage: true });
+  await page.locator('#upgradeOptions button').first().click();
+  const missionTwo = await page.evaluate(() => JSON.parse(localStorage.getItem('ironwood_phaser_preview_v1')));
+  assert.equal(missionTwo.mission, 1);
+  assert.equal(missionTwo.phase, 'player');
+  assert.equal(missionTwo.wins, 1);
+  assert.equal(Object.values(missionTwo.upgrades).reduce((a,b) => a+b,0), 1);
+  assert.equal(await page.locator('#goalPanel').getAttribute('data-goal-kind'), 'rescue');
+  assert.equal(await page.locator('#goalPanel').getAttribute('data-goal-total'), '2');
+  assert.match(await page.locator('#missionTitle').innerText(), /Os Nomes dos Desaparecidos/);
+  await page.screenshot({ path: 'artifacts/preview/08-mission-two.png', fullPage: true });
+
   assert.deepEqual(errors, [], 'Phaser should not throw browser errors');
-  console.log('PASS: core parity, M3f overlay/log cache, HUD, tween lock, pooled units, AOE, mobile');
+  console.log('PASS: core parity, M3g goals/victory/upgrades/mission2, M3f cache, HUD, tween lock, pooled units, AOE, mobile');
 } finally {
   await browser.close();
 }

@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { createIronwoodEngine } from '../../src/core/engine.js';
 import { HEROES, MISSIONS, SKILLS, UPGRADES } from '../../src/core/data.js';
+import { missionProgress } from '../../src/core/objectives.js';
 import { installPixelAtlas } from './PixelAtlas';
 import { readPreviewSave, writePreviewSave, exportCampaign, parseImportedSave } from './PreviewSave';
 
@@ -725,6 +726,26 @@ export class BattleScene extends Phaser.Scene {
 
     setText('missionTitle', mission.title);
     setText('missionDesc', mission.desc);
+    const objective = missionProgress(mission.kind, state.board, state.actors, state.round, state.phase);
+    setText('missionSequence', `${mission.act} · OPERAÇÃO ${state.mission + 1}/${MISSIONS.length}`);
+    setText('goalName', objective.label);
+    setText('goalDetail', objective.status === 'victory'
+      ? 'OBJETIVO CONCLUÍDO — escolha uma melhoria para prosseguir.'
+      : objective.status === 'defeat' ? 'MISSÃO PERDIDA — volte ao menu para recomeçar.'
+      : objective.detail);
+    const goalBar = document.getElementById('goalProgress') as HTMLProgressElement | null;
+    if (goalBar) {
+      goalBar.max = Math.max(1, objective.total);
+      goalBar.value = objective.completed;
+      goalBar.setAttribute('aria-label', `${objective.label}: ${objective.completed} de ${objective.total}`);
+    }
+    const goalPanel = document.getElementById('goalPanel');
+    if (goalPanel) {
+      goalPanel.dataset.goalKind = objective.kind;
+      goalPanel.dataset.goalStatus = objective.status;
+      goalPanel.dataset.goalCompleted = String(objective.completed);
+      goalPanel.dataset.goalTotal = String(objective.total);
+    }
     setText('phaseStatus', `Rodada ${state.round} · ${phase} · ${state.weather || 'tempo estável'}${this.note ? ' · ' + this.note : ''}`);
     setText('unitName', actor?.name || 'Sem combatente selecionado');
     setText('unitStats', actor

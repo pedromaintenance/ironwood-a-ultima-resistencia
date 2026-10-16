@@ -229,3 +229,47 @@ test('spell footprints respect board edges and line stops without touching state
   assert.ok(line.note.includes('água'));
   assert.ok(line.tiles.every(({x,y}) => x >= 0 && y >= 0 && x < 12 && y < 12));
 });
+
+test('mission goal tracker follows every core missionOutcome gate without mutations', async () => {
+  const { missionOutcome, missionProgress } = await import('../src/core/objectives.js');
+  const actors = [
+    { id: 'a0', side: 'ally', kind: 'guardian', hp: 30 },
+    { id: 'e0', side: 'enemy', kind: 'spear', hp: 0, maxhp: 14 },
+    { id: 'e1', side: 'enemy', kind: 'archer', hp: 11, maxhp: 11 },
+  ];
+  const goal = [{ objective: 'captive', cleared: true }, { objective: 'captive', cleared: false }];
+  const original = structuredClone({ actors, goal });
+  const kill = missionProgress('kill', [], actors, 1, 'player');
+  assert.equal(kill.completed, 1);
+  assert.equal(kill.total, 2);
+  assert.equal(kill.remaining, 1);
+  assert.equal(missionOutcome('kill', [], actors, 1), null);
+  const allDead = actors.map(a => a.side === 'enemy' ? { ...a, hp: 0 } : a);
+  assert.equal(missionProgress('kill', [], allDead, 1, 'between').status, 'victory');
+  assert.equal(missionOutcome('kill', [], allDead, 1), 'victory');
+
+  for (const [kind, type] of [
+    ['rescue', 'captive'], ['totem', 'totem'],
+    ['cleanse', 'shrine'], ['beacon', 'beacon'],
+  ]) {
+    const board = goal.map(t => ({ ...t, objective: type }));
+    const p = missionProgress(kind, board, actors, 2, 'player');
+    assert.equal(p.completed, 1, kind);
+    assert.equal(p.total, 2, kind);
+    assert.equal(missionOutcome(kind, board, actors, 2), null);
+    board[1].cleared = true;
+    assert.equal(missionProgress(kind, board, actors, 2, 'between').remaining, 0, kind);
+    assert.equal(missionOutcome(kind, board, actors, 2), 'victory', kind);
+  }
+  assert.equal(missionProgress('survive', [], actors, 6).completed, 5);
+  assert.equal(missionOutcome('survive', [], actors, 6), null);
+  assert.equal(missionProgress('survive', [], actors, 7, 'between').completed, 6);
+  assert.equal(missionOutcome('survive', [], actors, 7), 'victory');
+  const boss = actors.concat({ id: 'e2', side: 'enemy', kind: 'boss', hp: 12, maxhp: 52 });
+  assert.equal(missionProgress('boss', [], boss).completed, 40);
+  assert.equal(missionOutcome('boss', [], boss, 1), null);
+  const defeatedBoss = boss.map(a => a.kind === 'boss' ? { ...a, hp: 0 } : a);
+  assert.equal(missionProgress('boss', [], defeatedBoss, 1, 'ending').completed, 52);
+  assert.equal(missionOutcome('boss', [], defeatedBoss, 1), 'victory');
+  assert.deepEqual({ actors, goal }, original, 'progress read cannot modify caller objects');
+});
