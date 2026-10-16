@@ -1,8 +1,8 @@
 # Roadmap executivo — Ironwood Phaser
 
-**Atualização:** 15–16 de outubro de 2026  
+**Atualização:** 16 de outubro de 2026  
 **Jogo público:** `main` continua executando o Canvas legado.  
-**Ramo da prévia:** `feat/phaser-battle-preview`, com PR dependente [#7](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/pull/7).  
+**Ramo da prévia:** `feat/phaser-pixel-art-m2` (baseado em `feat/phaser-battle-preview`), com PR dependente [#7](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/pull/7).  
 **Roadmap do projeto inteiro:** [ROADMAP_IRONWOOD_PHASER.md](../ROADMAP_IRONWOOD_PHASER.md) (versão canônica publicada em `main`).
 
 Este roteiro diferencia funcionalidades **implementadas**, **validadas em CI**, **em revisão** e **ainda planejadas**. Os testes automatizados não substituem o playthrough humano em aparelho físico.
@@ -21,7 +21,8 @@ Este roteiro diferencia funcionalidades **implementadas**, **validadas em CI**, 
 | Melhorias entre missões | Implementadas | Apresenta as 3 opções originais para escolha | UI e sprites dos upgrades |
 | Feedback visual | **Implementado como protótipo**, testado em build+smoke | Tween de deslocamento e piscada de dano, preferência movimento reduzido | Arte final, sequenciamento e VFX específicos |
 | Telas pequenas | **Smoke emulado aprovado** | Layout responsivo 390×844, seleção de equipe, toque para mover e retomada após reload | Android/iOS físico, acessibilidade e qualidade |
-| Free-assets | Pesquisa concluída para candidatas; **nenhum arquivo externo incorporado** | [Manifest](../docs/assets-manifest.json), [Kenney Roguelike/RPG](https://kenney.nl/assets/roguelike-rpg-pack), [Kenney Characters](https://kenney.nl/assets/roguelike-characters) | Baixar, inspecionar, selecionar, incorporar e registrar arquivos CC0 |
+| Pixel-art original | **36 sprites/texturas 16×16 gerados localmente; teste Chromium aprovado** | `phaser/src/PixelAtlas.ts`, [guia artístico](../docs/PIXEL_ART_M2.md) | Refinar desenho, contraste e animações |
+| Free-assets de terceiros | Nenhum arquivo externo incorporado; CC0 Kenney apenas candidato | [Manifest](../docs/assets-manifest.json), [Kenney Roguelike/RPG](https://kenney.nl/assets/roguelike-rpg-pack) | Baixar, inspecionar, selecionar, incorporar e registrar arquivos CC0 |
 | PWA e publicação | Não iniciada no Phaser | Legado mantém PWA atual | SW, manifest, instalação e offline do Vite |
 
 ## Sequência de trabalho — próximos PRs
@@ -39,19 +40,27 @@ Este roteiro diferencia funcionalidades **implementadas**, **validadas em CI**, 
 
 **Aceite:** conseguir começar a campanha, gastar PA, encerrar turno, salvar, recarregar, importar um JSON e retomar com o mesmo estado.
 
-### M2 — Arte licenciada e direção visual (próximo)
+### M2 — Arte licenciada e direção visual (**em execução**)
+- [x] Criar atlas de **pixel-art autoral**, com 24 tiles de terreno e 12 sprites de unidades distintos, em 16×16.
+- [x] Renderizar terreno e personagens com imagens/texturas Phaser, preservando motor e efeitos.
+- [x] Diferenciar facções por borda/HP e manter o mapa determinístico, com variantes de terreno.
+- [x] Exibir destaque do alcance aproximado de habilidades e explicação para touch.
+- [x] Documentar arte gerada vs. assets de terceiros no manifesto, sem alegar importação CC0 não feita.
+- [x] CI com build, smoke Chromium, textura verificada por teste e screenshots.
+
 - [ ] Obter **arquivos reais** dos packs oficiais Kenney CC0; registrar versão, arquivo, URL e licença por asset.
 - [ ] Escolher uma perspectiva e escala coerentes. Tiles 16×16 exibidos como 32×32 ou 40×40 em grade lógica 12×12.
-- [ ] Implementar `AssetRegistry` e atlas para chão, água, vegetação, ruínas e paredes.
-- [ ] Trocar marcadores de heróis e inimigos por sprites individuais, com identificação de facção e barras de PV.
+- [x] Implementar primeiro registro local de texturas para chão, água, vegetação, ruínas e paredes em `PixelAtlas.ts` (gerado em memória).
+- [x] Trocar marcadores por sprites originais de 16×16 para todos os heróis e inimigos, preservando facções e barras de PV.
 - [ ] VFX para fogo, gelo, névoa, raízes, corrupção e eletricidade.
-- [ ] Confirmar que o build funciona **sem acesso à internet**, não usar hotlinks de sprites ou CDN em runtime.
+- [x] Garantir arte sem URLs externas em runtime; textures locais geradas em memória. **PWA offline ainda não comprovado**.
 
-**Aceite:** 100% dos assets externos publicados constam no manifest, todos licenciados e legíveis no celular; sem dependências de servidor de imagens.
+**Aceite:** toda arte incorporada tem origem documentada, é carregada localmente e é legível no celular; nenhum pacote externo sem licença auditada. **Gate parcial:** arte autoral e renderização passaram no CI; revisão visual humana e assets externos continuam pendentes.
 
-### M3 — Combate com animações e input robusto
+### M3 — Combate com animações e input robusto (próximo incremental)
 - [ ] Não permitir ações repetidas durante tweens críticos; fila de ações da interface, sem atrasar regras.
-- [ ] Pré-visualização de raio de magia, alvo, linha de visão e cobertura.
+- [x] Destaque de alcance aproximado + texto da habilidade em mobile.
+- [ ] Pré-visualização precisa de área de magia, linha de visão e cobertura, sem duplicar lógica do core.
 - [ ] Feedback de hit/miss, alterações de HP, objetivos destruídos e efeitos persistentes.
 - [ ] Adicionar pausa, inspeção, atalhos de teclado e suporte acessível além das cores.
 - [ ] Reduzir objetos recriados a cada ação para melhorar FPS e bateria.
@@ -97,3 +106,12 @@ npm run dev
 ```
 
 Para testar o pacote compilado, execute `npm run build` e `npm run preview`. [README](README.md) explica o fluxo. O workflow `Ironwood Phaser preview` publica o build e screenshots como artefatos de cada execução (não se trata de uma página pública).
+
+## Histórico de entregas
+
+| Incremento | Branch | Evidência |
+|---|---|---|
+| M1 — lobby + saves + mobile emulado | `feat/phaser-battle-preview` | [PR #7](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/pull/7) |
+| M2a — 36 texturas pixel originais; atlas e novo renderer | `feat/phaser-pixel-art-m2` | [Guia artístico](../docs/PIXEL_ART_M2.md), [CI](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/actions/runs/38838968563) |
+
+O compromisso de manter o jogo Canvas original publicado na `main` permanece. As novas texturas não fazem reivindicação de vínculo ou origem nos packs Kenney.

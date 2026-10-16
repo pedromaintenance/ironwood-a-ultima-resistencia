@@ -24,3 +24,5 @@
 .saveStatus{font:11px system-ui,sans-serif!important;color:#98bca6!important;min-height:15px}
 @media(max-width:540px){.heroSelection{grid-template-columns:repeat(2,minmax(0,1fr))}.lobbyBody{padding:15px}.heroChoice{min-height:84px}.lobbyControls{grid-template-columns:1fr}#importCampaign{grid-column:auto}}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;transition-duration:.01ms!important}}
+
+.skillHelp{border-left:3px solid #8ca6a0;padding:7px 10px;margin-top:11px!important;background:#243435;color:#c9d6cf!important;font-size:12px!important;line-height:1.5!important}

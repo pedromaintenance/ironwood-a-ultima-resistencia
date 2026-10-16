@@ -3,5 +3,45 @@
   "purpose": "Registry of third-party assets actually shipped with the Phaser version",
   "version": 1,
   "assets": [],
-  "notes": "No third-party art imported yet. Procedural Phaser graphics are placeholders. Verify license per source before adding a file."
+  "notes": "External assets have NOT been shipped. The 36 generated pixel textures are original to this game's source code; Kenney and other packs remain only candidates until individually reviewed and imported.",
+  "original_art": {
+    "generator": "phaser/src/PixelAtlas.ts",
+    "technique": "hand-composed pixel geometry rendered into local Phaser CanvasTextures",
+    "resolution": "16x16",
+    "count": 36,
+    "terrain": {
+      "kinds": [
+        "grass",
+        "bush",
+        "tree",
+        "rock",
+        "water",
+        "bones"
+      ],
+      "variations": 4,
+      "total": 24
+    },
+    "units": {
+      "allies": [
+        "guardian",
+        "ranger",
+        "mage",
+        "druid",
+        "cleric",
+        "runesmith"
+      ],
+      "enemies": [
+        "spear",
+        "archer",
+        "wolf",
+        "witch",
+        "shade",
+        "boss"
+      ],
+      "total": 12
+    },
+    "provenance": "Original code drawn for the Ironwood game; not copied from Kenney or any third-party pack",
+    "runtime_requirements": "HTML Canvas 2D; no external network asset URLs",
+    "scope": "This manifest distinguishes generated project art from separately licensed third-party art"
+  }
 }
