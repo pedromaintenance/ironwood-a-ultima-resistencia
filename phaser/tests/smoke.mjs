@@ -17,7 +17,7 @@ async function cell(canvas, x, y) {
 try {
   await page.goto('http://127.0.0.1:4173/', { waitUntil: 'networkidle' });
   assert.equal(await page.locator('#lobby').isVisible(), true, 'lobby should open first');
-  assert.match(await page.locator('.mast').innerText(), /BETA M3e/);
+  assert.match(await page.locator('.mast').innerText(), /BETA M3f/);
   assert.equal(await page.locator('.playtestGuide summary').isVisible(), true);
   assert.equal(await page.locator('#teamCount').innerText(), '3/3');
   await page.locator('#startCampaign').click();
@@ -29,6 +29,10 @@ try {
   assert.match(await page.locator('#missionTitle').innerText(), /A Trilha Fechada/);
   assert.match(await page.locator('#phaseStatus').innerText(), /Rodada 1/);
   await page.screenshot({ path: 'artifacts/preview/01-battle.png', fullPage: true });
+  const initialOverlayDraws = Number(await page.locator('#game').getAttribute('data-overlay-draws'));
+  const initialLogBuilds = Number(await page.locator('#battleLog').getAttribute('data-builds'));
+  assert.ok(initialOverlayDraws >= 1);
+  assert.ok(initialLogBuilds >= 1);
   const hudBuildsAtStart = Number(await page.locator('#skills').getAttribute('data-builds'));
   assert.equal(hudBuildsAtStart, 1, 'initial ability panel is allocated just once');
   const originalSave = await page.evaluate(() => localStorage.getItem('ironwood_phaser_preview_v1'));
@@ -38,6 +42,10 @@ try {
     'illegal movement does not overwrite the save');
   assert.equal(Number(await page.locator('#skills').getAttribute('data-builds')), hudBuildsAtStart,
     'invalid commands do not rebuild the skill list');
+  assert.equal(Number(await page.locator('#game').getAttribute('data-overlay-draws')), initialOverlayDraws,
+    'failed movement does not redraw a single overlay');
+  assert.equal(Number(await page.locator('#battleLog').getAttribute('data-builds')), initialLogBuilds,
+    'failed movement does not recreate the log');
 
   // Inspection must not move actors, spend AP, advance RNG or overwrite saves.
   assert.equal(await page.locator('#game').getAttribute('data-unit-objects'), '7');
@@ -59,6 +67,10 @@ try {
     'inspect mode must not allocate replacement sprites');
   assert.equal(Number(await page.locator('#skills').getAttribute('data-builds')), hudBuildsAtStart,
     'inspection does not rebuild HUD ability controls');
+  assert.equal(Number(await page.locator('#game').getAttribute('data-overlay-draws')), initialOverlayDraws,
+    'inspection does not recompute the graphics overlay');
+  assert.equal(Number(await page.locator('#battleLog').getAttribute('data-builds')), initialLogBuilds,
+    'inspection does not reconstruct log DOM');
 
   // Rapid input during a 300ms movement tween must never spend extra AP.
   const boardBounds = await canvas.boundingBox();
@@ -78,6 +90,10 @@ try {
   assert.equal(Number(await page.locator('#game').getAttribute('data-terrain-updates')), tilesBefore);
   assert.match(await page.locator('#unitStats').innerText(), /PA 1\/2/);
   assert.match(await page.locator('#battleLog').innerText(), /avança pela floresta/);
+  assert.ok(Number(await page.locator('#game').getAttribute('data-overlay-draws')) > initialOverlayDraws,
+    'a real movement invalidates overlays');
+  assert.ok(Number(await page.locator('#battleLog').getAttribute('data-builds')) > initialLogBuilds,
+    'a new combat event updates the log');
   assert.equal(Number(await page.locator('#game').getAttribute('data-unit-allocations')), initialAllocations,
     'moving existing actors must reuse the same sprite containers');
   // Rerender for another selected ally also must keep exactly the same objects.
@@ -211,7 +227,7 @@ try {
   assert.match(await page.locator('#battleLog').innerText(), /Bola de Fogo/);
 
   assert.deepEqual(errors, [], 'Phaser should not throw browser errors');
-  console.log('PASS: core parity, incremental HUD, invalid actions do not resave, tween lock, pooled units, AOE, mobile');
+  console.log('PASS: core parity, M3f overlay/log cache, HUD, tween lock, pooled units, AOE, mobile');
 } finally {
   await browser.close();
 }
