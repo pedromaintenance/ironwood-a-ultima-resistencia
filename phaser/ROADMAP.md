@@ -1,6 +1,6 @@
 # Roadmap executivo — Ironwood Phaser
 
-**Atualização:** 16 de outubro de 2026 — M3c validada em CI e distribuída como beta no Pages  
+**Atualização:** 16 de outubro de 2026 — M3d em validação; M3c publicada como beta no Pages  
 **Jogo público:** `main` continua executando o Canvas legado.  
 **Ramo da prévia:** `feat/phaser-impact-preview-m3b` ([PR #13](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/pull/13)); publicação pública independente compilada do commit `9ffc7029`.  
 **Roadmap do projeto inteiro:** [ROADMAP_IRONWOOD_PHASER.md](../ROADMAP_IRONWOOD_PHASER.md) (versão canônica publicada em `main`).
@@ -23,7 +23,7 @@ Este roteiro diferencia funcionalidades **implementadas**, **validadas em CI**, 
 | Telas pequenas | **Smoke emulado aprovado** | Layout responsivo 390×844, seleção de equipe, toque para mover e retomada após reload | Android/iOS físico, acessibilidade e qualidade |
 | Pixel-art original | **36 sprites/texturas 16×16 gerados localmente; teste Chromium aprovado** | `phaser/src/PixelAtlas.ts`, [guia artístico](../docs/PIXEL_ART_M2.md) | Refinar desenho, contraste e animações |
 | Free-assets de terceiros | Nenhum arquivo externo incorporado; CC0 Kenney apenas candidato | [Manifest](../docs/assets-manifest.json), [Kenney Roguelike/RPG](https://kenney.nl/assets/roguelike-rpg-pack) | Baixar, inspecionar, selecionar, incorporar e registrar arquivos CC0 |
-| Renderer incremental | **M3c com pool de unidades implementado** | 144 tiles + contêineres de personagens vivos reutilizados; contadores de alocação verificáveis | Pool de VFX, benchmark físico, tratamento da fila de tweens |
+| Renderer incremental e comandos | **M3d implementada; validação CI pendente** | 144 tiles + unidades reutilizados; trava da ação mutante durante tweens com telemetria | Pool de VFX, benchmark físico, teclado de mira e QA humano |
 | Publicação de beta no Pages | **M3b distribuída** em `/phaser-preview/`, sem substituir Canvas | [Jogar no Pages](https://pedromaintenance.github.io/ironwood-a-ultima-resistencia/phaser-preview/), [CI M3b](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/actions/runs/38955658327) | QA físico e acessibilidade |
 | PWA offline independente | Ainda não iniciada no Phaser | Legado mantém PWA atual; SW Canvas exclui a prévia de seu cache | SW próprio, web manifest, botão instalar e validação offline |
 
@@ -91,6 +91,17 @@ Este roteiro diferencia funcionalidades **implementadas**, **validadas em CI**, 
 - [ ] Playthrough da primeira missão e da campanha inteira.
 
 **Aceite parcial:** evita recriação de contêineres de aliados/inimigos vivos em ações normais, com identidade de sprites persistente. Ainda há recálculo das sobreposições e construção dos botões do HUD. [Especificação M3c](../docs/M3C_RENDER_POOL.md).
+
+### M3d — Trava de comandos enquanto o Phaser anima (implementado; CI em validação)
+- [x] Rastrear movimentos e efeitos de dano em `motionTweens`; bloquear comandos mutantes sem usar relógios nem alterar a engine.
+- [x] Desabilitar **ENCERRAR TURNO** durante tween, com verificação também no handler.
+- [x] Permitir inspeção, seleção, hover de mira e cancelamento durante a animação.
+- [x] Expor `data-input-locked`, `data-ignored-commands` e texto **ANIMANDO/PRONTO** acessível no celular.
+- [x] Cancelar tweens pendentes quando mudar de campanha/voltar ao menu.
+- [x] Teste Playwright de comando rápido duplicado sem alteração do save e trava do botão de turno.
+- [ ] Obter CI verde completo no commit de publicação, atualizar Pages e revisar resultados em aparelho físico.
+
+**Aceite parcial:** não há fila de comandos; entradas mutantes são **recusadas** durante animações, para impedir aplicar ordens baseadas em posições desatualizadas. O motor determinístico e o save continuam sendo as fontes de verdade. [Detalhamento M3d](../docs/M3D_COMMAND_LOCK.md).
 
 ### M4 — Campanha 8 missões
 - [ ] Telas de briefing, vitória, derrota, retry e progressão.
