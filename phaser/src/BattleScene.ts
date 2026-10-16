@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { createIronwoodEngine } from '../../src/core/engine.js';
-import { HEROES, MISSIONS, SKILLS } from '../../src/core/data.js';
+import { HEROES, MISSIONS, SKILLS, UPGRADES } from '../../src/core/data.js';
+import { readPreviewSave, writePreviewSave, exportCampaign, parseImportedSave } from './PreviewSave';
 
 const CELL = 40;
 const SIZE = 12;
@@ -31,11 +32,14 @@ export class BattleScene extends Phaser.Scene {
   private selected = 'a0';
   private selectedSkill: string | null = null;
   private note = '';
+  private team = ['guardian', 'ranger', 'druid'];
+  private active = false;
 
   constructor() { super('Battle'); }
 
   create(): void {
-    this.newCampaign();
+    this.bindLobby();
+    this.showLobby();
 
     this.input.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
       this.onBoardPress(pointer.worldX, pointer.worldY);
@@ -46,39 +50,154 @@ export class BattleScene extends Phaser.Scene {
         this.selectedSkill = null;
         this.note = '';
       }
+      this.persist();
       this.renderBattle();
     });
 
-    document.getElementById('restart')?.addEventListener('click', () => {
-      this.newCampaign();
+    document.getElementById('restart')?.addEventListener('click', () => this.showLobby());
+    document.getElementById('saveCampaign')?.addEventListener('click', () => this.persist());
+    document.getElementById('exportCampaign')?.addEventListener('click', () => {
+      if (!this.active) return;
+      try { exportCampaign(this.engine.snapshot()); this.setSaveStatus('Campanha exportada em JSON.'); }
+      catch { this.setSaveStatus('Não foi possível exportar a campanha.'); }
     });
-
-    document.getElementById('nextMission')?.addEventListener('click', () => {
-      if (this.engine.getOutcome() !== 'victory') return;
-      this.engine.advanceMission('hp');
-      this.engine.deployMission();
-      this.selected = 'a0';
+    this.input.keyboard?.on('keydown-ESC', () => {
       this.selectedSkill = null;
       this.note = '';
-      this.renderBattle();
+      if (this.active) this.renderBattle();
     });
   }
 
-  private newCampaign(): void {
-    this.engine = createIronwoodEngine({ seed: 20261015 });
-    this.engine.startCampaign({
-      team: ['guardian', 'ranger', 'druid'],
-      seed: 20261015,
-      difficulty: 'normal',
+  private setSaveStatus(message: string): void {
+    const target = document.getElementById('saveStatus');
+    if (target) target.textContent = message;
+  }
+
+  private persist(): void {
+    if (!this.active) return;
+    try {
+      const ok = writePreviewSave(this.engine.snapshot());
+      this.setSaveStatus(ok ? 'Progresso salvo neste navegador.' : 'Armazenamento indisponível. Exporte o JSON.');
+    } catch {
+      this.setSaveStatus('Falha ao validar o salvamento. Exporte para diagnóstico.');
+    }
+  }
+
+  private bindLobby(): void {
+    const container = document.getElementById('heroSelection');
+    if (container) {
+      for (const [key, hero] of Object.entries(HEROES)) {
+        const button = document.createElement('button');
+        button.className = 'heroChoice';
+        button.dataset.hero = key;
+        const title = document.createElement('strong');
+        title.textContent = hero.name;
+        const role = document.createElement('small');
+        role.textContent = hero.role;
+        const stats = document.createElement('small');
+        stats.textContent = `PV ${hero.hp} · Mana ${hero.mp}`;
+        button.append(title, role, stats);
+        button.addEventListener('click', () => {
+          if (this.team.includes(key)) this.team = this.team.filter(id => id !== key);
+          else if (this.team.length < 3) this.team.push(key);
+          else { this.setLobbyError('Escolha exatamente três combatentes.'); return; }
+          this.setLobbyError('');
+          this.renderTeamSelection();
+        });
+        container.appendChild(button);
+      }
+    }
+    document.getElementById('startCampaign')?.addEventListener('click', () => {
+      if (this.team.length !== 3) return;
+      const difficulty = (document.getElementById('difficulty') as HTMLSelectElement).value;
+      this.newCampaign([...this.team], difficulty);
     });
+    document.getElementById('continueCampaign')?.addEventListener('click', () => {
+      const value = readPreviewSave();
+      if (value) this.resumeCampaign(value);
+      else this.setLobbyError('Não há um save válido neste navegador.');
+    });
+    document.getElementById('importCampaign')?.addEventListener('click', () => {
+      (document.getElementById('importFile') as HTMLInputElement)?.click();
+    });
+    document.getElementById('importFile')?.addEventListener('change', async () => {
+      const input = document.getElementById('importFile') as HTMLInputElement;
+      const file = input.files?.[0];
+      if (!file) return;
+      try {
+        const value = await parseImportedSave(file);
+        this.resumeCampaign(value);
+      } catch (error) {
+        this.setLobbyError(error instanceof Error ? error.message : 'Save inválido.');
+      } finally { input.value = ''; }
+    });
+  }
+
+  private setLobbyError(message: string): void {
+    const target = document.getElementById('lobbyError');
+    if (target) target.textContent = message;
+  }
+
+  private renderTeamSelection(): void {
+    document.querySelectorAll<HTMLButtonElement>('.heroChoice').forEach(button => {
+      const chosen = this.team.includes(button.dataset.hero || '');
+      button.setAttribute('aria-pressed', String(chosen));
+    });
+    const count = document.getElementById('teamCount');
+    if (count) count.textContent = `${this.team.length}/3`;
+    const start = document.getElementById('startCampaign') as HTMLButtonElement;
+    if (start) start.disabled = this.team.length !== 3;
+  }
+
+  private showLobby(): void {
+    this.active = false;
+    this.selectedSkill = null;
+    this.renderTeamSelection();
+    this.setLobbyError('');
+    const resume = document.getElementById('continueCampaign') as HTMLButtonElement;
+    if (resume) resume.disabled = !readPreviewSave();
+    const lobby = document.getElementById('lobby');
+    if (lobby) lobby.hidden = false;
+  }
+
+  private hideLobby(): void {
+    const lobby = document.getElementById('lobby');
+    if (lobby) lobby.hidden = true;
+  }
+
+  private resumeCampaign(value: any): void {
+    const candidate = createIronwoodEngine({ seed: value.seed });
+    // Validate before replacing the running engine, preserving the active game on error.
+    candidate.restoreSave(value);
+    if (['ready', 'brief', 'defeat'].includes(candidate.snapshot().phase)) {
+      candidate.deployMission();
+    }
+    this.engine = candidate;
+    this.active = true;
+    this.selected = candidate.snapshot().selected || 'a0';
+    this.selectedSkill = null;
+    this.note = '';
+    this.hideLobby();
+    this.persist();
+    this.renderBattle();
+  }
+
+  private newCampaign(team: string[], difficulty: string): void {
+    const seed = Date.now() >>> 0;
+    this.engine = createIronwoodEngine({ seed });
+    this.engine.startCampaign({ team, difficulty, seed });
     this.engine.deployMission();
+    this.active = true;
     this.selected = 'a0';
     this.selectedSkill = null;
     this.note = '';
+    this.hideLobby();
+    this.persist();
     this.renderBattle();
   }
 
   private onBoardPress(worldX: number, worldY: number): void {
+    if (!this.active) return;
     const x = Math.floor(worldX / CELL);
     const y = Math.floor(worldY / CELL);
     if (x < 0 || x >= SIZE || y < 0 || y >= SIZE) return;
@@ -101,6 +220,7 @@ export class BattleScene extends Phaser.Scene {
 
     const messageEvents = this.engine.drainEvents().filter((event: any) => event.type === 'message');
     this.note = messageEvents.at(-1)?.message || '';
+    this.persist();
     this.renderBattle();
   }
 
@@ -193,7 +313,7 @@ export class BattleScene extends Phaser.Scene {
   }
 
   private drawHud(state: any, actor?: Actor): void {
-    const mission = MISSIONS[state.mission];
+    const mission = MISSIONS[state.mission] || MISSIONS[MISSIONS.length - 1];
     const phase = state.phase === 'player' ? 'SEU TURNO' :
       state.phase === 'between' ? 'VITÓRIA' : state.phase === 'defeat' ? 'DERROTA' : state.phase;
     const setText = (id: string, text: string) => {
@@ -232,7 +352,32 @@ export class BattleScene extends Phaser.Scene {
     const endTurn = document.getElementById('endTurn') as HTMLButtonElement | null;
     const nextMission = document.getElementById('nextMission') as HTMLButtonElement | null;
     if (endTurn) endTurn.disabled = state.phase !== 'player';
-    if (nextMission) nextMission.hidden = state.phase !== 'between';
+    if (nextMission) nextMission.hidden = true;
+    const upgrades = document.getElementById('upgradeOptions');
+    if (upgrades) {
+      upgrades.replaceChildren();
+      upgrades.hidden = state.phase !== 'between';
+      if (state.phase === 'between') {
+        const indices = [(state.mission * 2) % UPGRADES.length,
+          (state.mission * 2 + 3) % UPGRADES.length,
+          (state.mission * 2 + 5) % UPGRADES.length];
+        for (const index of indices) {
+          const upgrade = UPGRADES[index];
+          const button = document.createElement('button');
+          button.textContent = `${upgrade.name} — ${upgrade.desc}`;
+          button.addEventListener('click', () => {
+            this.engine.advanceMission(upgrade.id);
+            this.engine.deployMission();
+            this.selected = 'a0';
+            this.selectedSkill = null;
+            this.note = '';
+            this.persist();
+            this.renderBattle();
+          });
+          upgrades.appendChild(button);
+        }
+      }
+    }
 
     const lines = document.getElementById('battleLog');
     if (lines) {
