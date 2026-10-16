@@ -1,0 +1,12 @@
+{
+  "name": "ironwood-a-ultima-resistencia",
+  "private": true,
+  "version": "0.1.0-core",
+  "type": "module",
+  "scripts": {
+    "test": "node --test tests/baseline-static.test.mjs tests/core.test.mjs tests/parity.test.mjs",
+    "test:core": "node --test tests/core.test.mjs",
+    "test:legacy": "node --test tests/baseline-static.test.mjs",
+    "test:parity": "node --test tests/parity.test.mjs"
+  }
+}

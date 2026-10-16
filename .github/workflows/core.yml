@@ -1,0 +1,22 @@
+name: Ironwood headless core
+on:
+  push:
+    branches:
+      - feat/ironwood-core-phase1
+  pull_request:
+    branches:
+      - feat/phaser-migration
+      - main
+  workflow_dispatch:
+jobs:
+  headless-engine:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Run legacy and core tests
+        run: npm test
+      - name: Headless mission demonstration
+        run: node examples/headless-mission.mjs
