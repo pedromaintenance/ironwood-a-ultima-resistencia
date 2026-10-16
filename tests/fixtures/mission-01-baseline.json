@@ -1,0 +1,78 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "fixtureId": "ironwood-original-mission-01-contract",
+  "purpose": "Contrato estrutural de baseline pré-Phaser. Não é um save v1 nem replay determinístico.",
+  "source": {
+    "file": "app.js",
+    "blobSha": "62b621e7ce70fef88ccddfe6eda35918b9ce6555",
+    "branch": "main"
+  },
+  "board": {
+    "width": 12,
+    "height": 12,
+    "tiles": 144,
+    "startingPositions": [
+      {
+        "x": 2,
+        "y": 10
+      },
+      {
+        "x": 5,
+        "y": 10
+      },
+      {
+        "x": 9,
+        "y": 10
+      }
+    ],
+    "terrainKinds": [
+      "grass",
+      "bush",
+      "tree",
+      "water",
+      "rock",
+      "bones"
+    ]
+  },
+  "mission": {
+    "index": 0,
+    "title": "A Trilha Fechada",
+    "kind": "kill",
+    "enemyRoster": [
+      "spear",
+      "spear",
+      "archer",
+      "wolf"
+    ],
+    "victory": "todos inimigos derrotados"
+  },
+  "defaultTeam": [
+    "guardian",
+    "ranger",
+    "druid"
+  ],
+  "actionPointsPerAlly": 2,
+  "manaRegenerationPerRound": 2,
+  "upgradeIds": [
+    "hp",
+    "mp",
+    "power",
+    "defense",
+    "forest",
+    "focus"
+  ],
+  "save": {
+    "storageKey": "ironwood_campaign_v1",
+    "version": 1
+  },
+  "randomness": {
+    "deterministic": false,
+    "note": "Math.random() usa-se diretamente no original; seed persistida não basta para reproduzir um mapa. Fase 1 incluirá PRNG controlado."
+  },
+  "verification": {
+    "staticSourceAudit": true,
+    "headlessPlaythrough": false,
+    "manualPlaythrough": false,
+    "offlineTest": false
+  }
+}
