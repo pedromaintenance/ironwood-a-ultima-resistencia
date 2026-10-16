@@ -686,6 +686,9 @@ export class BattleScene extends Phaser.Scene {
     this.drawHud(state, selectedActor);
     this.paintAim();
     this.showCommandState();
+    const performance = document.getElementById('overlayStats');
+    if (performance) performance.textContent =
+      `M3f: ${this.overlayDraws} redesenhos de efeitos/alcance · ${this.logBuilds} reconstruções do registro de combate · ${this.upgradeBuilds} construções do menu de melhorias. Inspecionar sem alterar o mundo não aumenta esses contadores.`;
   }
 
   private drawHud(state: any, actor?: Actor): void {
