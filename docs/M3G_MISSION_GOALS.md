@@ -29,8 +29,8 @@ Os dados de teste em `#goalPanel`: `data-goal-kind`, `data-goal-status`, `data-g
 - [x] Realizar **uma ação real através da cena Phaser** para forçar o motor a concluir a missão.
 - [x] Conferir fase `between`, `wins=1`, três opções de melhoria e painel com objetivo concluído.
 - [x] Escolher melhoria usando o botão real, verificar entrada na missão 2 com dois reféns pendentes e upgrade registrado.
-- [ ] CI 24+ testes do core + compilação Vite/Phaser + smoke Chromium desktop/mobile verde.
-- [ ] Publicar o SHA exato aprovado, preservando `main/index.html`, `app.js`, `sw.js` e saves Canvas.
+- [x] [25/25 testes do core, compilação Vite/Phaser e smoke Chromium desktop/mobile aprovados](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/actions/runs/38969025016) no SHA `bfffb911`.
+- [x] [Workflow de publicação M3g concluído](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/actions/runs/38969342926) com o SHA exato aprovado; `main/phaser-preview/` atualizado e Canvas preservado.
 - [ ] Playthrough manual completo em hardware físico, sem fixture de preparação.
 
 ## Limites do teste
@@ -40,3 +40,5 @@ O teste automático usa um save válido *próximo* da vitória com inimigos já 
 ## Publicação
 
 Beta isolado em https://pedromaintenance.github.io/ironwood-a-ultima-resistencia/phaser-preview/ somente após CI verde. O código-fonte continua em PR dependente/draft; o Canvas original e seu salvamento permanecem inalterados.
+
+**Condição de entrega:** os testes e o workflow de publicação passaram. A implantação do GitHub Pages e o QA humano/físico são verificações posteriores e independentes. Código-fonte em PR #22 (draft).
