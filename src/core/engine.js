@@ -245,6 +245,22 @@ function victory(){if(G.phase==='between'||G.phase==='ending')return;G.wins++;lo
     if (!actor || actor.side !== 'ally' || !HEROES[actor.kind]?.skills.concat('interact').includes(skillId)) return false;
     return cast(actor, skillId, x, y);
   }
+  // Pure observation: no state, RNG or event mutation. Same spellAllowed and
+  // spellVisible gates used by cast in src/core/spells.js.
+  function previewSkill(actorId, skillId, x, y) {
+    ensureGame();
+    if (G.phase !== 'player') return { allowed: false, reason: 'phase' };
+    const actor = getActor(actorId);
+    if (!actor || actor.side !== 'ally' || !HEROES[actor.kind]?.skills.concat('interact').includes(skillId)) {
+      return { allowed: false, reason: 'unknown-skill' };
+    }
+    if (!Number.isInteger(x) || !Number.isInteger(y) || !at(x, y)) {
+      return { allowed: false, reason: 'outside-board' };
+    }
+    if (!spellAllowed(actor, skillId, x, y)) return { allowed: false, reason: 'invalid-target' };
+    if (!spellSystem.spellVisible(actor, skillId, x, y)) return { allowed: false, reason: 'blocked-sight' };
+    return { allowed: true, reason: 'ready' };
+  }
   function endTurn() {
     ensureGame();
     if (G.phase !== 'player') return false;
@@ -290,7 +306,7 @@ function victory(){if(G.phase==='between'||G.phase==='ending')return;G.wins++;lo
     return snapshot();
   }
   return {
-    startCampaign, deployMission, move, attack, useSkill, endTurn,
+    startCampaign, deployMission, move, attack, useSkill, previewSkill, endTurn,
     reachable, getOutcome, advanceMission, restoreSave,
     snapshot, drainEvents, getActor: id => structuredClone(getActor(id)),
     lineOfSight: (a,b) => { ensureGame(); return los(a,b); },
