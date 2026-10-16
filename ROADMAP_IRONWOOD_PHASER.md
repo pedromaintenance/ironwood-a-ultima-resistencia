@@ -6,6 +6,20 @@
 **Planejamento:** 15/10/2026  
 **Estado:** execução sequencial; não substituir o jogo publicado antes de validar a nova versão.
 
+## M3g — Objetivos de missão e transição validável (16/10/2026)
+
+**M3g implementada, ainda aguardando CI:** painel da operação exibe ato, missão 1–8, objetivo concreto, barra de avanço, contagem de inimigos/reféns/totens/marcos/focos, seis rodadas de defesa ou PV do chefe. A leitura é derivada do motor em `missionProgress()`, sem novos sorteios, regras de vitória ou alterações de save.
+
+**Teste funcional novo:** o Chromium importa uma fixture v1 válida da missão 1 *próxima* da vitória, executa uma ação de jogo para o core detectar a conclusão, verifica a tela de melhorias, escolhe uma e inicia a missão 2 com **2 reféns pendentes**. Há testes puros para as sete modalidades. Não representa ainda um playthrough completo da missão 1.
+
+- [x] Código + [PR #22](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/pull/22) + [documentação técnica M3g](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/blob/feat/phaser-mission-goals-m3g/docs/M3G_MISSION_GOALS.md).
+- [x] Cobertura automatizada escrita para progressos, vitória, escolha de melhoria e próxima missão.
+- [ ] [CI da M3g](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/actions/runs/38968616743): exigir todos os testes do core, Vite/TypeScript e smoke Chromium desktop/mobile aprovados.
+- [ ] Publicar em `main/phaser-preview/` a partir do commit testado, confirmar workflow e deploy final do Pages.
+- [ ] QA em dispositivo real, missão 1 completa sem fixture e oito missões/três finais.
+
+**Beta pública atual:** M3f compilada a partir do SHA `ca46fe5b` pelo [workflow aprovado](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/actions/runs/38967434066). Aguardar confirmação da implantação final do Pages antes de declarar propagação completa. A versão Canvas na raiz e seu save permanecem intactos.
+
 ## Beta publicada — M3e | M3f em testes (16/10/2026)
 
 **[JOGAR IRONWOOD PHASER — BETA M3e](https://pedromaintenance.github.io/ironwood-a-ultima-resistencia/phaser-preview/)**
