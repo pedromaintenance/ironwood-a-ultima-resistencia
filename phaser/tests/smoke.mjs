@@ -135,6 +135,28 @@ try {
   assert.match(await mobile.locator('#unitStats').innerText(), /PA 1\/2/);
   await mobileContext.close();
 
+  // New M3b spell-aiming: a dangerous AOE requires a deliberate second tap.
+  await page.locator('#restart').click();
+  await page.locator('[data-hero="druid"]').click();
+  await page.locator('[data-hero="mage"]').click();
+  await page.locator('#startCampaign').click();
+  await canvas.click({ position: await cell(canvas, 8, 10) });
+  assert.match(await page.locator('#unitName').innerText(), /Vaelis/);
+  await page.getByRole('button', { name: /Bola de Fogo/ }).click();
+  await canvas.hover({ position: await cell(canvas, 8, 9) });
+  assert.match(await page.locator('#impactInfo').innerText(), /Área inicial: 25 casa/);
+  assert.equal(await page.locator('#game').getAttribute('data-impact-tiles'), '25');
+  assert.match(await page.locator('#impactInfo').innerText(), /ALERTA.*aliado/);
+  const aimSave = await page.evaluate(() => localStorage.getItem('ironwood_phaser_preview_v1'));
+  await canvas.click({ position: await cell(canvas, 8, 9) });
+  assert.match(await page.locator('#impactInfo').innerText(), /TOQUE NOVAMENTE/);
+  assert.equal(await page.evaluate(() => localStorage.getItem('ironwood_phaser_preview_v1')), aimSave);
+  await page.screenshot({ path: 'artifacts/preview/06-fireball-aim.png', fullPage: true });
+  await canvas.click({ position: await cell(canvas, 8, 9) });
+  const fired = await page.evaluate(() => JSON.parse(localStorage.getItem('ironwood_phaser_preview_v1')));
+  assert.equal(fired.casts, 1);
+  assert.match(await page.locator('#battleLog').innerText(), /Bola de Fogo/);
+
   assert.deepEqual(errors, [], 'Phaser should not throw browser errors');
   console.log('PASS: core parity, cached 144 tiles, inspection, lobby, combat, saves and mobile touch');
 } finally {
