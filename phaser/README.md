@@ -21,21 +21,26 @@ O pacote é compilado para `phaser/dist/`, separado do aplicativo legado. O work
 
 ## O que está funcional
 
-- Tabuleiro procedural **12×12**, gerado pelo motor real.
-- Seleção de aliados, movimentação, ataque básico e encerramento do turno.
-- Inimigos da missão, suas posições e IA real do motor.
-- Barra de PV, aliados, estado de turno, clima, efeitos ambientais e logs.
-- Habilidades selecionáveis no painel e aplicação de seus efeitos nas casas.
-- Missões subsequentes acessíveis após vitória mediante upgrade de PV.
-- Layout desktop/mobile com Phaser Scale.FIT e controles HTML.
+- Tabuleiro procedural **12×12** com todos os efeitos do terreno provenientes do motor.
+- Lobby com **seis heróis, equipe de três, seleção de dificuldade** e nova campanha.
+- Comandos de seleção, movimentação, ataque, habilidades e encerramento do turno.
+- Inimigos, decisões da IA e condições de objetivos calculados pelo core.
+- Barras de PV, mana, pontos de ação, clima, log e seleção de alvo.
+- Autosave e retomada usando chave **`ironwood_phaser_preview_v1`**, isolada da versão Canvas.
+- Exportação de JSON v1 e importação com validação e limite de 2 MB.
+- **Três opções de upgrade** ao vencer, usando as mesmas opções do jogo original.
+- Tween de deslocamento e feedback de dano, com respeito a preferência por movimento reduzido.
+- Interface responsiva e controles touch para celular.
 
 ## O que ainda falta
 
-- Sprites/tilesets/efeitos **CC0** e manifest de origem. **As formas e cores atuais são provisórias**, geradas pelo renderer, não são assets obtidos externamente.
-- Sprites animados, feedback por etapa de ação, efeitos, som e transições.
-- Tela de seleção de heróis/dificuldade, narrativa, menus e save em browser.
-- QA de todos os dispositivos, acessibilidade e publicação/instalação PWA.
-- Validação manual das oito missões com progressão completa.
+- **Assets CC0 reais**. Os marcadores e terrenos atuais continuam vetoriais provisórios; o manifest não declara sprites incorporados.
+- Sprites animados reais, efeitos de magia, som, transições e feedback preciso de alcance.
+- Menus narrativos completos, seleção de upgrade com sprites, créditos e resultados finais.
+- Importação de saves reais da versão Canvas testada com arquivos de usuário, sem afetar o jogo publicado.
+- PWA da versão Phaser, instalação/offline, revisão completa da campanha e QA físico.
+
+Veja o **[roadmap de produção e seus critérios](ROADMAP.md)** para acompanhar o progresso de M1 a M5.
 
 ## Procedência de free-assets
 
