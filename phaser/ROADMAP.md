@@ -1,6 +1,6 @@
 # Roadmap executivo — Ironwood Phaser
 
-**Atualização:** 16 de outubro de 2026 — M3e testada e compilada para o Pages, QA humano ainda pendente  
+**Atualização:** 16 de outubro de 2026 — M3f implementada em branch e em CI; M3e continua como beta público  
 **Jogo público:** `main` continua executando o Canvas legado.  
 **Ramo da prévia:** `feat/phaser-impact-preview-m3b` ([PR #13](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/pull/13)); publicação pública independente compilada do commit `9ffc7029`.  
 **Roadmap do projeto inteiro:** [ROADMAP_IRONWOOD_PHASER.md](../ROADMAP_IRONWOOD_PHASER.md) (versão canônica publicada em `main`).
@@ -117,6 +117,18 @@ Este roteiro diferencia funcionalidades **implementadas**, **validadas em CI**, 
 - [ ] Revisar feedback em todas as habilidades, especialmente LOS e status de terreno.
 
 **Escopo preciso:** o painel de habilidades passou a ser incremental. O log, as opções de upgrade e o overlay do mapa ainda possuem redesenho por ação, e FPS/memória precisam de benchmarks. [Guia M3e](../docs/M3E_HUD_FEEDBACK.md).
+
+### M3f — Cache de overlays, registro e menu de melhorias (**implementado; CI pendente**)
+- [x] Evitar redesenho completo de efeitos/alcance da grade quando missão, terreno, clima, turno, atores e seleção não mudarem.
+- [x] Regenerar overlays em movimentos válidos, seleção diferente, mudança de magia, rodada ou ambiente; limpar assinatura ao trocar de campanha ou missão.
+- [x] Atualizar o DOM do registro de combate só se as cinco mensagens atuais mudaram.
+- [x] Reutilizar opções de upgrade enquanto permanecer na mesma tela de vitória.
+- [x] Telemetria `data-overlay-draws`, `#battleLog[data-builds]` e `#upgradeOptions[data-builds]`, visível em “Como testar”.
+- [x] Teste Playwright: inspeção e alvo inválido não redesenham; movimento real gera um novo overlay e log.
+- [ ] Core, Vite e Chromium desktop/mobile verdes no commit final da publicação.
+- [ ] Beta do Pages e QA manual, especialmente movimentos, alcance de magia e upgrades.
+
+**Limite do incremento:** a assinatura ainda percorre o estado para detectar mudanças. Redução de operações Graphics/DOM não equivale a FPS aferido em dispositivo físico. [Guia M3f](../docs/M3F_RENDER_CACHE.md).
 
 ### M4 — Campanha 8 missões
 - [ ] Telas de briefing, vitória, derrota, retry e progressão.
