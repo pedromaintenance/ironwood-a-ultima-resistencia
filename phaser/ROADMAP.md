@@ -1,6 +1,6 @@
 # Roadmap executivo — Ironwood Phaser
 
-**Atualização:** 16 de outubro de 2026 — M3c em execução; M3b distribuída no Pages  
+**Atualização:** 16 de outubro de 2026 — M3c validada em CI e distribuída como beta no Pages  
 **Jogo público:** `main` continua executando o Canvas legado.  
 **Ramo da prévia:** `feat/phaser-impact-preview-m3b` ([PR #13](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/pull/13)); publicação pública independente compilada do commit `9ffc7029`.  
 **Roadmap do projeto inteiro:** [ROADMAP_IRONWOOD_PHASER.md](../ROADMAP_IRONWOOD_PHASER.md) (versão canônica publicada em `main`).
@@ -78,13 +78,14 @@ Este roteiro diferencia funcionalidades **implementadas**, **validadas em CI**, 
 
 **Aceite parcial:** M3b passou em 24 testes de core/paridade, build e smoke Chromium (incluindo a mira e confirmação). o cache de terreno é real, porém o renderer **ainda recria unidades e overlays a cada ação**. A visualização de alvo e da **área geométrica inicial** existe. A propagação ambiental e danos finais continuam sendo resolvidos pelo motor no momento da ação. [Guia técnico M3a](../docs/M3_COMBAT_UX.md).
 
-### M3c — Desempenho incremental (**pool de unidades implementado; validação em andamento**)
+### M3c — Desempenho incremental (**pool de unidades testado e distribuído em beta**)
 - [x] Reutilizar contêiner, gráficos e sprite de cada ator vivo entre seleções, movimentos e atualizações de HUD.
 - [x] Atualizar textura e barra de vida em objetos existentes, sem destruir os sprites a cada render.
 - [x] Criar somente novas unidades, remover mortos e limpar visualização ao carregar save, iniciar campanha e mudar de missão.
 - [x] Manter as interpolações de movimento/dano sem cancelá-las em re-renderização de seleção.
 - [x] Adicionar telemetria `data-unit-objects` e `data-unit-allocations`; smoke verifica contagem sem crescimento indevido.
-- [ ] Gate CI verde no commit final e capturas de tela verificadas.
+- [x] Gate CI com **24/24 testes headless, build Vite e smoke Chromium** aprovado no commit `32cbfd7b` ([execução](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/actions/runs/38957047595)); screenshots anexadas ao workflow.
+- [x] [Publicação em beta](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/actions/runs/38957277789), com versão M3c identificada e contador de unidades no roteiro de teste.
 - [ ] Benchmark de FPS, memória e bateria em hardware real.
 - [ ] Travar ou enfileirar ações conflitantes durante animações; pool de VFX e render incremental do HUD.
 - [ ] Playthrough da primeira missão e da campanha inteira.
@@ -139,13 +140,13 @@ Para testar o pacote compilado, execute `npm run build` e `npm run preview`. [RE
 
 O workflow `.github/workflows/publish-phaser-beta.yml`, presente na `main`, construiu a branch **M3a** testada e fez commit dos arquivos prontos na subpasta `phaser-preview/`. A versão antiga continua na raiz do Pages. Este **não** é um merge do novo motor com o Canvas: é um compilado independente e reversível.
 
-A nova interface de mira **M3b** foi compilada do commit `9ffc7029`, validado pela CI, e enviada ao beta público via GitHub Actions. O PR #13 continua **draft** enquanto aguardamos homologação humana.
+A interface de mira **M3b** foi compilada do commit `9ffc7029`, validado pela CI, e enviada ao beta público via GitHub Actions. O PR #13 continua **draft** enquanto aguardamos homologação humana.
 
 **Roteiro de teste:** escolher três heróis, inspecionar uma unidade, mover, atacar, conjurar, encerrar turno, salvar e recarregar. Problemas conhecidos: sem PWA offline independente, sem QA físico, sem playthrough integral e nenhuma garantia de balanceamento das oito missões.
 
 ## Próxima entrega e rastreamento
 
-- **M3c — otimização de sprites:** [especificação](../docs/M3C_RENDER_POOL.md), branch `feat/phaser-unit-pooling-m3c`; validar testes antes de atualizar o Pages.
+- **M3c — otimização de sprites:** [especificação](../docs/M3C_RENDER_POOL.md), [PR #14](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/pull/14); **validada automaticamente** e compilada para o Pages com fonte fixa `32cbfd7b`. Revisão humana/física permanece pendente.
 - **Sem merge no Canvas original:** o Pages testa compilados isolados em `/phaser-preview/`. Publicar não equivale a fechar revisão de código nem validar hardware físico.
 
 ## Histórico de entregas
