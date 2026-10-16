@@ -1,6 +1,6 @@
 # Roadmap executivo — Ironwood Phaser
 
-**Atualização:** 16 de outubro de 2026 — M3e implementada e em CI; M3d distribuída no Pages  
+**Atualização:** 16 de outubro de 2026 — M3e testada e compilada para o Pages, QA humano ainda pendente  
 **Jogo público:** `main` continua executando o Canvas legado.  
 **Ramo da prévia:** `feat/phaser-impact-preview-m3b` ([PR #13](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/pull/13)); publicação pública independente compilada do commit `9ffc7029`.  
 **Roadmap do projeto inteiro:** [ROADMAP_IRONWOOD_PHASER.md](../ROADMAP_IRONWOOD_PHASER.md) (versão canônica publicada em `main`).
@@ -105,14 +105,15 @@ Este roteiro diferencia funcionalidades **implementadas**, **validadas em CI**, 
 
 **Aceite parcial:** não há fila de comandos; entradas mutantes são **recusadas** durante animações, para impedir aplicar ordens baseadas em posições desatualizadas. O motor determinístico e o save continuam sendo as fontes de verdade. [Detalhamento M3d](../docs/M3D_COMMAND_LOCK.md).
 
-### M3e — HUD incremental e mensagens de combate (**implementado; validação em andamento**)
+### M3e — HUD incremental e mensagens de combate (**CI aprovada, beta distribuída no Pages**)
 - [x] Reusar botões e listeners por conjunto de habilidades, atualizando estado sem destruir o foco do teclado a cada render.
 - [x] Expor `#skills[data-builds]` e `data-buttons` para aferir alocações e confirmar inspeção/movimento sem reconstrução.
 - [x] Mostrar mensagens acessíveis para movimentos, ataques e habilidades recusados, incluindo os motivos retornados pelo motor.
 - [x] Salvar somente após ação efetivamente executada; seleção e tentativas inválidas não alteram a entrada persistida.
 - [x] Teste Playwright de foco do botão, rebuild estável e save intocado após comando e magia fora de alcance.
-- [ ] CI 24/24, Vite e Chromium desktop/mobile do commit publicado.
-- [ ] Publicar atualização do beta em `/phaser-preview/` sem afetar Canvas e validar dispositivos reais.
+- [x] **24/24 testes**, Vite e Chromium desktop/mobile aprovados no commit `fd27434a` ([CI #38964097106](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/actions/runs/38964097106)).
+- [x] Publicação do build testado em `main/phaser-preview/` concluída ([workflow #38964449033](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/actions/runs/38964449033)); Canvas preservado.
+- [ ] Validar visualmente em dispositivos reais e medir consumo de memória/FPS.
 - [ ] Revisar feedback em todas as habilidades, especialmente LOS e status de terreno.
 
 **Escopo preciso:** o painel de habilidades passou a ser incremental. O log, as opções de upgrade e o overlay do mapa ainda possuem redesenho por ação, e FPS/memória precisam de benchmarks. [Guia M3e](../docs/M3E_HUD_FEEDBACK.md).
