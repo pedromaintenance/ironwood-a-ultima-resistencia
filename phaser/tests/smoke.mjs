@@ -17,7 +17,7 @@ async function cell(canvas, x, y) {
 try {
   await page.goto('http://127.0.0.1:4173/', { waitUntil: 'networkidle' });
   assert.equal(await page.locator('#lobby').isVisible(), true, 'lobby should open first');
-  assert.match(await page.locator('.mast').innerText(), /BETA M3b/);
+  assert.match(await page.locator('.mast').innerText(), /BETA M3c/);
   assert.equal(await page.locator('.playtestGuide summary').isVisible(), true);
   assert.equal(await page.locator('#teamCount').innerText(), '3/3');
   await page.locator('#startCampaign').click();
@@ -34,6 +34,7 @@ try {
   assert.equal(await page.locator('#game').getAttribute('data-unit-objects'), '7');
   const initialAllocations = Number(await page.locator('#game').getAttribute('data-unit-allocations'));
   assert.equal(initialAllocations, 7, 'first mission creates exactly 3 allies and 4 enemies');
+  assert.match(await page.locator('#renderStats').textContent(), /7 personagens visíveis · 7 contêineres/);
     assert.equal(await page.locator('#game').getAttribute('data-terrain-objects'), '144');
   const tilesBefore = Number(await page.locator('#game').getAttribute('data-terrain-updates'));
   const saveBeforeInspect = await page.evaluate(() => localStorage.getItem('ironwood_phaser_preview_v1'));
