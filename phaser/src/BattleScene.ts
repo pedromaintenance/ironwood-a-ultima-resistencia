@@ -283,10 +283,31 @@ export class BattleScene extends Phaser.Scene {
       graphics.strokeRect(left, top, CELL, CELL);
     }
 
-    if (state.phase === 'player' && selectedActor?.hp > 0 && !this.selectedSkill) {
-      graphics.lineStyle(2, 0x7ab995, .75);
-      for (const p of this.engine.reachable(selectedActor.id)) {
-        graphics.strokeRect(p.x * CELL + 3, p.y * CELL + 3, CELL - 6, CELL - 6);
+    if (state.phase === 'player' && selectedActor?.hp > 0) {
+      if (!this.selectedSkill) {
+        graphics.lineStyle(2, 0x7ab995, .75);
+        for (const p of this.engine.reachable(selectedActor.id)) {
+          graphics.strokeRect(p.x * CELL + 3, p.y * CELL + 3, CELL - 6, CELL - 6);
+        }
+      } else {
+        // Range is a visual hint; engine.spellAllowed remains the authority.
+        const skill = SKILLS[this.selectedSkill as keyof typeof SKILLS];
+        if (skill) for (const tile of state.board as Tile[]) {
+          const distance = Math.abs(selectedActor.x - tile.x) + Math.abs(selectedActor.y - tile.y);
+          const candidate = (skill.target === 'self')
+            ? distance === 0
+            : distance <= skill.range;
+          if (!candidate) continue;
+          const occupied = (state.actors as Actor[]).find(u => u.hp > 0 && u.x === tile.x && u.y === tile.y);
+          if (skill.target === 'ally' && occupied?.side !== 'ally') continue;
+          if (skill.target === 'enemy' && occupied?.side !== 'enemy') continue;
+          if (this.selectedSkill === 'interact' && (!tile.objective || tile.cleared)) continue;
+          const hue = skill.target === 'enemy' ? 0xd17681 : this.selectedSkill === 'interact' ? 0xd9ba6e : 0x8cb8c8;
+          graphics.lineStyle(2, hue, .9);
+          graphics.strokeRect(tile.x * CELL + 4, tile.y * CELL + 4, CELL - 8, CELL - 8);
+          graphics.fillStyle(hue, .07);
+          graphics.fillRect(tile.x * CELL + 4, tile.y * CELL + 4, CELL - 8, CELL - 8);
+        }
       }
     }
 
@@ -350,6 +371,11 @@ export class BattleScene extends Phaser.Scene {
     setText('unitStats', actor
       ? `PV ${actor.hp}/${actor.maxhp} · Mana ${actor.mp}/${actor.maxmp} · PA ${actor.ap}/2${actor.root ? ' · ENRAIZADO' : ''}`
       : '');
+
+    const selectedSpell = this.selectedSkill ? SKILLS[this.selectedSkill as keyof typeof SKILLS] : null;
+    setText('skillHelp', selectedSpell
+      ? `${selectedSpell.name} · Alcance ${selectedSpell.range} · Mana ${selectedSpell.cost}. ${selectedSpell.desc} Toque em uma casa destacada; obstáculos ainda podem bloquear a ação.`
+      : 'Casas verdes: movimento. Selecione uma habilidade para ver o alcance aproximado. O motor confirma alvos e linha de visão.');
 
     const container = document.getElementById('skills');
     if (container) {
