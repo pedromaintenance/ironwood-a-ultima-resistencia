@@ -26,3 +26,7 @@
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;transition-duration:.01ms!important}}
 
 .skillHelp{border-left:3px solid #8ca6a0;padding:7px 10px;margin-top:11px!important;background:#243435;color:#c9d6cf!important;font-size:12px!important;line-height:1.5!important}
+
+.inspect{display:grid;gap:7px}
+.inspect button[aria-pressed="true"]{background:#455844;border:2px solid #c7ae79;color:#fae6c0}
+#tileInfo{min-height:30px;color:#cbd2c6!important;font:12px/1.5 system-ui,sans-serif!important;overflow-wrap:anywhere}
