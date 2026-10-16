@@ -1,0 +1,67 @@
+name: Publish Phaser beta alongside legacy Pages
+
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/publish-phaser-beta.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: ironwood-pages-beta-publish
+  cancel-in-progress: false
+
+jobs:
+  publish-beta:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout Pages source (legacy Canvas stays untouched)
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          persist-credentials: true
+      - name: Checkout tested Phaser preview independently
+        uses: actions/checkout@v4
+        with:
+          ref: feat/phaser-combat-ux-m3
+          path: .phaser-build-src
+          persist-credentials: false
+      - name: Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify core regressions
+        run: npm test
+        working-directory: .phaser-build-src
+      - name: Build separate Phaser preview
+        working-directory: .phaser-build-src/phaser
+        run: |
+          npm install --no-audit --no-fund
+          npm run build
+      - name: Copy build to own Pages subdirectory only
+        run: |
+          mkdir -p phaser-preview
+          cp -R .phaser-build-src/phaser/dist/. phaser-preview/
+          test -s phaser-preview/index.html
+          test -f index.html
+          test -f sw.js
+          printf '%s\n' 'Phaser beta from feat/phaser-combat-ux-m3. Canvas main root retained.' > phaser-preview/DEPLOYMENT.txt
+      - name: Commit the generated standalone preview to main
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -f phaser-preview
+          if git diff --cached --quiet; then
+            echo 'Published preview is already up to date.'
+            exit 0
+          fi
+          git commit -m 'build(pages): publish Phaser beta under phaser-preview only'
+          git pull --rebase origin main
+          git push origin HEAD:main
+      - name: Note preview path
+        run: |
+          echo 'Preview: https://pedromaintenance.github.io/ironwood-a-ultima-resistencia/phaser-preview/' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Legacy: https://pedromaintenance.github.io/ironwood-a-ultima-resistencia/' >> "$GITHUB_STEP_SUMMARY"
