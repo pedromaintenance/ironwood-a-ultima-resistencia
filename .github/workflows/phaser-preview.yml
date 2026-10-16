@@ -1,0 +1,32 @@
+name: Ironwood Phaser preview
+on:
+  push:
+    branches:
+      - feat/phaser-battle-preview
+  pull_request:
+    branches:
+      - feat/ironwood-core-phase1
+  workflow_dispatch:
+
+jobs:
+  phaser-preview:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: phaser
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install Phaser, Vite and TypeScript
+        run: npm install --no-audit --no-fund
+      - name: Build independent Phaser preview
+        run: npm run build
+      - name: Archive preview
+        uses: actions/upload-artifact@v4
+        with:
+          name: ironwood-phaser-preview
+          path: phaser/dist/
+          if-no-files-found: error
