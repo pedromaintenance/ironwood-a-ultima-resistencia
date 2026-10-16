@@ -6,6 +6,7 @@ on:
       - feat/phaser-pixel-art-m2
       - feat/phaser-combat-ux-m3
       - feat/phaser-impact-preview-m3b
+      - feat/phaser-unit-pooling-m3c
   pull_request:
     branches:
       - feat/ironwood-core-phase1
