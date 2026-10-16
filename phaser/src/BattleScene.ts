@@ -512,6 +512,8 @@ export class BattleScene extends Phaser.Scene {
       unitCounter.dataset.unitObjects = String(this.actorViews.size);
       unitCounter.dataset.unitAllocations = String(this.actorAllocations);
     }
+    const stats = document.getElementById('renderStats');
+    if (stats) stats.textContent = `Renderizador M3c: ${this.terrainSprites.length} tiles fixos · ${this.actorViews.size} personagens visíveis · ${this.actorAllocations} contêineres criados nesta sessão. Inspecionar e mover não devem aumentar esse último número.`;
 
     this.drawHud(state, selectedActor);
     this.paintAim();
