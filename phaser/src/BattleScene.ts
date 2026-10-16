@@ -81,8 +81,15 @@ export class BattleScene extends Phaser.Scene {
       try { exportCampaign(this.engine.snapshot()); this.setSaveStatus('Campanha exportada em JSON.'); }
       catch { this.setSaveStatus('Não foi possível exportar a campanha.'); }
     });
+    this.input.keyboard?.on('keydown-I', () => {
+      if (!this.active || this.engine.snapshot()?.phase !== 'player') return;
+      this.inspectMode = !this.inspectMode;
+      if (this.inspectMode) this.selectedSkill = null;
+      this.renderBattle();
+    });
     this.input.keyboard?.on('keydown-ESC', () => {
       this.selectedSkill = null;
+      this.inspectMode = false;
       this.note = '';
       if (this.active) this.renderBattle();
     });
