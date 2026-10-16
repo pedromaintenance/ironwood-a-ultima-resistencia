@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta name="theme-color" content="#10191d" />
+  <meta name="description" content="Protótipo de batalha Ironwood em Phaser 4" />
+  <title>Ironwood — Prévia Phaser</title>
+</head>
+<body>
+  <main class="shell">
+    <header class="mast">
+      <div><span class="eyebrow">A ÚLTIMA RESISTÊNCIA</span><h1>IRONWOOD <small>• PHASER PREVIEW</small></h1></div>
+      <span class="branch">PROTÓTIPO · NÃO PUBLICADO</span>
+    </header>
+    <section id="lobby" class="lobby" role="dialog" aria-modal="true" aria-labelledby="lobbyTitle">
+      <div class="lobbyBody panel">
+        <span class="eyebrow">A CORTE AVANÇA SOBRE ELDROTH</span>
+        <h2 id="lobbyTitle">A companhia de Ironwood</h2>
+        <p>Escolha três combatentes para enfrentar a ocupação de Sylara. Sua campanha fica salva neste navegador e pode ser exportada.</p>
+        <p class="eyebrow">ESCOLHA TRÊS HEROIS <span id="teamCount">3/3</span></p>
+        <div id="heroSelection" class="heroSelection" role="group" aria-label="Combatentes disponíveis"></div>
+        <label class="difficultyLabel" for="difficulty">DIFICULDADE</label>
+        <select id="difficulty" aria-label="Dificuldade">
+          <option value="story">Aprendiz</option>
+          <option value="normal" selected>Resistência</option>
+          <option value="hard">Implacável</option>
+        </select>
+        <div class="lobbyControls">
+          <button id="startCampaign" class="accent">COMEÇAR CAMPANHA</button>
+          <button id="continueCampaign" disabled>CONTINUAR SALVAMENTO</button>
+          <button id="importCampaign">IMPORTAR CAMPANHA JSON</button>
+        </div>
+        <input id="importFile" type="file" accept="application/json,.json" hidden>
+        <p id="lobbyError" class="lobbyError" role="status" aria-live="polite"></p>
+        <p class="footnote">A prévia mantém seu próprio save: <code>ironwood_phaser_preview_v1</code>. O progresso da versão Canvas não é substituído.</p>
+      </div>
+    </section>
+    <div class="layout">
+      <div class="boardFrame">
+        <div id="game" aria-label="Mapa de batalha com grade 12 por 12"></div>
+        <p class="helper">Toque num aliado para selecioná-lo; toque numa casa para mover, num inimigo para atacar ou escolha uma habilidade.</p>
+      </div>
+      <aside class="sidebar">
+        <section class="panel"><span class="eyebrow">OPERAÇÃO ATUAL</span><h2 id="missionTitle">A Trilha Fechada</h2>
+          <p id="missionDesc"></p><p id="phaseStatus" class="status">Preparando resistência...</p></section>
+        <section class="panel"><span class="eyebrow">COMPANHIA</span><h3 id="unitName">Selecione um herói</h3><p id="unitStats"></p><div id="skills" class="skillList"></div></section>
+        <section class="panel controls"><button id="endTurn" class="accent">ENCERRAR TURNO</button>
+          <div id="upgradeOptions" class="upgradeOptions" hidden aria-label="Melhorias após vitória"></div>
+          <button id="nextMission" hidden disabled>ESCOLHA UMA MELHORIA</button>
+          <button id="saveCampaign">SALVAR AGORA</button>
+          <button id="exportCampaign">EXPORTAR JSON</button>
+          <button id="restart">VOLTAR AO MENU</button>
+          <p id="saveStatus" class="saveStatus" role="status" aria-live="polite"></p></section>
+        <section class="panel report"><span class="eyebrow">REGISTRO DE CAMPO</span><div id="battleLog" aria-live="polite"></div></section>
+      </aside>
+    </div>
+    <footer>Protótipo de renderização em Phaser 4.2.1 · Regras importadas do motor original · Sprites provisórios até integração dos assets CC0.</footer>
+  </main>
+  <script type="module" src="/src/main.ts"></script>
+</body>
+</html>

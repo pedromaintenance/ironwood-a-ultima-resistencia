@@ -1,0 +1,7 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "purpose": "Registry of third-party assets actually shipped with the Phaser version",
+  "version": 1,
+  "assets": [],
+  "notes": "No third-party art imported yet. Procedural Phaser graphics are placeholders. Verify license per source before adding a file."
+}
