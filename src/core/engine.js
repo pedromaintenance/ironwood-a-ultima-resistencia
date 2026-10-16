@@ -12,6 +12,7 @@ import { createEnemySystem } from './ai.js';
 import { createSpellSystem } from './spells.js';
 import { createWorldSystem } from './environment.js';
 import { validateLegacySave } from './save.js';
+import { skillImpact } from './targeting.js';
 
 export const BOARD_SIZE = 12;
 export const LEGACY_SAVE_KEY = 'ironwood_campaign_v1';
@@ -261,6 +262,12 @@ function victory(){if(G.phase==='between'||G.phase==='ending')return;G.wins++;lo
     if (!spellSystem.spellVisible(actor, skillId, x, y)) return { allowed: false, reason: 'blocked-sight' };
     return { allowed: true, reason: 'ready' };
   }
+  // Read-only spell impact preview. Cast still remains the sole mutating path.
+  function previewImpact(actorId, skillId, x, y) {
+    const eligibility = previewSkill(actorId, skillId, x, y);
+    if (!eligibility.allowed) return {...eligibility, tiles: [], allyIds: [], confirm: false, note: ''};
+    return {...eligibility, ...skillImpact(G, getActor(actorId), skillId, x, y)};
+  }
   function endTurn() {
     ensureGame();
     if (G.phase !== 'player') return false;
@@ -306,7 +313,7 @@ function victory(){if(G.phase==='between'||G.phase==='ending')return;G.wins++;lo
     return snapshot();
   }
   return {
-    startCampaign, deployMission, move, attack, useSkill, previewSkill, endTurn,
+    startCampaign, deployMission, move, attack, useSkill, previewSkill, previewImpact, endTurn,
     reachable, getOutcome, advanceMission, restoreSave,
     snapshot, drainEvents, getActor: id => structuredClone(getActor(id)),
     lineOfSight: (a,b) => { ensureGame(); return los(a,b); },
