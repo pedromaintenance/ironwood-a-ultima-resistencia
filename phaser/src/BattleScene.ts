@@ -67,6 +67,9 @@ export class BattleScene extends Phaser.Scene {
   private logBuilds = 0;
   private upgradeSignature = '';
   private upgradeBuilds = 0;
+  // Observational frame-rate sample; no gameplay decisions depend on this.
+  private frameSamples = 0;
+  private frameElapsedMs = 0;
 
   constructor() { super('Battle'); }
 
@@ -162,6 +165,20 @@ export class BattleScene extends Phaser.Scene {
     this.showCommandState();
   }
 
+
+  update(_time: number, delta: number): void {
+    if (!this.active || !Number.isFinite(delta) || delta <= 0) return;
+    this.frameSamples++;
+    this.frameElapsedMs += delta;
+    if (this.frameSamples < 60) return;
+    const fps = Math.round(1000 * this.frameSamples / Math.max(1, this.frameElapsedMs));
+    this.frameSamples = 0;
+    this.frameElapsedMs = 0;
+    const board = document.getElementById('game');
+    if (board) board.dataset.renderFps = String(fps);
+    const readout = document.getElementById('fpsReadout');
+    if (readout) readout.textContent = `FPS aproximado: ${fps} (navegador atual; não representa benchmark físico).`;
+  }
 
   create(): void {
     const count = installPixelAtlas(this);
@@ -312,6 +329,12 @@ export class BattleScene extends Phaser.Scene {
 
   private showLobby(): void {
     this.active = false;
+    this.frameSamples = 0;
+    this.frameElapsedMs = 0;
+    const fpsBoard = document.getElementById('game');
+    if (fpsBoard) fpsBoard.dataset.renderFps = '--';
+    const fpsReadout = document.getElementById('fpsReadout');
+    if (fpsReadout) fpsReadout.textContent = 'FPS: cálculo disponível ao iniciar combate.';
     this.reportAction('Menu de campanha. Selecione sua companhia.');
     for (const tween of this.motionTweens) tween.stop();
     this.motionTweens.clear();
