@@ -10,7 +10,7 @@
 <body>
   <main class="shell">
     <header class="mast">
-      <div><span class="eyebrow">A ÚLTIMA RESISTÊNCIA</span><h1>IRONWOOD <small>• BETA M3f</small></h1></div>
+      <div><span class="eyebrow">A ÚLTIMA RESISTÊNCIA</span><h1>IRONWOOD <small>• BETA M3g</small></h1></div>
       <span class="branch">PRÉVIA DE TESTE · PAGES</span>
     </header>
     <section id="lobby" class="lobby" role="dialog" aria-modal="true" aria-labelledby="lobbyTitle">
@@ -42,8 +42,9 @@
         <p class="helper">Toque num aliado para selecioná-lo; toque numa casa para mover ou num inimigo para atacar. Magias de área mostram a zona afetada; um segundo toque confirma habilidades perigosas.</p>
         <p id="actionFeedback" class="actionFeedback" role="status" aria-live="polite">Selecione uma unidade e experimente uma habilidade. Ações recusadas aparecem aqui sem consumir recursos.</p>
         <p id="commandStatus" class="commandStatus" role="status" aria-live="polite">PRONTO — escolha uma ação.</p>
-        <details class="playtestGuide"><summary>Como testar esta versão · M3f</summary>
+        <details class="playtestGuide"><summary>Como testar esta versão · M3g</summary>
           <p>1. Escolha três heróis e inicie uma campanha. 2. Mova uma unidade e note o aviso ANIMANDO: comandos de combate ficam suspensos por uma fração de segundo, mas inspeção e seleção continuam. Depois encerre o turno. 3. Selecione a maga Vaelis e lance Bola de Fogo: observe o destaque e o aviso de fogo amigo. 4. Inspecione uma casa e experimente salvar e recarregar.</p>
+          <p><strong>M3g:</strong> acompanhe o objetivo da missão à direita. A missão 1 requer derrotar os 4 inimigos; após a vitória, escolha uma melhoria para prosseguir à missão 2 e libertar dois prisioneiros.</p>
           <p id="renderStats">Renderizador de unidades: métricas disponíveis ao iniciar uma campanha.</p>
           <p id="fpsReadout">FPS: cálculo disponível ao iniciar combate.</p>
           <p id="overlayStats">M3f: métricas de renderização serão exibidas ao começar o combate.</p>
@@ -53,8 +54,17 @@
         </details>
       </div>
       <aside class="sidebar">
-        <section class="panel"><span class="eyebrow">OPERAÇÃO ATUAL</span><h2 id="missionTitle">A Trilha Fechada</h2>
-          <p id="missionDesc"></p><p id="phaseStatus" class="status">Preparando resistência...</p></section>
+        <section class="panel" id="goalPanel" aria-label="Objetivo e progresso da missão">
+          <span class="eyebrow" id="missionSequence">ATO I · OPERAÇÃO 1/8</span>
+          <h2 id="missionTitle">A Trilha Fechada</h2>
+          <p id="missionDesc"></p>
+          <div class="goalTracker">
+            <strong id="goalName">Expulsar a patrulha</strong>
+            <progress id="goalProgress" value="0" max="4" aria-label="Progresso da missão"></progress>
+            <p id="goalDetail" role="status" aria-live="polite">Objetivo disponível após começar a campanha.</p>
+          </div>
+          <p id="phaseStatus" class="status">Preparando resistência...</p>
+        </section>
         <section class="panel"><span class="eyebrow">COMPANHIA</span><h3 id="unitName">Selecione um herói</h3><p id="unitStats"></p><div id="skills" class="skillList"></div><p id="skillHelp" class="skillHelp" aria-live="polite">Selecione uma habilidade para visualizar seu alcance.</p><p id="impactInfo" class="impactInfo" aria-live="polite">Passe o cursor sobre uma casa para inspecionar sua área de efeito. Em magias ofensivas de área, toque duas vezes para confirmar.</p></section>
         <section class="panel inspect"><button id="inspectMode" aria-pressed="false" type="button">INSPECIONAR CASA / UNIDADE</button><p id="tileInfo" role="status" aria-live="polite">Inspeção disponível sem gastar pontos de ação.</p></section>
         <section class="panel controls"><button id="endTurn" class="accent">ENCERRAR TURNO</button>
@@ -67,7 +77,7 @@
         <section class="panel report"><span class="eyebrow">REGISTRO DE CAMPO</span><div id="battleLog" aria-live="polite"></div></section>
       </aside>
     </div>
-    <footer>Beta M3f em Phaser 4.2.1 · motor tático independente · arte pixelada autoral · save separado da versão Canvas.</footer>
+    <footer>Beta M3g em Phaser 4.2.1 · motor tático independente · arte pixelada autoral · save separado da versão Canvas.</footer>
   </main>
   <script type="module" src="/src/main.ts"></script>
 </body>
