@@ -244,8 +244,7 @@ export class BattleScene extends Phaser.Scene {
     this.engine = createIronwoodEngine({ seed });
     this.engine.startCampaign({ team, difficulty, seed });
     this.engine.deployMission();
-    this.lastPositions.clear();
-    this.lastHealth.clear();
+    this.resetActorViews();
     this.active = true;
     this.selected = 'a0';
     this.selectedSkill = null;
