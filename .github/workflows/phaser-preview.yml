@@ -9,6 +9,7 @@ on:
       - feat/phaser-unit-pooling-m3c
       - feat/phaser-command-lock-m3d
       - feat/phaser-hud-feedback-m3e
+      - feat/phaser-render-cache-m3f
   pull_request:
     branches:
       - feat/ironwood-core-phase1
