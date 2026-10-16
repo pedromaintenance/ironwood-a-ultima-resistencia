@@ -5,6 +5,7 @@ on:
       - feat/phaser-battle-preview
       - feat/phaser-pixel-art-m2
       - feat/phaser-combat-ux-m3
+      - feat/phaser-impact-preview-m3b
   pull_request:
     branches:
       - feat/ironwood-core-phase1
