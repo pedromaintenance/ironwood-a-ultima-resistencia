@@ -1,0 +1,22 @@
+name: Ironwood baseline
+on:
+  push:
+    branches:
+      - feat/phaser-migration
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  baseline-static:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Legacy baseline assertions
+        run: node --test tests/baseline-static.test.mjs
