@@ -19,8 +19,8 @@ Este roteiro diferencia funcionalidades **implementadas**, **validadas em CI**, 
 | Exportar/importar JSON | Implementado | Validação do formato v1 e limite de 2 MB | Testes com amostras legadas de usuários |
 | Continuação de campanha | Implementada | Recupera batalha/estado e RNG no carregamento | Testar interrupções de sessões longas |
 | Melhorias entre missões | Implementadas | Apresenta as 3 opções originais para escolha | UI e sprites dos upgrades |
-| Feedback visual | Parcial | Tween de deslocamento e piscada de dano; respeita movimento reduzido | Animações reais, feitiços e tempo de turnos |
-| Telas pequenas | Em testes | Layout responsivo, input toque, smoke mobile emulado | Android/iOS físico, acessibilidade e qualidade |
+| Feedback visual | **Implementado como protótipo**, testado em build+smoke | Tween de deslocamento e piscada de dano, preferência movimento reduzido | Arte final, sequenciamento e VFX específicos |
+| Telas pequenas | **Smoke emulado aprovado** | Layout responsivo 390×844, seleção de equipe, toque para mover e retomada após reload | Android/iOS físico, acessibilidade e qualidade |
 | Free-assets | Pesquisa concluída para candidatas; **nenhum arquivo externo incorporado** | [Manifest](../docs/assets-manifest.json), [Kenney Roguelike/RPG](https://kenney.nl/assets/roguelike-rpg-pack), [Kenney Characters](https://kenney.nl/assets/roguelike-characters) | Baixar, inspecionar, selecionar, incorporar e registrar arquivos CC0 |
 | PWA e publicação | Não iniciada no Phaser | Legado mantém PWA atual | SW, manifest, instalação e offline do Vite |
 
@@ -34,7 +34,7 @@ Este roteiro diferencia funcionalidades **implementadas**, **validadas em CI**, 
 - [x] Exportação do estado em JSON; importação de arquivo JSON v1 validado.
 - [x] Opções reais de upgrade após vitória (não mais HP automática).
 - [x] Feedback de movimentação/dano com tweens leves.
-- [ ] CI verde com nova cobertura de fluxo de importação e touch mobile.
+- [x] CI verde com importação válida/inválida, exportação, persistência, escolha de heróis, dificuldade e teste **touch mobile emulado** ([run 38837895074](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/actions/runs/38837895074)).
 - [ ] Playthrough de 1 missão sem intervenção artificial.
 
 **Aceite:** conseguir começar a campanha, gastar PA, encerrar turno, salvar, recarregar, importar um JSON e retomar com o mesmo estado.
