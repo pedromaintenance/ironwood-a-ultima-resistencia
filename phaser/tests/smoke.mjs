@@ -68,7 +68,7 @@ try {
   await page.locator('#restart').click();
   const fileInput = page.locator('#importFile');
   await fileInput.setInputFiles({ name: 'invalid.json', mimeType: 'application/json', buffer: Buffer.from('{"ver":2}') });
-  assert.match(await page.locator('#lobbyError').innerText(), /Invalid Ironwood v1 save/);
+  await page.locator('#lobbyError').getByText(/Invalid Ironwood v1 save/).waitFor({ timeout: 12000 });
   const afterFailedImport = await page.evaluate(() => JSON.parse(localStorage.getItem('ironwood_phaser_preview_v1')));
   assert.deepEqual(afterFailedImport, stateBefore);
   await page.locator('#continueCampaign').click();
