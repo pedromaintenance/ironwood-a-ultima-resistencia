@@ -6,7 +6,7 @@ export function createSpellSystem({
   getState, man, unitAt, terrainBlocked, cell, occupied,
   toast, los, log, damage, push, aoeDamage, heroes, coordsArea,
   ign, r, freeze, heal, clearCorrupt, hurtStructure, bresenham,
-  floodElectric, soak, updateObjectives, afterAction, resetCommandMode,
+  floodElectric, soak, enterTile, updateObjectives, afterAction, resetCommandMode,
 }) {
 function spellInRange(u,s,x,y){if(s.target==='self')return true;return man(u,{x,y})<=s.range}
 
