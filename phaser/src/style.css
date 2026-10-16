@@ -43,3 +43,8 @@
 
 .commandStatus{font:700 12px/1.45 system-ui,sans-serif;margin:8px auto;padding:7px 10px;max-width:480px;border-left:3px solid #b9af87;background:#1c2927;color:#f0e4c5}
 #game[data-input-locked="true"]+.helper+.commandStatus{border-left-color:#edb56a;color:#ffe1a7}
+
+/* M3e: readable, screen-reader announced combat feedback. */
+.actionFeedback{font:600 12px/1.5 system-ui,sans-serif;margin:8px auto;padding:9px 11px;max-width:480px;background:#1c302b;border-left:3px solid #a1c7a3;color:#e6ecd9;min-height:20px}
+.actionFeedback[data-kind="warning"]{background:#302a25;border-left-color:#f1b76f;color:#ffe0ac}
+#skills button:focus-visible{outline:2px solid #eed68a;outline-offset:2px}

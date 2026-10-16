@@ -8,6 +8,7 @@ on:
       - feat/phaser-impact-preview-m3b
       - feat/phaser-unit-pooling-m3c
       - feat/phaser-command-lock-m3d
+      - feat/phaser-hud-feedback-m3e
   pull_request:
     branches:
       - feat/ironwood-core-phase1

@@ -56,10 +56,78 @@ export class BattleScene extends Phaser.Scene {
   // Critical animations fence gameplay commands; inspection and selection stay usable.
   private motionTweens = new Set<Phaser.Tweens.Tween>();
   private ignoredCommands = 0;
+  // HUD actions remain mounted as long as the hero/skill layout is the same.
+  private skillButtons = new Map<string, HTMLButtonElement>();
+  private skillLayout = '';
+  private skillBuilds = 0;
 
   constructor() { super('Battle'); }
 
   private commandLocked(): boolean { return this.motionTweens.size > 0; }
+
+  private reportAction(message: string, kind: 'info' | 'warning' = 'info'): void {
+    const node = document.getElementById('actionFeedback');
+    if (node) {
+      node.textContent = message;
+      node.dataset.kind = kind;
+    }
+  }
+
+  private explainSkillDenial(reason: string): string {
+    switch (reason) {
+      case 'blocked-sight': return 'Visão obstruída: há um obstáculo entre a unidade e o alvo.';
+      case 'outside-board': return 'A casa escolhida está fora do mapa.';
+      case 'invalid-target': return 'Alvo inválido: confira o alcance, os pontos de ação, a mana e o tipo de alvo.';
+      case 'unknown-skill': return 'Esta unidade não possui essa habilidade.';
+      case 'phase': return 'Aguarde a sua fase para usar uma habilidade.';
+      default: return 'Não foi possível executar a habilidade.';
+    }
+  }
+
+  private syncSkillButtons(state: any, actor?: Actor): void {
+    const panel = document.getElementById('skills');
+    if (!panel) return;
+    const keys = [...(HEROES[actor?.kind as keyof typeof HEROES]?.skills ?? []), 'interact']
+      .filter(key => Boolean(SKILLS[key as keyof typeof SKILLS]));
+    const layout = keys.join('|');
+    if (layout !== this.skillLayout) {
+      panel.replaceChildren();
+      this.skillButtons.clear();
+      for (const key of keys) {
+        const skill = SKILLS[key as keyof typeof SKILLS];
+        const button = document.createElement('button');
+        button.textContent = `${skill.name} (✦${skill.cost})`;
+        button.title = skill.desc;
+        button.dataset.skill = key;
+        button.type = 'button';
+        button.addEventListener('click', () => {
+          this.inspectMode = false;
+          this.armedSpell = null;
+          this.aimCell = null;
+          this.selectedSkill = this.selectedSkill === key ? null : key;
+          this.note = this.selectedSkill ? `Selecione alvo para ${skill.name}` : '';
+          this.reportAction(this.selectedSkill
+            ? `Habilidade selecionada: ${skill.name}. Escolha uma casa válida.`
+            : 'Habilidade cancelada. Selecione uma ação.');
+          this.renderBattle();
+        });
+        this.skillButtons.set(key, button);
+        panel.appendChild(button);
+      }
+      this.skillLayout = layout;
+      this.skillBuilds++;
+    }
+    for (const key of keys) {
+      const button = this.skillButtons.get(key)!;
+      const skill = SKILLS[key as keyof typeof SKILLS];
+      button.classList.toggle('active', this.selectedSkill === key);
+      button.setAttribute('aria-pressed', String(this.selectedSkill === key));
+      button.disabled = state.phase !== 'player' || !actor || actor.ap <= 0 || actor.mp < skill.cost;
+    }
+    panel.dataset.builds = String(this.skillBuilds);
+    panel.dataset.buttons = String(this.skillButtons.size);
+  }
+
 
   private showCommandState(): void {
     const board = document.getElementById('game');
@@ -237,6 +305,7 @@ export class BattleScene extends Phaser.Scene {
 
   private showLobby(): void {
     this.active = false;
+    this.reportAction('Menu de campanha. Selecione sua companhia.');
     for (const tween of this.motionTweens) tween.stop();
     this.motionTweens.clear();
     this.showCommandState();
@@ -318,35 +387,55 @@ export class BattleScene extends Phaser.Scene {
         // Never queue a stale target after enemy AI has possibly moved units.
         // Explicitly reject mutating commands; no AP, mana, save or RNG changes.
         this.ignoredCommands++;
+        this.reportAction('ANIMANDO: comando de combate ignorado, sem gastar PA ou mana.', 'warning');
         this.showCommandState();
       }
       return;
     }
 
+    let performed = false;
     if (this.selectedSkill) {
-      const preview = this.engine.previewImpact(this.selected, this.selectedSkill, x, y);
+      const skillId = this.selectedSkill;
+      const preview = this.engine.previewImpact(this.selected, skillId, x, y);
       this.aimCell = { x, y };
-      if (preview.allowed && preview.confirm && this.armedSpell !== `${this.selectedSkill}:${x},${y}`) {
-        // First touch previews potentially dangerous multi-tile attacks.
-        // The second touch of the same cell executes them.
-        this.armedSpell = `${this.selectedSkill}:${x},${y}`;
+      if (!preview.allowed) {
+        this.armedSpell = null;
+        this.reportAction(this.explainSkillDenial(preview.reason), 'warning');
         this.paintAim();
         return;
       }
-      const performed = this.engine.useSkill(this.selected, this.selectedSkill, x, y);
-      if (performed) this.selectedSkill = null;
+      if (preview.confirm && this.armedSpell !== `${skillId}:${x},${y}`) {
+        this.armedSpell = `${skillId}:${x},${y}`;
+        this.reportAction('Área exibida. Toque novamente na mesma casa para confirmar sem atingir aliados por engano.', 'warning');
+        this.paintAim();
+        return;
+      }
+      performed = this.engine.useSkill(this.selected, skillId, x, y);
+      if (performed) {
+        this.selectedSkill = null;
+        this.reportAction(`${SKILLS[skillId as keyof typeof SKILLS]?.name ?? 'Habilidade'} executada.`);
+      } else this.reportAction('A habilidade não pôde ser executada. Confira o log.', 'warning');
       this.armedSpell = null;
     } else if (clicked?.side === 'ally') {
       this.selected = clicked.id;
+      this.reportAction(`${clicked.name} selecionado(a). Selecione uma ação.`);
+      this.renderBattle();
+      return;
     } else if (clicked?.side === 'enemy') {
-      this.engine.attack(this.selected, clicked.id);
+      performed = this.engine.attack(this.selected, clicked.id);
+      this.reportAction(performed ? `Ataque realizado contra ${clicked.name}.` :
+        'Ataque indisponível: verifique PA, distância e cobertura.', performed ? 'info' : 'warning');
     } else {
-      this.engine.move(this.selected, x, y);
+      performed = this.engine.move(this.selected, x, y);
+      this.reportAction(performed ? 'Movimento executado.' :
+        'Movimento indisponível: verifique PA, alcance, terreno e ocupação da casa.',
+        performed ? 'info' : 'warning');
     }
 
     const messageEvents = this.engine.drainEvents().filter((event: any) => event.type === 'message');
     this.note = messageEvents.at(-1)?.message || '';
-    this.persist();
+    // Invalid actions and ally selection never rewrite saves.
+    if (performed) this.persist();
     this.renderBattle();
   }
 
@@ -599,28 +688,7 @@ export class BattleScene extends Phaser.Scene {
       ? `${selectedSpell.name} · Alcance ${selectedSpell.range} · Mana ${selectedSpell.cost}. ${selectedSpell.desc} Casas destacadas estão válidas segundo as regras de alvo e visão do motor.`
       : 'Casas verdes: movimento. Magias destacam apenas alvos atualmente válidos pelo motor.');
 
-    const container = document.getElementById('skills');
-    if (container) {
-      container.replaceChildren();
-      for (const key of [...(HEROES[actor?.kind as keyof typeof HEROES]?.skills ?? []), 'interact']) {
-        const skill = SKILLS[key as keyof typeof SKILLS];
-        if (!skill) continue;
-        const button = document.createElement('button');
-        button.textContent = `${skill.name} (✦${skill.cost})`;
-        button.title = skill.desc;
-        button.className = this.selectedSkill === key ? 'active' : '';
-        button.disabled = state.phase !== 'player' || !actor || actor.ap <= 0 || actor.mp < skill.cost;
-        button.addEventListener('click', () => {
-          this.inspectMode = false;
-          this.armedSpell = null;
-          this.aimCell = null;
-          this.selectedSkill = this.selectedSkill === key ? null : key;
-          this.note = this.selectedSkill ? `Selecione alvo para ${skill.name}` : '';
-          this.renderBattle();
-        });
-        container.appendChild(button);
-      }
-    }
+    this.syncSkillButtons(state, actor);
 
     const inspectButton = document.getElementById('inspectMode') as HTMLButtonElement | null;
     if (inspectButton) {

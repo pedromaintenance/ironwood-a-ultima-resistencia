@@ -1,4 +1,4 @@
-# Ironwood — Phaser beta M3d (em validação para Pages)
+# Ironwood — Phaser beta M3e (HUD incremental e feedback)
 
 Prévia jogável e independente da batalha usando **Phaser 4.2.1 + Vite + TypeScript**, importando o motor headless da branch de desenvolvimento. O site Canvas publicado continua intacto.
 
@@ -46,6 +46,13 @@ O pacote é compilado para `phaser/dist/`, separado do aplicativo legado. O work
 - Inspeção, seleção de aliado e hover de área de magia permanecem disponíveis durante animações.
 - Um indicador sob o tabuleiro sinaliza **ANIMANDO** ou **PRONTO**, e `data-ignored-commands` conta cliques bloqueados sem custo de AP/mana/salvamento.
 - Veja [detalhes e limitações](../docs/M3D_COMMAND_LOCK.md). O beta público ainda pode estar na M3c até que a M3d passe nos testes e seja publicada.
+
+## M3e — botões persistentes e feedback
+
+- Os botões de habilidades não são mais destruídos a cada render: só são reconstruídos quando muda a lista de magias do herói. `#skills[data-builds]` mostra quantas vezes isso aconteceu.
+- O foco do teclado permanece na habilidade após selecioná-la, com atributos `aria-pressed` e `disabled` corretos.
+- Avisos de movimento impossível, ataque indisponível e magia inválida aparecem no painel de feedback sem regravar saves.
+- [CI 24/24 e Chromium aprovado](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/actions/runs/38964097106) · [Guia técnico M3e](../docs/M3E_HUD_FEEDBACK.md).
 
 ## O que ainda falta
 
