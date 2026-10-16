@@ -10,11 +10,17 @@ Implementação inicial do **Ironwood Core**. A versão Canvas original continua
 | `src/core/rng.js` | Gerador seeded Mulberry32 com leitura/restauração de estado |
 | `src/core/navigation.js` | Caminhos, custo de terreno, bloqueios, linha de visão e cobertura sem estado global |
 | `src/core/terrain.js` | Fogo, água e gelo como mutações isoladas de cada tile |
-| `src/core/engine.js` | Fachada do jogo: campanha, deploy, ações, IA, turno, objetivos, eventos e save |
+| `src/core/engine.js` | Fachada de campanha, estado por instância, ações e emissão de eventos |
+| `src/core/combat.js` | Cálculo de acerto, dano, armadura e cura |
+| `src/core/objectives.js` | Condições puras de vitória e derrota |
+| `src/core/ai.js` | IA, rodada inimiga e ondas de reforços, com dependências injetadas |
+| `src/core/spells.js` | 32 comandos, validação de alvo e consequências mágicas |
+| `src/core/environment.js` | Clima, duração de condições e propagação do fogo |
+| `src/core/save.js` | Validação estrutural do formato v1 antes de restaurar a campanha |
 | `tests/core.test.mjs` | Testes de comportamento sem navegador |
 | `tests/parity.test.mjs` | Testes diferenciais: mesmas decisões/RNG no legado e motor novo |
 
-O motor usa um `GameState` interno por instância, exposto exclusivamente por `snapshot()` (cópia estrutural). As regras estão desacopladas de Canvas, DOM, localStorage, Phaser e timers. A extração das funções de combate, ambiente e IA preserva intencionalmente várias fórmulas legadas; a separação delas em submódulos menores ocorrerá em incrementos posteriores, sempre protegida por testes de paridade.
+O motor usa um `GameState` interno por instância, exposto exclusivamente por `snapshot()` (cópia estrutural). As regras estão desacopladas de Canvas, DOM, localStorage, Phaser e timers. Combate, objetivos, IA, comandos mágicos e ciclo ambiental foram extraídos para submódulos com dependências explícitas. A fachada continua responsável pela coordenação e pelos dados mutáveis da campanha. Não há mudança deliberada de balanceamento.
 
 ## API inicial
 
@@ -63,7 +69,7 @@ npm run test:parity
 node examples/headless-mission.mjs
 ```
 
-Os testes de paridade carregam o `app.js` real num contexto Node VM com Canvas/renderização neutralizados e substituem apenas `Math.random()` por um gerador com a mesma sequência da nova engine. Assim, comparam estados de jogo após criação da missão, movimento, turno, clima, magias e vitória.
+A suíte inclui `tests/parity.test.mjs`, com cobertura diferencial das oito missões e das 32 habilidades/ações em cenários controlados. Os testes de paridade carregam o `app.js` real num contexto Node VM com Canvas/renderização neutralizados e substituem apenas `Math.random()` por um gerador com a mesma sequência da nova engine. Assim, comparam estados de jogo após criação da missão, movimento, turno, clima, magias e vitória.
 
 ## Acompanhamento
 
@@ -73,9 +79,16 @@ Os testes de paridade carregam o `app.js` real num contexto Node VM com Canvas/r
 - [x] Caminho/LOS/cobertura separados em módulo.
 - [x] Magias elementais simples separadas por tile.
 - [x] Testes de funcionamento e paridade com o legado.
-- [ ] Extrair inteiramente combate, IA, objetivos e efeitos restantes para módulos menores.
-- [ ] Definir esquema mais rigoroso para importação de save não confiável.
-- [ ] Completar matrizes de regressão para todos os 32 comandos, cenários de terreno e oito missões.
+- [x] Extrair combate, IA, objetivos e ciclo climático em módulos menores.
+- [x] Validar saves v1 e rejeitar dimensões, personagens e estados inválidos antes de restaurar.
+- [x] Testar diferenças do legado para **oito gerações de missão** e **32 habilidades/ações em cenários controlados**.
+- [ ] Completar *todas as combinações* de terreno, dificuldade e combate prolongado com regressão; casos controlados não equivalem a uma campanha completa.
 - [ ] Adaptador de comandos/eventos orientado a animações Phaser (fase 2).
 
 **Critério de avanço:** aumentar a cobertura de regressão e garantir que novos módulos preservem o comportamento do código original. A interface Phaser ainda não foi implementada nesta entrega.
+
+## Resultado deste incremento
+
+- [CI — Fase 1, extração e importação verificadas](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/actions/runs/38835392027)
+- [PR #5](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/pull/5) — permanece draft até integração e revisão.
+- Observação: não foi feito playthrough físico/manual completo no browser; os testes automatizados são representativos, não exaustivos.
