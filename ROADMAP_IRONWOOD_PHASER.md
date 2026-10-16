@@ -26,6 +26,15 @@
 | M2b — Assets de terceiros | **Pendente**: Kenney/Tiddybub não incorporados; manifest de terceiros vazio. Arte atual é autoral local | [Manifest](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/blob/feat/phaser-combat-ux-m3/docs/assets-manifest.json) |
 | M3b–M5 — AOE, animações, campanha integral, PWA | Pendentes: prévia de área inteira, pool de unidades, animação com trava de input, playthrough, saves físicos, offline e QA real | [Roadmap detalhado](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/blob/feat/phaser-combat-ux-m3/phaser/ROADMAP.md) |
 
+### M3b — prévia de impacto (desenvolvimento isolado)
+
+- **Branch:** `feat/phaser-impact-preview-m3b`.
+- **[PR #13](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/pull/13)** / **[Issue #12](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/issues/12)**.
+- Implementados: área geométrica inicial 3×3/5×5/linha da magia, aviso de aliados em risco, hover de impacto sem gastar recursos, **dois toques para confirmar** magias ofensivas de área, testes específicos de 5×5/limites/salvamento.
+- A propagação ambiental de fogo e de eletricidade continua sujeita às regras/aleatoriedade do motor, não é predita pelo indicador.
+- **Status:** código implementado; CI de cobertura ampliada na fila. **Ainda não substituiu o beta M3a do Pages**. Só publicar M3b após build e smoke específicos aprovados.
+- [Roadmap detalhado da branch](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/blob/feat/phaser-impact-preview-m3b/phaser/ROADMAP.md) · [documentação de limites](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/blob/feat/phaser-impact-preview-m3b/docs/M3B_IMPACT_PREVIEW.md).
+
 ### Prioridade seguinte — M3b
 
 O caminho recomendado é **prévia fiel da área afetada por magias**, reutilizando a geometria do motor; depois, pool de personagens/efeitos e fila de comandos durante os tweens. O marco só pode ser concluído após playthrough real da missão 1, testes de performance e dispositivos físicos. A camada de terreno já é persistente, mas a camada dos atores **ainda é reconstruída** em cada ação. Os sprites externos ainda dependem de auditoria individual de licença.
