@@ -1,6 +1,6 @@
 # Roadmap executivo — Ironwood Phaser
 
-**Atualização:** 16 de outubro de 2026 — M3f implementada em branch e em CI; M3e continua como beta público  
+**Atualização:** 16 de outubro de 2026 — M3g em validação; M3f já publicada como compilado no Pages  
 **Jogo público:** `main` continua executando o Canvas legado.  
 **Ramo da prévia:** `feat/phaser-impact-preview-m3b` ([PR #13](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/pull/13)); publicação pública independente compilada do commit `9ffc7029`.  
 **Roadmap do projeto inteiro:** [ROADMAP_IRONWOOD_PHASER.md](../ROADMAP_IRONWOOD_PHASER.md) (versão canônica publicada em `main`).
@@ -129,6 +129,18 @@ Este roteiro diferencia funcionalidades **implementadas**, **validadas em CI**, 
 - [ ] Beta do Pages e QA manual, especialmente movimentos, alcance de magia e upgrades.
 
 **Limite do incremento:** a assinatura ainda percorre o estado para detectar mudanças. Redução de operações Graphics/DOM não equivale a FPS aferido em dispositivo físico. [Guia M3f](../docs/M3F_RENDER_CACHE.md).
+
+### M3g — Objetivos vivos e transição missão 1 → 2 (**implementado, validação em andamento**)
+- [x] Compartilhar interpretação das sete modalidades de objetivo com `missionOutcome()` por uma função pura `missionProgress()`.
+- [x] Exibir ato, número da operação, meta, andamento numérico e barra acessível de progresso durante a batalha.
+- [x] Comunicar vitória/derrota com mensagem contextual e atualizar meta na mudança de missão.
+- [x] Teste de core para eliminação, resgate, totens, seis rodadas, purificação, marcos e chefe sem mutação.
+- [x] Smoke Chromium com importação de save válido próximo da vitória, ação real que conclui a missão, escolha de melhoria e início da missão 2.
+- [ ] CI 24+ testes, compilação Phaser e Playwright desktop/mobile verde.
+- [ ] Publicar novo beta com SHA aprovado e testar no Pages.
+- [ ] Jogar a missão 1 por inteiro sem fixture; avançar até a missão 8 e os três finais.
+
+**Limite:** teste de transição usa fixture próxima da vitória, não a resolução humana de todo o combate. [Guia técnico M3g](../docs/M3G_MISSION_GOALS.md).
 
 ### M4 — Campanha 8 missões
 - [ ] Telas de briefing, vitória, derrota, retry e progressão.
