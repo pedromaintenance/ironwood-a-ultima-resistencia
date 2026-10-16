@@ -6,6 +6,8 @@ import { HEROES, MISSIONS, ENEMIES, SKILLS, UPGRADES } from './data.js';
 import { createSeededRng } from './rng.js';
 import { terrainBlocked as gridBlocked, walkCost as gridCost, reachablePaths, bresenhamLine, lineOfSight, effectiveCover as gridCover } from './navigation.js';
 import { igniteTile, soakTile, freezeTile } from './terrain.js';
+import { rollToHit, applyDamage, applyHealing } from './combat.js';
+import { missionOutcome } from './objectives.js';
 
 export const BOARD_SIZE = 12;
 export const LEGACY_SAVE_KEY = 'ironwood_campaign_v1';
@@ -109,11 +111,13 @@ function los(a, b, ignoreCover = false) { return lineOfSight(G.board, a, b, igno
 
 function effectiveCover(t) { return gridCover(t); }
 
-function aimTest(a,b,ignoreCover=false){const t=cell(b.x,b.y),cover=b.marked?0:effectiveCover(t);return dice(20)+a.aim+(a.bless?2:0)>=9+b.armor+(ignoreCover?0:cover)}
+function aimTest(a, b, ignoreCover = false) { return rollToHit(a, b, cell(b.x, b.y), dice(20), ignoreCover); }
 
-function damage(target,n,element='physical',caster=null){if(!target||target.hp<=0)return;let d=Math.max(1,Math.round(n)+(caster?.side==='ally'?up('power'):0));if(target.guard>0)d=Math.max(0,d-3);target.hp=Math.max(0,target.hp-d);if(d>0)log(`${target.name} sofre ${d} ${element==='physical'?'de dano':`de ${element}`}.`);if(target.hp===0){log(`☠ ${target.name} caiu.`);if(target.kind==='boss')G.stats.boss=true}}
+function damage(target, n, element = 'physical', caster = null) {
+  return applyDamage(target, n, {element, caster, powerUpgrade: up('power'), onLog: log, onBossDefeat: () => {G.stats.boss = true;}});
+}
 
-function heal(u,n){if(!u||u.hp<=0)return;let q=Math.min(u.maxhp-u.hp,n);u.hp+=q;log(`✦ ${u.name} recupera ${q} PV.`)}
+function heal(unit, amount) { return applyHealing(unit, amount, log); }
 
 function push(u,from,steps){if(!u||u.hp<=0)return;let dx=Math.sign(u.x-from.x),dy=Math.sign(u.y-from.y);if(dx===0&&dy===0)dx=1;if(Math.abs(dx)+Math.abs(dy)===2){if(Math.abs(u.x-from.x)>=Math.abs(u.y-from.y))dy=0;else dx=0}for(let i=0;i<steps;i++){let x=u.x+dx,y=u.y+dy;if(!at(x,y)||terrainBlocked(cell(x,y))||occupied(x,y,u.id)){damage(u,2,'impacto');break}u.x=x;u.y=y;enterTile(u)}}
 
@@ -187,7 +191,12 @@ function moveUnit(a,to){const paths=pathsFrom(a),p=paths.get(idx(to.x,to.y));if(
 
 function afterAction(){if(!G)return;let party=heroes();if(!party.length){defeat();return}updateObjectives();if(G.phase!=='player')return;let sel=getSelected();if(!sel||sel.ap<=0){let next=party.find(a=>a.ap>0);if(next)G.selected=next.id}save();render()}
 
-function updateObjectives(){if(G.phase!=='player'&&G.phase!=='enemy')return;let kind=MISSIONS[G.mission].kind,items=G.board?.filter(t=>t.objective&&!t.cleared)||[];let done=(kind==='kill'&&hostiles().length===0)||(kind==='boss'&&!hostiles().some(a=>a.kind==='boss'))||(['rescue','totem','cleanse','beacon'].includes(kind)&&items.length===0)||(kind==='survive'&&G.round>6);if(done){victory();return}if(!heroes().length)defeat()}
+function updateObjectives() {
+  if (G.phase !== 'player' && G.phase !== 'enemy') return;
+  const outcome = missionOutcome(MISSIONS[G.mission].kind, G.board, G.actors, G.round);
+  if (outcome === 'victory') { victory(); return; }
+  if (outcome === 'defeat') defeat();
+}
 
 function enemyAction(a){if(a.hp<=0)return;let list=heroes();if(!list.length)return;let moved=false;for(let turn=0;turn<2&&a.hp>0;turn++){
  let enemies=heroes();if(!enemies.length)break;
