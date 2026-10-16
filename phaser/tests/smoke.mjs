@@ -17,7 +17,7 @@ async function cell(canvas, x, y) {
 try {
   await page.goto('http://127.0.0.1:4173/', { waitUntil: 'networkidle' });
   assert.equal(await page.locator('#lobby').isVisible(), true, 'lobby should open first');
-  assert.match(await page.locator('.mast').innerText(), /BETA M3d/);
+  assert.match(await page.locator('.mast').innerText(), /BETA M3e/);
   assert.equal(await page.locator('.playtestGuide summary').isVisible(), true);
   assert.equal(await page.locator('#teamCount').innerText(), '3/3');
   await page.locator('#startCampaign').click();
@@ -29,6 +29,15 @@ try {
   assert.match(await page.locator('#missionTitle').innerText(), /A Trilha Fechada/);
   assert.match(await page.locator('#phaseStatus').innerText(), /Rodada 1/);
   await page.screenshot({ path: 'artifacts/preview/01-battle.png', fullPage: true });
+  const hudBuildsAtStart = Number(await page.locator('#skills').getAttribute('data-builds'));
+  assert.equal(hudBuildsAtStart, 1, 'initial ability panel is allocated just once');
+  const originalSave = await page.evaluate(() => localStorage.getItem('ironwood_phaser_preview_v1'));
+  await canvas.click({ position: await cell(canvas, 11, 11) });
+  assert.match(await page.locator('#actionFeedback').innerText(), /Movimento indisponível/);
+  assert.equal(await page.evaluate(() => localStorage.getItem('ironwood_phaser_preview_v1')), originalSave,
+    'illegal movement does not overwrite the save');
+  assert.equal(Number(await page.locator('#skills').getAttribute('data-builds')), hudBuildsAtStart,
+    'invalid commands do not rebuild the skill list');
 
   // Inspection must not move actors, spend AP, advance RNG or overwrite saves.
   assert.equal(await page.locator('#game').getAttribute('data-unit-objects'), '7');
@@ -48,6 +57,8 @@ try {
   assert.equal(Number(await page.locator('#game').getAttribute('data-terrain-updates')), tilesBefore);
   assert.equal(Number(await page.locator('#game').getAttribute('data-unit-allocations')), initialAllocations,
     'inspect mode must not allocate replacement sprites');
+  assert.equal(Number(await page.locator('#skills').getAttribute('data-builds')), hudBuildsAtStart,
+    'inspection does not rebuild HUD ability controls');
 
   // Rapid input during a 300ms movement tween must never spend extra AP.
   const boardBounds = await canvas.boundingBox();
@@ -173,7 +184,18 @@ try {
   // The headless roster places allies at x=2,5,9 (not x=8).
   await canvas.click({ position: await cell(canvas, 9, 10) });
   assert.match(await page.locator('#unitName').innerText(), /Vaelis/);
-  await page.getByRole('button', { name: /Bola de Fogo/ }).click();
+  const fireballButton = page.getByRole('button', { name: /Bola de Fogo/ });
+  await fireballButton.click();
+  assert.equal(await fireballButton.evaluate(el => el === document.activeElement), true,
+    'clicking an ability preserves its keyboard focus when HUD updates');
+  const mageHudBuilds = Number(await page.locator('#skills').getAttribute('data-builds'));
+  const invalidSpellSave = await page.evaluate(() => localStorage.getItem('ironwood_phaser_preview_v1'));
+  await canvas.click({ position: await cell(canvas, 0, 0) });
+  assert.match(await page.locator('#actionFeedback').innerText(), /Alvo inválido/);
+  assert.equal(await page.evaluate(() => localStorage.getItem('ironwood_phaser_preview_v1')), invalidSpellSave,
+    'out-of-range spell does not modify the saved state');
+  assert.equal(Number(await page.locator('#skills').getAttribute('data-builds')), mageHudBuilds,
+    'invalid spell does not rebuild ability buttons');
   await canvas.hover({ position: await cell(canvas, 9, 9) });
   assert.match(await page.locator('#impactInfo').innerText(), /Área inicial: 25 casa/);
   assert.equal(await page.locator('#game').getAttribute('data-impact-tiles'), '25');
@@ -189,7 +211,7 @@ try {
   assert.match(await page.locator('#battleLog').innerText(), /Bola de Fogo/);
 
   assert.deepEqual(errors, [], 'Phaser should not throw browser errors');
-  console.log('PASS: core parity, tween command lock, reused units, inspection, AOE double-tap, saves and mobile touch');
+  console.log('PASS: core parity, incremental HUD, invalid actions do not resave, tween lock, pooled units, AOE, mobile');
 } finally {
   await browser.close();
 }
