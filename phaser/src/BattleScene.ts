@@ -26,7 +26,7 @@ type Tile = {
   x: number; y: number; base: string; texture: number; wall: number;
   fire: number; wet: number; ice: number; fog: number; web: number;
   vines: number; thorns: number; charge: number; corrupt: number;
-  objective: string; cleared: boolean;
+  objective: string; cleared: boolean; objhp: number;
 };
 
 type ActorView = {
@@ -456,6 +456,11 @@ export class BattleScene extends Phaser.Scene {
       performed = this.engine.attack(this.selected, clicked.id);
       this.reportAction(performed ? `Ataque realizado contra ${clicked.name}.` :
         'Ataque indisponível: verifique PA, distância e cobertura.', performed ? 'info' : 'warning');
+    } else if ((state.board as Tile[])[y * SIZE + x].objective === 'totem' &&
+               !(state.board as Tile[])[y * SIZE + x].cleared && !clicked) {
+      performed = this.engine.attackObjective(this.selected, x, y);
+      this.reportAction(performed ? 'Totem atingido! Continue atacando até destruí-lo.' :
+        'Totem fora de alcance ou sem PA. Aproxime-se ou escolha uma habilidade.', performed ? 'info' : 'warning');
     } else {
       performed = this.engine.move(this.selected, x, y);
       this.reportAction(performed ? 'Movimento executado.' :
@@ -519,8 +524,14 @@ export class BattleScene extends Phaser.Scene {
       'thorns', 'charge', 'corrupt', 'wall'] as const)
       .filter(key => Number(tile[key] || 0) > 0)
       .map(key => `${key}: ${tile[key]}`);
+    const goalNames: Record<string, string> = {
+      totem: 'Totem da Servidão — toque para atacar, após se aproximar',
+      captive: 'Prisioneiro — use Interagir',
+      shrine: 'Foco de Corrupção — use Interagir ou Purificar',
+      beacon: 'Marco Ancestral — use Interagir',
+    };
     const objective = tile.objective && !tile.cleared
-      ? ` · Objetivo: ${tile.objective}` : '';
+      ? ` · Objetivo: ${goalNames[tile.objective] || tile.objective}${tile.objective === 'totem' ? ` · Integridade ${tile.objhp}` : ''}` : '';
     const unit = actor
       ? ` · ${actor.name} (${actor.side === 'ally' ? 'aliado' : 'inimigo'}), PV ${actor.hp}/${actor.maxhp}` : '';
     const text = `Casa ${x + 1},${y + 1}: ${names[tile.base] || tile.base}${objective}${unit}. ${conditions.length ? conditions.join(' · ') : 'Sem efeitos ambientais.'}`;
@@ -612,8 +623,37 @@ export class BattleScene extends Phaser.Scene {
           graphics.lineBetween(left + 18, top + 14, left + 30, top + 20);
         }
         if (tile.objective && !tile.cleared) {
-          graphics.lineStyle(2, 0xd5b16d, .95);
-          graphics.strokeRect(left + 6, top + 6, CELL - 12, CELL - 12);
+          // Unique silhouettes make a captive, a totem, a shrine and a beacon
+          // recognizable even without color or a visible text label.
+          const tint = tile.objective === 'totem' ? 0xe9a566 :
+            tile.objective === 'captive' ? 0x85d1ca :
+            tile.objective === 'shrine' ? 0xbca0ed : 0xd6d38c;
+          graphics.fillStyle(0x111c1d, .85);
+          graphics.fillRect(left + 7, top + 7, 26, 26);
+          graphics.lineStyle(2, tint, 1);
+          graphics.strokeRect(left + 6, top + 6, 28, 28);
+          if (tile.objective === 'totem') {
+            graphics.lineBetween(left + 20, top + 9, left + 30, top + 20);
+            graphics.lineBetween(left + 30, top + 20, left + 20, top + 30);
+            graphics.lineBetween(left + 20, top + 30, left + 10, top + 20);
+            graphics.lineBetween(left + 10, top + 20, left + 20, top + 9);
+            graphics.lineBetween(left + 15, top + 20, left + 25, top + 20);
+            graphics.fillStyle(0x151515, 1);
+            graphics.fillRect(left + 8, top + 33, 24, 3);
+            graphics.fillStyle(tint, 1);
+            graphics.fillRect(left + 8, top + 33, 24 * Math.max(0, Math.min(18, tile.objhp)) / 18, 3);
+          } else if (tile.objective === 'captive') {
+            graphics.strokeCircle(left + 15, top + 19, 5);
+            graphics.strokeCircle(left + 25, top + 19, 5);
+            graphics.lineBetween(left + 20, top + 19, left + 20, top + 26);
+          } else if (tile.objective === 'shrine') {
+            graphics.strokeCircle(left + 20, top + 20, 9);
+            graphics.lineBetween(left + 13, top + 27, left + 27, top + 13);
+          } else if (tile.objective === 'beacon') {
+            graphics.lineBetween(left + 20, top + 10, left + 29, top + 27);
+            graphics.lineBetween(left + 29, top + 27, left + 11, top + 27);
+            graphics.lineBetween(left + 11, top + 27, left + 20, top + 10);
+          }
         }
         if (tile.fog > 0) { graphics.fillStyle(0xa2b3b5, .3); graphics.fillRect(left, top, CELL, CELL); }
         graphics.lineStyle(1, 0x060f10, .32);
