@@ -130,3 +130,37 @@ test('invalid teams, skills and save versions do not mutate gameplay', () => {
   assert.deepEqual(e.snapshot(), before);
   assert.throws(() => e.restoreSave({ ver: 2 }), TypeError);
 });
+
+test('import rejects malformed v1 board, roster, RNG and phase without mutating existing campaign', () => {
+  const e = deployed(991);
+  const original = e.snapshot();
+  const variations = [
+    value => { value.board.pop(); },
+    value => { value.board[0].x = 99; },
+    value => { value.actors[0].x = -1; },
+    value => { value.actors[1].id = value.actors[0].id; },
+    value => { value.team = ['guardian','guardian','ranger']; },
+    value => { value.difficulty = 'legendary'; },
+    value => { value.phase = 'unknown'; },
+    value => { value.rngState = -1; },
+    value => { value.round = 0; },
+    value => { value.upgrades = null; },
+  ];
+  for (const mutate of variations) {
+    const value = structuredClone(original);
+    mutate(value);
+    assert.throws(() => e.restoreSave(value), TypeError);
+    assert.deepEqual(e.snapshot(), original);
+  }
+});
+
+test('unmodified legacy v1 save without rngState remains readable', () => {
+  const e = deployed(1234);
+  const legacy = e.snapshot();
+  delete legacy.rngState;
+  const restored = createIronwoodEngine();
+  restored.restoreSave(legacy);
+  const current = restored.snapshot();
+  delete current.rngState;
+  assert.deepEqual(current, legacy);
+});
