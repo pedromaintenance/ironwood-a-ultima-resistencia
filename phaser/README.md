@@ -30,11 +30,13 @@ O pacote é compilado para `phaser/dist/`, separado do aplicativo legado. O work
 - Exportação de JSON v1 e importação com validação e limite de 2 MB.
 - **Três opções de upgrade** ao vencer, usando as mesmas opções do jogo original.
 - Tween de deslocamento e feedback de dano, com respeito a preferência por movimento reduzido.
+- **36 sprites pixel-art autorais** de 16×16: 24 texturas de terreno e 12 unidades com silhuetas individuais, registrados em `PixelAtlas.ts`.
+- Prévia de alcance aproximado de habilidades e painel explicativo para mobile; o motor ainda valida os alvos.
 - Interface responsiva e controles touch para celular.
 
 ## O que ainda falta
 
-- **Assets CC0 reais**. Os marcadores e terrenos atuais continuam vetoriais provisórios; o manifest não declara sprites incorporados.
+- **Assets CC0 de terceiros:** ainda não incorporados. A arte autoral 16×16 já é renderizada, mas pode receber acabamento e substituição posterior por pacotes externos devidamente auditados.
 - Sprites animados reais, efeitos de magia, som, transições e feedback preciso de alcance.
 - Menus narrativos completos, seleção de upgrade com sprites, créditos e resultados finais.
 - Importação de saves reais da versão Canvas testada com arquivos de usuário, sem afetar o jogo publicado.
@@ -50,7 +52,7 @@ O catálogo de recursos está em [free-asset-gallery.md](../free-asset-gallery.m
 - [Kenney UI Pack](https://kenney.nl/assets/ui-pack) — interface, licença CC0 conforme o pacote oficial.
 - [Tiddybub 2D Assets](https://github.com/Tiddybub/2d-assets) — verificar licença e autoria específica de **cada pacote**.
 
-Até termos arquivos efetivamente incorporados, [docs/assets-manifest.json](../docs/assets-manifest.json) permanece sem entradas. Não presumir permissão a partir de uma listagem de links.
+O campo `assets` para terceiros em [docs/assets-manifest.json](../docs/assets-manifest.json) permanece vazio; `original_art` registra as 36 texturas originais geradas pelo projeto. Consulte o [guia de pixel-art M2](../docs/PIXEL_ART_M2.md). Não presumir permissão a partir de uma listagem de links.
 
 ## Arquitetura
 
