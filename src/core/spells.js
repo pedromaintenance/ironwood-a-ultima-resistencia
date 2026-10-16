@@ -12,7 +12,15 @@ function spellInRange(u,s,x,y){if(s.target==='self')return true;return man(u,{x,
 
 function spellAllowed(u,key,x,y){const s=SKILLS[key];if(!s||!u||u.side!=='ally'||u.hp<=0||u.ap<1||u.mp<s.cost)return false;if(!spellInRange(u,s,x,y))return false;const q=unitAt(x,y);if(s.target==='ally'&&(!q||q.side!=='ally'))return false;if(s.target==='enemy'&&(!q||q.side!=='enemy'))return false;if(s.target==='self')return x===u.x&&y===u.y;if(s.effect==='blink'&&(terrainBlocked(cell(x,y))||occupied(x,y,u.id)))return false;if(s.effect==='interact'){let t=cell(x,y);return !!(t?.objective&&!t.cleared)}return true}
 
-function cast(u,key,x,y){const G = getState();let s=SKILLS[key];if(!spellAllowed(u,key,x,y)){toast('Alvo inválido, fora de alcance ou mana/PA insuficientes.');return false}let p={x,y},t=cell(x,y),target=unitAt(x,y);if(s.target!=='self'&&key!=='blink'&&key!=='interact'&&!los(u,p, ['fireball','fog','spikes','entangle','sleet','rain','grow','sunbeam','lightning','volley','faerie','web','earthwall','icewall'].includes(key))){toast('Linha de visão bloqueada.');return false}
+// Shared deterministic line-of-sight gate; UI preview and casting use the same rule.
+function spellVisible(u,key,x,y){
+  const s=SKILLS[key];
+  if(!s)return false;
+  if(s.target==='self'||key==='blink'||key==='interact')return true;
+  return los(u,{x,y}, ['fireball','fog','spikes','entangle','sleet','rain','grow','sunbeam','lightning','volley','faerie','web','earthwall','icewall'].includes(key));
+}
+
+function cast(u,key,x,y){const G = getState();let s=SKILLS[key];if(!spellAllowed(u,key,x,y)){toast('Alvo inválido, fora de alcance ou mana/PA insuficientes.');return false}let p={x,y},t=cell(x,y),target=unitAt(x,y);if(!spellVisible(u,key,x,y)){toast('Linha de visão bloqueada.');return false}
  u.ap--;u.mp-=s.cost;G.casts++;log(`${u.name} usa ${s.name}.`);
  switch(s.effect){
  case'bash':damage(target,8,'impacto',u);push(target,u,1);break;
@@ -52,5 +60,5 @@ function cast(u,key,x,y){const G = getState();let s=SKILLS[key];if(!spellAllowed
  resetCommandMode();updateObjectives();afterAction();return true
 }
 
-  return { spellInRange, spellAllowed, cast };
+  return { spellInRange, spellAllowed, spellVisible, cast };
 }

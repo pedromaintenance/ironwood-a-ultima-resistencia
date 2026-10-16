@@ -1,6 +1,6 @@
 # Roadmap executivo — Ironwood Phaser
 
-**Atualização:** 16 de outubro de 2026  
+**Atualização:** 16 de outubro de 2026 — marco M3a  
 **Jogo público:** `main` continua executando o Canvas legado.  
 **Ramo da prévia:** `feat/phaser-pixel-art-m2` (baseado em `feat/phaser-battle-preview`), com PR dependente [#7](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/pull/7).  
 **Roadmap do projeto inteiro:** [ROADMAP_IRONWOOD_PHASER.md](../ROADMAP_IRONWOOD_PHASER.md) (versão canônica publicada em `main`).
@@ -19,10 +19,11 @@ Este roteiro diferencia funcionalidades **implementadas**, **validadas em CI**, 
 | Exportar/importar JSON | Implementado | Validação do formato v1 e limite de 2 MB | Testes com amostras legadas de usuários |
 | Continuação de campanha | Implementada | Recupera batalha/estado e RNG no carregamento | Testar interrupções de sessões longas |
 | Melhorias entre missões | Implementadas | Apresenta as 3 opções originais para escolha | UI e sprites dos upgrades |
-| Feedback visual | **Implementado como protótipo**, testado em build+smoke | Tween de deslocamento e piscada de dano, preferência movimento reduzido | Arte final, sequenciamento e VFX específicos |
+| Feedback visual/inspeção | M3a implementado; smoke de navegador verde | Seleção de alvos pelo core, inspeção sem gastar recursos, movimento/dano | VFX precisos/AOE e fila de ações |
 | Telas pequenas | **Smoke emulado aprovado** | Layout responsivo 390×844, seleção de equipe, toque para mover e retomada após reload | Android/iOS físico, acessibilidade e qualidade |
 | Pixel-art original | **36 sprites/texturas 16×16 gerados localmente; teste Chromium aprovado** | `phaser/src/PixelAtlas.ts`, [guia artístico](../docs/PIXEL_ART_M2.md) | Refinar desenho, contraste e animações |
 | Free-assets de terceiros | Nenhum arquivo externo incorporado; CC0 Kenney apenas candidato | [Manifest](../docs/assets-manifest.json), [Kenney Roguelike/RPG](https://kenney.nl/assets/roguelike-rpg-pack) | Baixar, inspecionar, selecionar, incorporar e registrar arquivos CC0 |
+| Renderer incremental | M3a concluído parcialmente | 144 sprites estáticos reutilizados; layers separados para terreno/efeitos/unidades | Pool de unidades, culling e profiling físico |
 | PWA e publicação | Não iniciada no Phaser | Legado mantém PWA atual | SW, manifest, instalação e offline do Vite |
 
 ## Sequência de trabalho — próximos PRs
@@ -57,16 +58,20 @@ Este roteiro diferencia funcionalidades **implementadas**, **validadas em CI**, 
 
 **Aceite:** toda arte incorporada tem origem documentada, é carregada localmente e é legível no celular; nenhum pacote externo sem licença auditada. **Gate parcial:** arte autoral e renderização passaram no CI; revisão visual humana e assets externos continuam pendentes.
 
-### M3 — Combate com animações e input robusto (próximo incremental)
-- [ ] Não permitir ações repetidas durante tweens críticos; fila de ações da interface, sem atrasar regras.
-- [x] Destaque de alcance aproximado + texto da habilidade em mobile.
-- [ ] Pré-visualização precisa de área de magia, linha de visão e cobertura, sem duplicar lógica do core.
-- [ ] Feedback de hit/miss, alterações de HP, objetivos destruídos e efeitos persistentes.
-- [ ] Adicionar pausa, inspeção, atalhos de teclado e suporte acessível além das cores.
-- [ ] Reduzir objetos recriados a cada ação para melhorar FPS e bateria.
-- [ ] Testes E2E em 390×844, desktop e tablet.
+### M3 — Combate legível e input robusto (**M3a implementado/testado; M3b pendente**)
+- [x] **M3a:** `previewSkill` no core consulta as mesmas verificações de alvo e linha de visão da magia executada; sem gastar PA/mana/RNG.
+- [x] **M3a:** destacar apenas casas legalmente selecionáveis; mostrar nome, mana, alcance e descrição no celular.
+- [x] **M3a:** botão INSPECIONAR e atalho `I`, cancelamento por `Esc`, relatório de terreno, efeitos, objetivos e personagens; inspeção não consome turno.
+- [x] **M3a:** cache persistente dos 144 sprites de terreno; `setTexture` apenas quando o terreno muda.
+- [x] **M3a:** separar overlay e unidades do terreno; preservar animação de deslocamento.
+- [x] **M3a:** executar testes de paridade do core **no mesmo workflow** do build/smoke Phaser.
+- [x] **M3a:** testes E2E de inspeção desktop e mobile emulado, preservação de save e cache de 144 tiles.
+- [ ] **M3b:** pré-visualizar área **afetada** de magias e propagação elétrica, além da validade do alvo inicial.
+- [ ] **M3b:** fila de ações durante tweens, hit/miss, objetivos, sprites de unidades em pool e feedback de custos.
+- [ ] **M3b:** acessibilidade com anúncios descritivos, teclado completo, tablet, física de render e benchmark FPS/memória.
+- [ ] Testar uma missão integral sem atalhos de QA, em Android/iOS físico.
 
-**Aceite:** primeira missão jogável por toque e mouse sem comandos perdidos; animações não afetam os resultados do motor.
+**Aceite parcial:** motor e Phaser passaram em testes unitários/de paridade e smoke; o cache de terreno é real, porém o renderer **ainda recria unidades e overlays a cada ação**. A visualização de alvo é precisa, mas **não** mostra todo o dano/área de efeito. [Guia técnico M3a](../docs/M3_COMBAT_UX.md).
 
 ### M4 — Campanha 8 missões
 - [ ] Telas de briefing, vitória, derrota, retry e progressão.
@@ -113,5 +118,6 @@ Para testar o pacote compilado, execute `npm run build` e `npm run preview`. [RE
 |---|---|---|
 | M1 — lobby + saves + mobile emulado | `feat/phaser-battle-preview` | [PR #7](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/pull/7) |
 | M2a — 36 texturas pixel originais; atlas e novo renderer | `feat/phaser-pixel-art-m2` | [Guia artístico](../docs/PIXEL_ART_M2.md), [CI](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/actions/runs/38838968563) |
+| M3a — inspeção, cache estático, previewSkill no core, smoke mobile | `feat/phaser-combat-ux-m3` | [Guia M3a](../docs/M3_COMBAT_UX.md), [CI](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/actions/runs/38880712097) |
 
 O compromisso de manter o jogo Canvas original publicado na `main` permanece. As novas texturas não fazem reivindicação de vínculo ou origem nos packs Kenney.

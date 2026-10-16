@@ -37,6 +37,11 @@ export class BattleScene extends Phaser.Scene {
   private active = false;
   private lastPositions = new Map<string, { x: number; y: number }>();
   private lastHealth = new Map<string, number>();
+  private inspectMode = false;
+  private terrainSprites: Phaser.GameObjects.Image[] = [];
+  private worldOverlay: Phaser.GameObjects.Graphics | null = null;
+  private unitsLayer: Phaser.GameObjects.Container | null = null;
+  private terrainUpdates = 0;
 
   constructor() { super('Battle'); }
 
@@ -63,6 +68,12 @@ export class BattleScene extends Phaser.Scene {
       this.renderBattle();
     });
 
+    document.getElementById('inspectMode')?.addEventListener('click', () => {
+      if (!this.active) return;
+      this.inspectMode = !this.inspectMode;
+      if (this.inspectMode) this.selectedSkill = null;
+      this.renderBattle();
+    });
     document.getElementById('restart')?.addEventListener('click', () => this.showLobby());
     document.getElementById('saveCampaign')?.addEventListener('click', () => this.persist());
     document.getElementById('exportCampaign')?.addEventListener('click', () => {
@@ -70,8 +81,15 @@ export class BattleScene extends Phaser.Scene {
       try { exportCampaign(this.engine.snapshot()); this.setSaveStatus('Campanha exportada em JSON.'); }
       catch { this.setSaveStatus('Não foi possível exportar a campanha.'); }
     });
+    this.input.keyboard?.on('keydown-I', () => {
+      if (!this.active || this.engine.snapshot()?.phase !== 'player') return;
+      this.inspectMode = !this.inspectMode;
+      if (this.inspectMode) this.selectedSkill = null;
+      this.renderBattle();
+    });
     this.input.keyboard?.on('keydown-ESC', () => {
       this.selectedSkill = null;
+      this.inspectMode = false;
       this.note = '';
       if (this.active) this.renderBattle();
     });
@@ -161,6 +179,7 @@ export class BattleScene extends Phaser.Scene {
   private showLobby(): void {
     this.active = false;
     this.selectedSkill = null;
+    this.inspectMode = false;
     this.renderTeamSelection();
     this.setLobbyError('');
     const resume = document.getElementById('continueCampaign') as HTMLButtonElement;
@@ -187,6 +206,7 @@ export class BattleScene extends Phaser.Scene {
     this.active = true;
     this.selected = candidate.snapshot().selected || 'a0';
     this.selectedSkill = null;
+    this.inspectMode = false;
     this.note = '';
     this.hideLobby();
     this.persist();
@@ -218,6 +238,10 @@ export class BattleScene extends Phaser.Scene {
     const state = this.engine.snapshot();
     if (state.phase !== 'player') return;
 
+    if (this.inspectMode) {
+      this.inspectTile(x, y, state);
+      return;
+    }
     const clicked = (state.actors as Actor[]).find(a => a.hp > 0 && a.x === x && a.y === y);
 
     if (this.selectedSkill) {
@@ -237,23 +261,61 @@ export class BattleScene extends Phaser.Scene {
     this.renderBattle();
   }
 
+  private inspectTile(x: number, y: number, state: any): void {
+    const tile = (state.board as Tile[])[y * SIZE + x];
+    const actor = (state.actors as Actor[]).find(u => u.hp > 0 && u.x === x && u.y === y);
+    const names: Record<string, string> = {
+      grass: 'Clareira', tree: 'Árvore', bush: 'Arbustos',
+      water: 'Água', rock: 'Rochas', bones: 'Ruínas e ossos',
+    };
+    const conditions = (['fire', 'ice', 'wet', 'fog', 'web', 'vines',
+      'thorns', 'charge', 'corrupt', 'wall'] as const)
+      .filter(key => Number(tile[key] || 0) > 0)
+      .map(key => `${key}: ${tile[key]}`);
+    const objective = tile.objective && !tile.cleared
+      ? ` · Objetivo: ${tile.objective}` : '';
+    const unit = actor
+      ? ` · ${actor.name} (${actor.side === 'ally' ? 'aliado' : 'inimigo'}), PV ${actor.hp}/${actor.maxhp}` : '';
+    const text = `Casa ${x + 1},${y + 1}: ${names[tile.base] || tile.base}${objective}${unit}. ${conditions.length ? conditions.join(' · ') : 'Sem efeitos ambientais.'}`;
+    const node = document.getElementById('tileInfo');
+    if (node) node.textContent = text;
+  }
+
   private renderBattle(): void {
-    this.children.removeAll(true);
     const state = this.engine.snapshot();
     if (!state?.board) return;
 
     const selectedActor = (state.actors as Actor[]).find(a => a.id === this.selected);
 
-    // Texture palette is generated from original 16x16 pixel matrices at startup.
-    // Position/terrain identity continues to come exclusively from the game core.
+    // Terrain sprites are persistent. Only changed textures are updated.
+    // Status overlays and units have independent redraw lifecycles.
+    if (this.terrainSprites.length === 0) {
+      for (const tile of state.board as Tile[]) {
+        const image = this.add.image(tile.x * CELL + CELL / 2, tile.y * CELL + CELL / 2,
+          'ironwood-ground-grass-0').setDisplaySize(CELL, CELL);
+        this.terrainSprites.push(image);
+      }
+      this.worldOverlay = this.add.graphics();
+      this.unitsLayer = this.add.container(0, 0);
+      const game = document.getElementById('game');
+      if (game) game.dataset.terrainObjects = String(this.terrainSprites.length);
+    }
     for (const tile of state.board as Tile[]) {
-      const variant = ((state.board[tile.y * SIZE + tile.x].texture || 0) % 4 + 4) % 4;
+      const variant = ((tile.texture || 0) % 4 + 4) % 4;
       const kind = Object.hasOwn(COLORS, tile.base) ? tile.base : 'grass';
       const key = `ironwood-ground-${kind}-${variant}`;
-      this.add.image(tile.x * CELL + CELL / 2, tile.y * CELL + CELL / 2, key)
-        .setDisplaySize(CELL, CELL);
+      const image = this.terrainSprites[tile.y * SIZE + tile.x];
+      if (image.texture.key !== key) {
+        image.setTexture(key);
+        this.terrainUpdates++;
+      }
     }
-    const graphics = this.add.graphics();
+    const game = document.getElementById('game');
+    if (game) game.dataset.terrainUpdates = String(this.terrainUpdates);
+    const graphics = this.worldOverlay!;
+    graphics.clear();
+    for (const child of this.unitsLayer!.list) this.tweens.killTweensOf(child);
+    this.unitsLayer!.removeAll(true);
     for (const tile of state.board as Tile[]) {
       const left = tile.x * CELL, top = tile.y * CELL;
       if (tile.web > 0) {
@@ -290,19 +352,13 @@ export class BattleScene extends Phaser.Scene {
           graphics.strokeRect(p.x * CELL + 3, p.y * CELL + 3, CELL - 6, CELL - 6);
         }
       } else {
-        // Range is a visual hint; engine.spellAllowed remains the authority.
+        // Shared headless engine gate is authoritative for mana, target and LOS.
         const skill = SKILLS[this.selectedSkill as keyof typeof SKILLS];
         if (skill) for (const tile of state.board as Tile[]) {
-          const distance = Math.abs(selectedActor.x - tile.x) + Math.abs(selectedActor.y - tile.y);
-          const candidate = (skill.target === 'self')
-            ? distance === 0
-            : distance <= skill.range;
-          if (!candidate) continue;
-          const occupied = (state.actors as Actor[]).find(u => u.hp > 0 && u.x === tile.x && u.y === tile.y);
-          if (skill.target === 'ally' && occupied?.side !== 'ally') continue;
-          if (skill.target === 'enemy' && occupied?.side !== 'enemy') continue;
-          if (this.selectedSkill === 'interact' && (!tile.objective || tile.cleared)) continue;
-          const hue = skill.target === 'enemy' ? 0xd17681 : this.selectedSkill === 'interact' ? 0xd9ba6e : 0x8cb8c8;
+          const preview = this.engine.previewSkill(selectedActor.id, this.selectedSkill, tile.x, tile.y);
+          if (!preview.allowed) continue;
+          const hue = skill.target === 'enemy' ? 0xd17681 :
+            this.selectedSkill === 'interact' ? 0xd9ba6e : 0x8cb8c8;
           graphics.lineStyle(2, hue, .9);
           graphics.strokeRect(tile.x * CELL + 4, tile.y * CELL + 4, CELL - 8, CELL - 8);
           graphics.fillStyle(hue, .07);
@@ -331,6 +387,7 @@ export class BattleScene extends Phaser.Scene {
       outline.fillRect(-18, 16, Math.max(0, 36 * actor.hp / actor.maxhp), 5);
       const sprite = this.add.image(0, -2, spriteKey).setDisplaySize(36, 36);
       const container = this.add.container(x, y, [outline, sprite]);
+      this.unitsLayer!.add(container);
       if (prev && (prev.x !== actor.x || prev.y !== actor.y) && !reduceMotion) {
         container.setPosition(prev.x * CELL + CELL / 2, prev.y * CELL + CELL / 2);
         this.tweens.add({ targets: container, x, y, duration: 220, ease: 'Sine.easeOut' });
@@ -374,8 +431,8 @@ export class BattleScene extends Phaser.Scene {
 
     const selectedSpell = this.selectedSkill ? SKILLS[this.selectedSkill as keyof typeof SKILLS] : null;
     setText('skillHelp', selectedSpell
-      ? `${selectedSpell.name} · Alcance ${selectedSpell.range} · Mana ${selectedSpell.cost}. ${selectedSpell.desc} Toque em uma casa destacada; obstáculos ainda podem bloquear a ação.`
-      : 'Casas verdes: movimento. Selecione uma habilidade para ver o alcance aproximado. O motor confirma alvos e linha de visão.');
+      ? `${selectedSpell.name} · Alcance ${selectedSpell.range} · Mana ${selectedSpell.cost}. ${selectedSpell.desc} Casas destacadas estão válidas segundo as regras de alvo e visão do motor.`
+      : 'Casas verdes: movimento. Magias destacam apenas alvos atualmente válidos pelo motor.');
 
     const container = document.getElementById('skills');
     if (container) {
@@ -389,6 +446,7 @@ export class BattleScene extends Phaser.Scene {
         button.className = this.selectedSkill === key ? 'active' : '';
         button.disabled = state.phase !== 'player' || !actor || actor.ap <= 0 || actor.mp < skill.cost;
         button.addEventListener('click', () => {
+          this.inspectMode = false;
           this.selectedSkill = this.selectedSkill === key ? null : key;
           this.note = this.selectedSkill ? `Selecione alvo para ${skill.name}` : '';
           this.renderBattle();
@@ -397,6 +455,12 @@ export class BattleScene extends Phaser.Scene {
       }
     }
 
+    const inspectButton = document.getElementById('inspectMode') as HTMLButtonElement | null;
+    if (inspectButton) {
+      inspectButton.disabled = !this.active || state.phase !== 'player';
+      inspectButton.setAttribute('aria-pressed', String(this.inspectMode));
+      inspectButton.textContent = this.inspectMode ? 'SAIR DA INSPEÇÃO' : 'INSPECIONAR CASA / UNIDADE';
+    }
     const endTurn = document.getElementById('endTurn') as HTMLButtonElement | null;
     const nextMission = document.getElementById('nextMission') as HTMLButtonElement | null;
     if (endTurn) endTurn.disabled = state.phase !== 'player';

@@ -164,3 +164,38 @@ test('unmodified legacy v1 save without rngState remains readable', () => {
   delete current.rngState;
   assert.deepEqual(current, legacy);
 });
+
+test('previewSkill shares cast target/line-of-sight gates without spending AP or RNG', () => {
+  const engine = deployed(777);
+  const state = engine.snapshot();
+  const ranger = state.actors.find(a => a.id === 'a1');
+  ranger.x = 5; ranger.y = 8; ranger.mp = 99; ranger.ap = 2;
+  state.actors.find(a => a.id === 'a0').x = 7;
+  state.actors.find(a => a.id === 'a0').y = 8;
+  const enemies = state.actors.filter(a => a.side === 'enemy');
+  enemies.forEach((a, i) => { a.x = i; a.y = 0; });
+  enemies[0].x = 5; enemies[0].y = 5;
+  for (const t of state.board) {
+    if (t.x === 5 && t.y >= 5 && t.y <= 8) { t.base = 'grass'; t.wall = 0; t.fog = 0; }
+  }
+  tile(state.board, 5, 7).base = 'rock';
+  engine.restoreSave(state);
+  const initial = engine.snapshot();
+  assert.deepEqual(engine.previewSkill('a1', 'mark', 5, 5), { allowed: false, reason: 'blocked-sight' });
+  assert.deepEqual(engine.previewSkill('a1', 'mark', 5, 4), { allowed: false, reason: 'invalid-target' });
+  assert.deepEqual(engine.previewSkill('a1', 'fireball', 5, 5), { allowed: false, reason: 'unknown-skill' });
+  assert.deepEqual(engine.previewSkill('a1', 'mark', -1, 0), { allowed: false, reason: 'outside-board' });
+  assert.deepEqual(engine.snapshot(), initial, 'preview does not alter state or RNG');
+  assert.equal(engine.useSkill('a1', 'mark', 5, 5), false);
+  assert.equal(engine.snapshot().actors.find(a => a.id === 'a1').ap, 2);
+
+  const open = engine.snapshot();
+  tile(open.board, 5, 7).base = 'grass';
+  engine.restoreSave(open);
+  const before = engine.snapshot();
+  assert.deepEqual(engine.previewSkill('a1', 'mark', 5, 5), { allowed: true, reason: 'ready' });
+  assert.deepEqual(engine.snapshot(), before, 'valid preview is also read-only');
+  assert.equal(engine.useSkill('a1', 'mark', 5, 5), true);
+  assert.equal(engine.snapshot().actors.find(a => a.id === 'a1').ap, 1);
+  assert.equal(engine.snapshot().casts, before.casts + 1);
+});

@@ -31,18 +31,20 @@ O pacote é compilado para `phaser/dist/`, separado do aplicativo legado. O work
 - **Três opções de upgrade** ao vencer, usando as mesmas opções do jogo original.
 - Tween de deslocamento e feedback de dano, com respeito a preferência por movimento reduzido.
 - **36 sprites pixel-art autorais** de 16×16: 24 texturas de terreno e 12 unidades com silhuetas individuais, registrados em `PixelAtlas.ts`.
-- Prévia de alcance aproximado de habilidades e painel explicativo para mobile; o motor ainda valida os alvos.
+- Prévia **precisa dos alvos legais** de habilidades (alcance, recursos e linha de visão), consultando as mesmas regras do core.
+- Modo **INSPECIONAR** via botão ou atalho `I`, com leitura de terreno, efeitos e unidades sem gastar PA; `Esc` cancela.
+- **144 sprites de terreno em cache**: o renderizador altera suas texturas somente quando os dados mudam, sem reconstruir o mapa em cada clique.
 - Interface responsiva e controles touch para celular.
 
 ## O que ainda falta
 
 - **Assets CC0 de terceiros:** ainda não incorporados. A arte autoral 16×16 já é renderizada, mas pode receber acabamento e substituição posterior por pacotes externos devidamente auditados.
-- Sprites animados reais, efeitos de magia, som, transições e feedback preciso de alcance.
+- Sprites animados reais, efeitos de magia, som, transições e **prévia da área afetada (AOE)**. O alvo inicial já é verificado corretamente.
 - Menus narrativos completos, seleção de upgrade com sprites, créditos e resultados finais.
 - Importação de saves reais da versão Canvas testada com arquivos de usuário, sem afetar o jogo publicado.
 - PWA da versão Phaser, instalação/offline, revisão completa da campanha e QA físico.
 
-Veja o **[roadmap de produção e seus critérios](ROADMAP.md)** para acompanhar o progresso de M1 a M5.
+Veja o **[roadmap de produção e seus critérios](ROADMAP.md)** para acompanhar M1 a M5, e o [guia técnico M3a](../docs/M3_COMBAT_UX.md) para inspeção, cache e alvos precisos.
 
 ## Procedência de free-assets
 
