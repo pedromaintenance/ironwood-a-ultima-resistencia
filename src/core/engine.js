@@ -5,6 +5,7 @@
 import { HEROES, MISSIONS, ENEMIES, SKILLS, UPGRADES } from './data.js';
 import { createSeededRng } from './rng.js';
 import { terrainBlocked as gridBlocked, walkCost as gridCost, reachablePaths, bresenhamLine, lineOfSight, effectiveCover as gridCover } from './navigation.js';
+import { igniteTile, soakTile, freezeTile } from './terrain.js';
 
 export const BOARD_SIZE = 12;
 export const LEGACY_SAVE_KEY = 'ironwood_campaign_v1';
@@ -122,11 +123,11 @@ function coordsArea(x,y,radius,diamond=false){let arr=[];for(let yy=y-radius;yy<
 
 function floodElectric(x,y){let queue=[{x,y}],seen=new Set(),hit=new Set();while(queue.length&&seen.size<70){let p=queue.shift(),k=idx(p.x,p.y);if(seen.has(k))continue;seen.add(k);let t=cell(p.x,p.y);if(!t||!(t.base==='water'||t.wet>0||k===idx(x,y)))continue;t.charge=Math.max(t.charge,2);t.glow=2;let u=unitAt(p.x,p.y);if(u&&!hit.has(u.id)){damage(u,6,'eletricidade');hit.add(u.id);G.stats.shocked++}for(let [dx,dy]of [[1,0],[-1,0],[0,1],[0,-1]])if(at(p.x+dx,p.y+dy))queue.push({x:p.x+dx,y:p.y+dy})}}
 
-function ign(t,n=3){if(!t||t.base==='water'||t.wet>0||t.ice>0){if(t){t.ice=0;t.wet=Math.max(t.wet,2);t.steam=3;t.fire=0}return}t.web=0;t.vines=0;t.thorns=0;t.fire=Math.max(t.fire,n);t.glow=1;G.stats.fires++}
+function ign(t, n = 3) { if (igniteTile(t, n)) G.stats.fires++; }
 
-function soak(t,makePool=false){if(!t)return;let hadFire=t.fire>0;t.fire=0;t.wet=Math.max(t.wet,4);if(hadFire)t.steam=Math.max(t.steam,2);if(makePool&&t.base==='grass')t.base='water'}
+function soak(t, makePool = false) { soakTile(t, makePool); }
 
-function freeze(t){if(!t)return;t.fire=0;t.steam=0;t.ice=Math.max(t.ice,3);if(t.base==='water'||t.wet>0)t.ice=5}
+function freeze(t) { freezeTile(t); }
 
 function clearCorrupt(t){if(!t)return;t.corrupt=0;t.vines=0;if(t.objective==='shrine'&&!t.cleared){t.cleared=true;G.stats.rescued++;log('✦ Um foco de corrupção foi purificado.')}}
 
