@@ -11,6 +11,7 @@ import { missionOutcome } from './objectives.js';
 import { createEnemySystem } from './ai.js';
 import { createSpellSystem } from './spells.js';
 import { createWorldSystem } from './environment.js';
+import { validateLegacySave } from './save.js';
 
 export const BOARD_SIZE = 12;
 export const LEGACY_SAVE_KEY = 'ironwood_campaign_v1';
@@ -280,11 +281,7 @@ function victory(){if(G.phase==='between'||G.phase==='ending')return;G.wins++;lo
     return snapshot();
   }
   function restoreSave(value) {
-    if (!value || value.ver !== 1 || !Array.isArray(value.team) ||
-        value.team.length !== 3 || !Number.isInteger(value.mission) ||
-        value.mission < 0 || value.mission > MISSIONS.length) {
-      throw new TypeError('Invalid v1 save');
-    }
+    validateLegacySave(value);
     G = structuredClone(value);
     selectedTeam = [...G.team];
     prng = createSeededRng(G.seed || 1);
