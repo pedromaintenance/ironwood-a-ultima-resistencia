@@ -26,9 +26,9 @@ jobs:
       - name: Checkout tested Phaser preview independently
         uses: actions/checkout@v4
         with:
-          # Immutable, CI-verified M3b release candidate.
-          # tests/build/browser: https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/actions/runs/38955658327
-          ref: 9ffc702962102c27da66c14bc881a2a859fd1af5
+          # Immutable, CI-verified M3c release candidate.
+          # tests/build/browser: https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/actions/runs/38957047595
+          ref: 32cbfd7bf938aa85068f9623bff974677f49081d
           path: .phaser-build-src
           persist-credentials: false
       - name: Node 22
@@ -37,7 +37,7 @@ jobs:
           node-version: '22'
       - name: Assert exactly the commit tested in CI
         run: |
-          test "$(git -C .phaser-build-src rev-parse HEAD)" = "9ffc702962102c27da66c14bc881a2a859fd1af5"
+          test "$(git -C .phaser-build-src rev-parse HEAD)" = "32cbfd7bf938aa85068f9623bff974677f49081d"
       - name: Verify core regressions
         run: npm test
         working-directory: .phaser-build-src
@@ -54,7 +54,7 @@ jobs:
           test -s phaser-preview/index.html
           test -f index.html
           test -f sw.js
-          printf '%s\n' 'Phaser M3b beta: 9ffc702962102c27da66c14bc881a2a859fd1af5 (CI 38955658327). Canvas main root retained.' > phaser-preview/DEPLOYMENT.txt
+          printf '%s\n' 'Phaser M3c beta: 32cbfd7bf938aa85068f9623bff974677f49081d (CI 38957047595). Canvas main root retained.' > phaser-preview/DEPLOYMENT.txt
       - name: Commit the generated standalone preview to main
         run: |
           git config user.name 'github-actions[bot]'
