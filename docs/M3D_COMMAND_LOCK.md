@@ -1,6 +1,6 @@
 # M3d — Sincronização de comandos e animações
 
-**Situação:** implementado em `feat/phaser-command-lock-m3d`. É um PR dependente da M3c, validado antes de qualquer distribuição no Pages.
+**Situação:** M3d testada e distribuída como beta. Commit de publicação `16c73ea5` aprovado em [24/24 testes de core, build e Chromium](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/actions/runs/38961163306); [workflow de publicação](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/actions/runs/38961411555) executado com sucesso. O PR #16 permanece draft para QA humano e físico.
 
 ## Problema
 
@@ -30,7 +30,7 @@ O painel `#commandStatus` anuncia o estado e explica que seleção/inspeção pe
 - [x] Limpar animações ao voltar ao menu, carregar outro save ou iniciar missão.
 - [x] Expor travamento e comandos descartados para verificação de navegador.
 - [x] Teste Playwright de dois comandos rápidos: o segundo não altera o save, e fim de turno fica desabilitado.
-- [ ] **Gate:** 24 testes headless, build Vite/Phaser e smoke Chromium desktop/mobile aprovados no commit de publicação.
+- [x] **Gate:** 24 testes headless, build Vite/Phaser e smoke Chromium desktop/mobile aprovados no commit de publicação.
 - [ ] Playtest real no Pages: toque rápido, movimento, dano, magia 5×5, save/reload e encerramento de turno.
 - [ ] Validar em Android/iOS físicos (latência de toque, teclado e GPU modestos).
 
