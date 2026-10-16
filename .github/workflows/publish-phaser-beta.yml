@@ -1,13 +1,15 @@
 name: Publish Phaser beta alongside legacy Pages
 
 on:
-  push:
-    branches: [main]
-    paths: ['.github/workflows/publish-phaser-beta.yml']
+  workflow_run:
+    workflows: ['Ironwood Phaser preview']
+    types: [completed]
+    branches: ['feat/phaser-render-cache-m3f']
   workflow_dispatch:
 
 permissions:
   contents: write
+  actions: read
 
 concurrency:
   group: ironwood-pages-beta-publish
@@ -15,6 +17,9 @@ concurrency:
 
 jobs:
   publish-beta:
+    # Only an approved immutable candidate CI may publish. A failed, cancelled
+    # or newer unreviewed source run cannot overwrite the current beta.
+    if: ${{ github.event_name == 'workflow_dispatch' || (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.id == 38966907392 && github.event.workflow_run.head_sha == 'ca46fe5b8f793dcbc2e2f563aaa22d83c9e491dc' && github.event.workflow_run.head_repository.full_name == 'pedromaintenance/ironwood-a-ultima-resistencia') }}
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -23,12 +28,18 @@ jobs:
         with:
           ref: main
           persist-credentials: true
+      - name: Require completed green CI for the exact M3f candidate
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          conclusion="$(gh api repos/${{ github.repository }}/actions/runs/38966907392 --jq '.conclusion')"
+          test "$conclusion" = success
       - name: Checkout tested Phaser preview independently
         uses: actions/checkout@v4
         with:
-          # Immutable, CI-verified M3e release candidate.
-          # tests/build/browser: https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/actions/runs/38964097106
-          ref: fd27434a4112d3edd84456e31e6d85e12e5eca5b
+          # Immutable, CI-verified M3f release candidate.
+          # tests/build/browser: https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/actions/runs/38966907392
+          ref: ca46fe5b8f793dcbc2e2f563aaa22d83c9e491dc
           path: .phaser-build-src
           persist-credentials: false
       - name: Node 22
@@ -37,7 +48,7 @@ jobs:
           node-version: '22'
       - name: Assert exactly the commit tested in CI
         run: |
-          test "$(git -C .phaser-build-src rev-parse HEAD)" = "fd27434a4112d3edd84456e31e6d85e12e5eca5b"
+          test "$(git -C .phaser-build-src rev-parse HEAD)" = "ca46fe5b8f793dcbc2e2f563aaa22d83c9e491dc"
       - name: Verify core regressions
         run: npm test
         working-directory: .phaser-build-src
@@ -54,7 +65,7 @@ jobs:
           test -s phaser-preview/index.html
           test -f index.html
           test -f sw.js
-          printf '%s\n' 'Phaser M3e beta: fd27434a4112d3edd84456e31e6d85e12e5eca5b (CI 38964097106). Canvas main root retained.' > phaser-preview/DEPLOYMENT.txt
+          printf '%s\n' 'Phaser M3f beta: ca46fe5b8f793dcbc2e2f563aaa22d83c9e491dc (CI 38966907392). Canvas main root retained.' > phaser-preview/DEPLOYMENT.txt
       - name: Commit the generated standalone preview to main
         run: |
           git config user.name 'github-actions[bot]'
@@ -64,7 +75,7 @@ jobs:
             echo 'Published preview is already up to date.'
             exit 0
           fi
-          git commit -m 'build(pages): publish tested M3e beta under phaser-preview'
+          git commit -m 'build(pages): publish tested M3f beta under phaser-preview'
           git pull --rebase origin main
           git push origin HEAD:main
       - name: Note preview path
