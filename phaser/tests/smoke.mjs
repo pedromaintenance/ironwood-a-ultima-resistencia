@@ -31,7 +31,10 @@ try {
   await page.screenshot({ path: 'artifacts/preview/01-battle.png', fullPage: true });
 
   // Inspection must not move actors, spend AP, advance RNG or overwrite saves.
-  assert.equal(await page.locator('#game').getAttribute('data-terrain-objects'), '144');
+  assert.equal(await page.locator('#game').getAttribute('data-unit-objects'), '7');
+  const initialAllocations = Number(await page.locator('#game').getAttribute('data-unit-allocations'));
+  assert.equal(initialAllocations, 7, 'first mission creates exactly 3 allies and 4 enemies');
+    assert.equal(await page.locator('#game').getAttribute('data-terrain-objects'), '144');
   const tilesBefore = Number(await page.locator('#game').getAttribute('data-terrain-updates'));
   const saveBeforeInspect = await page.evaluate(() => localStorage.getItem('ironwood_phaser_preview_v1'));
   await page.locator('#inspectMode').click();
@@ -42,15 +45,25 @@ try {
   await page.locator('#inspectMode').click();
   assert.equal(await page.locator('#inspectMode').getAttribute('aria-pressed'), 'false');
   assert.equal(Number(await page.locator('#game').getAttribute('data-terrain-updates')), tilesBefore);
+  assert.equal(Number(await page.locator('#game').getAttribute('data-unit-allocations')), initialAllocations,
+    'inspect mode must not allocate replacement sprites');
 
   await canvas.click({ position: await cell(canvas, 3, 10) });
   assert.equal(await page.locator('#game').getAttribute('data-terrain-objects'), '144');
   assert.equal(Number(await page.locator('#game').getAttribute('data-terrain-updates')), tilesBefore);
   assert.match(await page.locator('#unitStats').innerText(), /PA 1\/2/);
   assert.match(await page.locator('#battleLog').innerText(), /avança pela floresta/);
+  assert.equal(Number(await page.locator('#game').getAttribute('data-unit-allocations')), initialAllocations,
+    'moving existing actors must reuse the same sprite containers');
+  // Rerender for another selected ally also must keep exactly the same objects.
+  await canvas.click({ position: await cell(canvas, 5, 10) });
+  assert.equal(Number(await page.locator('#game').getAttribute('data-unit-allocations')), initialAllocations);
+  assert.equal(await page.locator('#game').getAttribute('data-unit-objects'), '7');
 
   await page.locator('#endTurn').click();
   assert.match(await page.locator('#phaseStatus').innerText(), /Rodada 2/);
+  assert.ok(Number(await page.locator('#game').getAttribute('data-unit-allocations')) >= initialAllocations,
+    'new spawned enemies may allocate sprites, existing sprites stay pooled');
   await page.screenshot({ path: 'artifacts/preview/02-round-2.png', fullPage: true });
 
   await page.locator('#restart').click();
@@ -161,7 +174,7 @@ try {
   assert.match(await page.locator('#battleLog').innerText(), /Bola de Fogo/);
 
   assert.deepEqual(errors, [], 'Phaser should not throw browser errors');
-  console.log('PASS: core parity, cached 144 tiles, inspection, lobby, combat, saves and mobile touch');
+  console.log('PASS: core parity, cached 144 tiles, pooled units, inspection, AOE double-tap, saves and mobile touch');
 } finally {
   await browser.close();
 }
