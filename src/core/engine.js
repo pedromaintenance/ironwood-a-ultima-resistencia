@@ -4,6 +4,7 @@
 // Next refactor: split combat/terrain/AI modules behind this stable facade.
 import { HEROES, MISSIONS, ENEMIES, SKILLS, UPGRADES } from './data.js';
 import { createSeededRng } from './rng.js';
+import { terrainBlocked as gridBlocked, walkCost as gridCost, reachablePaths, bresenhamLine, lineOfSight, effectiveCover as gridCover } from './navigation.js';
 
 export const BOARD_SIZE = 12;
 export const LEGACY_SAVE_KEY = 'ironwood_campaign_v1';
@@ -93,19 +94,19 @@ function getSelected(){let u=G?.actors?.find(a=>a.id===G.selected);return u?.hp>
 
 function chooseHero(a){if(a.side!=='ally'||a.hp<=0)return;G.selected=a.id;mode='move';pendingSkill=null;render()}
 
-function terrainBlocked(t){return!t||t.wall>0||t.base==='tree'||t.base==='rock'}
+function terrainBlocked(t) { return gridBlocked(t); }
 
 function occupied(x,y,except){return living().some(a=>a.id!==except&&a.x===x&&a.y===y)}
 
-function walkCost(t){return(t.base==='water'||t.base==='bush'||t.vines>0||t.web>0||t.thorns>0||t.ice>0)?2:1}
+function walkCost(t) { return gridCost(t); }
 
-function pathsFrom(a){let best=new Map([[idx(a.x,a.y),{cost:0,path:[]}]]),todo=[{x:a.x,y:a.y,cost:0,path:[]}];while(todo.length){todo.sort((u,v)=>u.cost-v.cost);let q=todo.shift();if(q.cost> (best.get(idx(q.x,q.y))?.cost??Infinity))continue;for(let [dx,dy]of [[1,0],[-1,0],[0,1],[0,-1]]){let x=q.x+dx,y=q.y+dy,t=cell(x,y);if(!t||terrainBlocked(t)||occupied(x,y,a.id))continue;let cost=q.cost+walkCost(t);if(cost>a.move-(a.slowed?1:0))continue;let k=idx(x,y);if(!best.has(k)||best.get(k).cost>cost){let path=[...q.path,{x,y}];best.set(k,{cost,path});todo.push({x,y,cost,path})}}}best.delete(idx(a.x,a.y));return best}
+function pathsFrom(a) { return reachablePaths(G.board, G.actors, a, N); }
 
-function bresenham(ax,ay,bx,by){let out=[],dx=Math.abs(bx-ax),dy=Math.abs(by-ay),sx=ax<bx?1:-1,sy=ay<by?1:-1,e=dx-dy;for(;;){out.push({x:ax,y:ay});if(ax===bx&&ay===by)break;let e2=e*2;if(e2>-dy){e-=dy;ax+=sx}if(e2<dx){e+=dx;ay+=sy}}return out}
+function bresenham(ax, ay, bx, by) { return bresenhamLine(ax, ay, bx, by); }
 
-function los(a,b,ignoreCover=false){let line=bresenham(a.x,a.y,b.x,b.y);for(let j=1;j<line.length-1;j++){let t=cell(line[j].x,line[j].y);if(!t)continue;if((t.base==='tree'||t.base==='rock'||t.wall>0)&&!ignoreCover)return false;if(t.fog>0||t.steam>0)return false}return true}
+function los(a, b, ignoreCover = false) { return lineOfSight(G.board, a, b, ignoreCover, N); }
 
-function effectiveCover(t){if(!t)return 0;return(t.base==='bush'?2:0)+(t.base==='rock'?3:0)+(t.base==='tree'?3:0)+(t.fog>0?2:0)}
+function effectiveCover(t) { return gridCover(t); }
 
 function aimTest(a,b,ignoreCover=false){const t=cell(b.x,b.y),cover=b.marked?0:effectiveCover(t);return dice(20)+a.aim+(a.bless?2:0)>=9+b.armor+(ignoreCover?0:cover)}
 
