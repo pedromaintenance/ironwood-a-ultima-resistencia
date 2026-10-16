@@ -6,6 +6,17 @@
 **Planejamento:** 15/10/2026  
 **Estado:** execução sequencial; não substituir o jogo publicado antes de validar a nova versão.
 
+## Painel de execução (15/10/2026)
+
+| Fase | Situação | Evidência |
+|---|---|---|
+| Fase 0 — Preservação e baseline | Testes estáticos e smoke mobile emulado concluídos; homologação manual/física pendente | [PR #3](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/pull/3) · [Issue #2](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/issues/2) |
+| Fase 1 — Motor independente | **Em desenvolvimento**: engine sem DOM, RNG reproduzível, navegação e terreno modularizados; testes diferenciais aprovados | [PR #5](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/pull/5) · [Issue #4](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/issues/4) · [CI](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/actions/runs/38834055027) |
+| Fase 2 — Primeira batalha Phaser | Não iniciada | Aguardando Gate G1 |
+| Fases 3–8 | Não iniciadas | Avançar sequencialmente |
+
+**Política:** não incorporar a nova interface à `main` antes de paridade aprovada. Os PRs permanecem em rascunho enquanto os respectivos critérios não forem atendidos.
+
 ## 1. Objetivo
 
 Migrar Ironwood de Canvas 2D artesanal para **Phaser + TypeScript + Vite**, preservando o sistema de combate por turnos e a operação offline (PWA). A floresta continua sendo a mecânica central: clima, fogo, água, gelo, teias, raízes, névoa, eletricidade e corrupção devem continuar interagindo com combate, caminhos e objetivos.
