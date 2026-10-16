@@ -28,6 +28,11 @@ try {
   await canvas.waitFor({ state: 'visible', timeout: 15000 });
   assert.match(await page.locator('#missionTitle').innerText(), /A Trilha Fechada/);
   assert.match(await page.locator('#phaseStatus').innerText(), /Rodada 1/);
+  await page.waitForFunction(() => {
+    const sample = Number(document.querySelector('#game')?.getAttribute('data-render-fps'));
+    return Number.isFinite(sample) && sample > 0 && sample < 500;
+  }, null, { timeout: 15000 });
+  assert.match(await page.locator('#fpsReadout').textContent(), /FPS aproximado/);
   await page.screenshot({ path: 'artifacts/preview/01-battle.png', fullPage: true });
   const initialOverlayDraws = Number(await page.locator('#game').getAttribute('data-overlay-draws'));
   const initialLogBuilds = Number(await page.locator('#battleLog').getAttribute('data-builds'));
