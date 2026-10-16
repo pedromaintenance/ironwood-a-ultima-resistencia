@@ -1,6 +1,6 @@
 # Roadmap executivo — Ironwood Phaser
 
-**Atualização:** 16 de outubro de 2026 — M3d em validação; M3c publicada como beta no Pages  
+**Atualização:** 16 de outubro de 2026 — M3d aprovada no CI e distribuída como beta no Pages  
 **Jogo público:** `main` continua executando o Canvas legado.  
 **Ramo da prévia:** `feat/phaser-impact-preview-m3b` ([PR #13](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/pull/13)); publicação pública independente compilada do commit `9ffc7029`.  
 **Roadmap do projeto inteiro:** [ROADMAP_IRONWOOD_PHASER.md](../ROADMAP_IRONWOOD_PHASER.md) (versão canônica publicada em `main`).
@@ -92,14 +92,16 @@ Este roteiro diferencia funcionalidades **implementadas**, **validadas em CI**, 
 
 **Aceite parcial:** evita recriação de contêineres de aliados/inimigos vivos em ações normais, com identidade de sprites persistente. Ainda há recálculo das sobreposições e construção dos botões do HUD. [Especificação M3c](../docs/M3C_RENDER_POOL.md).
 
-### M3d — Trava de comandos enquanto o Phaser anima (implementado; CI em validação)
+### M3d — Trava de comandos enquanto o Phaser anima (**CI aprovado e beta publicado**)
 - [x] Rastrear movimentos e efeitos de dano em `motionTweens`; bloquear comandos mutantes sem usar relógios nem alterar a engine.
 - [x] Desabilitar **ENCERRAR TURNO** durante tween, com verificação também no handler.
 - [x] Permitir inspeção, seleção, hover de mira e cancelamento durante a animação.
 - [x] Expor `data-input-locked`, `data-ignored-commands` e texto **ANIMANDO/PRONTO** acessível no celular.
 - [x] Cancelar tweens pendentes quando mudar de campanha/voltar ao menu.
 - [x] Teste Playwright de comando rápido duplicado sem alteração do save e trava do botão de turno.
-- [ ] Obter CI verde completo no commit de publicação, atualizar Pages e revisar resultados em aparelho físico.
+- [x] CI **24/24 testes**, build e Chromium desktop/mobile verdes no commit `16c73ea5` ([execução](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/actions/runs/38961163306)).
+- [x] [Workflow de publicação da M3d](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/actions/runs/38961411555) aprovou o SHA e compilou a prévia em `main/phaser-preview/`.
+- [ ] Revisar resultado em dispositivo físico, incluindo toques rápidos e botão de turno.
 
 **Aceite parcial:** não há fila de comandos; entradas mutantes são **recusadas** durante animações, para impedir aplicar ordens baseadas em posições desatualizadas. O motor determinístico e o save continuam sendo as fontes de verdade. [Detalhamento M3d](../docs/M3D_COMMAND_LOCK.md).
 
