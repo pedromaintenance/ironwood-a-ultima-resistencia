@@ -73,12 +73,20 @@ bash, guard, cleave, rally, mark, volley, snare, camouflage, firebolt, fireball,
 3. A `seed` salva não reproduz o tabuleiro porque o código ainda usa `Math.random()`.
 4. A lógica tática, os toasts, o salvamento e a renderização compartilham variáveis globais/DOM em `app.js`, exigindo extração cuidadosa.
 
-## Validação prática — ainda pendente
+## Evidência automatizada da Fase 0
 
-- [ ] Abrir o jogo original em desktop e capturar menu/equipe/combate/resultado.
-- [ ] Concluir missão 1, verificando objetivo, vitória e salvamento.
-- [ ] Exportar save **de teste**, anonimizado, como fixture de compatibilidade.
-- [ ] Validar partida por toque em celular e modo offline.
-- [ ] Rodar a matriz em [REGRESSION_CASES.md](REGRESSION_CASES.md).
+- [x] Testes estáticos do contrato legado executados com sucesso em [GitHub Actions](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/actions/runs/38832555332).
+- [x] [Smoke test em Chromium mobile emulado](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/actions/runs/38832810446) passou, com capturas de menu, seleção de equipe, combate e resultado.
+- [x] Movimento de (2,10) para (3,10), consumo de PA e avanço para rodada 2 foram testados no navegador.
+- [x] Exportação de save `ver:1` e retomada da batalha foram verificadas; save sintético está armazenado como artifact do CI.
+- [x] Recarregamento offline com Service Worker foi aprovado no Chromium **emulado**.
+- [x] Evidências arquivadas no artifact [baseline-mobile-evidence](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/actions/runs/38832810446) (capturas e `save-v1-teste.json`).
 
-**Gate G0:** a documentação está pronta; os itens de execução visual/manual acima precisam ser confirmados antes de declarar o baseline totalmente homologado.
+### Limites da evidência
+
+- [ ] Concluir a missão 1 por combate normal. O smoke atual aciona uma **vitória forçada de teste** após verificar movimento/turno, não simula a derrota real de todos os inimigos.
+- [ ] Validar o funcionamento em **celular físico** e instalação PWA fora do Chromium emulado.
+- [ ] Exercitar importação de save pelo seletor de arquivo, além da exportação testada.
+- [ ] Registrar resultados da matriz completa de [REGRESSION_CASES.md](REGRESSION_CASES.md) durante as próximas fases.
+
+**Gate G0:** baseline estático e smoke de navegador aprovados; homologação integral ainda depende dos itens pendentes acima. Não iniciar merge na `main` com alegação de validação total.
