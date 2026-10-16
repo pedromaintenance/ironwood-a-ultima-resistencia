@@ -237,6 +237,7 @@ export class BattleScene extends Phaser.Scene {
 
   private showLobby(): void {
     this.active = false;
+    for (const tween of this.motionTweens) tween.stop();
     this.motionTweens.clear();
     this.showCommandState();
     this.selectedSkill = null;
