@@ -28,6 +28,14 @@ type Tile = {
   objective: string; cleared: boolean;
 };
 
+type ActorView = {
+  container: Phaser.GameObjects.Container;
+  frame: Phaser.GameObjects.Graphics;
+  sprite: Phaser.GameObjects.Image;
+  kind: string;
+  x: number; y: number; hp: number;
+};
+
 export class BattleScene extends Phaser.Scene {
   private engine = createIronwoodEngine({ seed: 20261015 });
   private selected = 'a0';
@@ -35,8 +43,8 @@ export class BattleScene extends Phaser.Scene {
   private note = '';
   private team = ['guardian', 'ranger', 'druid'];
   private active = false;
-  private lastPositions = new Map<string, { x: number; y: number }>();
-  private lastHealth = new Map<string, number>();
+  private actorViews = new Map<string, ActorView>();
+  private actorAllocations = 0;
   private inspectMode = false;
   private terrainSprites: Phaser.GameObjects.Image[] = [];
   private worldOverlay: Phaser.GameObjects.Graphics | null = null;
@@ -218,8 +226,7 @@ export class BattleScene extends Phaser.Scene {
       candidate.deployMission();
     }
     this.engine = candidate;
-    this.lastPositions.clear();
-    this.lastHealth.clear();
+    this.resetActorViews();
     this.active = true;
     this.selected = candidate.snapshot().selected || 'a0';
     this.selectedSkill = null;
@@ -348,6 +355,18 @@ export class BattleScene extends Phaser.Scene {
     if (node) node.textContent = text;
   }
 
+  // Reset only on a different campaign or mission. In a normal render the
+  // existing sprite and container retain their identity and running tweens.
+  private resetActorViews(): void {
+    for (const view of this.actorViews.values()) {
+      this.tweens.killTweensOf(view.container);
+      view.container.destroy();
+    }
+    this.actorViews.clear();
+    const game = document.getElementById('game');
+    if (game) game.dataset.unitObjects = '0';
+  }
+
   private renderBattle(): void {
     const state = this.engine.snapshot();
     if (!state?.board) return;
@@ -382,8 +401,7 @@ export class BattleScene extends Phaser.Scene {
     if (game) game.dataset.terrainUpdates = String(this.terrainUpdates);
     const graphics = this.worldOverlay!;
     graphics.clear();
-    for (const child of this.unitsLayer!.list) this.tweens.killTweensOf(child);
-    this.unitsLayer!.removeAll(true);
+    // Unit containers persist. Only disappeared actors are removed after sync.
     for (const tile of state.board as Tile[]) {
       const left = tile.x * CELL, top = tile.y * CELL;
       if (tile.web > 0) {
@@ -441,40 +459,59 @@ export class BattleScene extends Phaser.Scene {
       if (actor.hp <= 0) continue;
       liveIds.add(actor.id);
       const x = actor.x * CELL + CELL / 2, y = actor.y * CELL + CELL / 2;
-      const prev = this.lastPositions.get(actor.id);
       const spriteKey = `ironwood-unit-${actor.kind}`;
-      const outline = this.add.graphics();
-      outline.fillStyle(actor.side === 'ally' ? 0x1b4235 : 0x542a39, .9);
-      outline.fillRect(-19, -19, 38, 38);
-      outline.lineStyle(actor.id === this.selected ? 3 : 1,
-        actor.id === this.selected ? 0xfce0a6 : actor.side === 'ally' ? 0x71977b : 0xae6d72);
-      outline.strokeRect(-19, -19, 38, 38);
-      outline.fillStyle(0x101a1b, 1);
-      outline.fillRect(-18, 16, 36, 5);
-      outline.fillStyle(actor.side === 'ally' ? 0x8cbd99 : 0xc46f76, 1);
-      outline.fillRect(-18, 16, Math.max(0, 36 * actor.hp / actor.maxhp), 5);
-      const sprite = this.add.image(0, -2, spriteKey).setDisplaySize(36, 36);
-      const container = this.add.container(x, y, [outline, sprite]);
-      this.unitsLayer!.add(container);
-      if (prev && (prev.x !== actor.x || prev.y !== actor.y) && !reduceMotion) {
-        container.setPosition(prev.x * CELL + CELL / 2, prev.y * CELL + CELL / 2);
-        this.tweens.add({ targets: container, x, y, duration: 220, ease: 'Sine.easeOut' });
+      let view = this.actorViews.get(actor.id);
+      if (!view) {
+        const frame = this.add.graphics();
+        const sprite = this.add.image(0, -2, spriteKey).setDisplaySize(36, 36);
+        const container = this.add.container(x, y, [frame, sprite]);
+        this.unitsLayer!.add(container);
+        view = { frame, sprite, container, kind: actor.kind, x: actor.x, y: actor.y, hp: actor.hp };
+        this.actorViews.set(actor.id, view);
+        this.actorAllocations++;
       }
-
-      const lastHp = this.lastHealth.get(actor.id);
-      if (lastHp !== undefined && lastHp > actor.hp && !reduceMotion) {
-        this.tweens.add({
-          targets: container, alpha: .42, duration: 85, yoyo: true, repeat: 2,
+      if (view.kind !== actor.kind) {
+        view.sprite.setTexture(spriteKey);
+        view.kind = actor.kind;
+      }
+      const frame = view.frame;
+      frame.clear();
+      frame.fillStyle(actor.side === 'ally' ? 0x1b4235 : 0x542a39, .9);
+      frame.fillRect(-19, -19, 38, 38);
+      frame.lineStyle(actor.id === this.selected ? 3 : 1,
+        actor.id === this.selected ? 0xfce0a6 : actor.side === 'ally' ? 0x71977b : 0xae6d72);
+      frame.strokeRect(-19, -19, 38, 38);
+      frame.fillStyle(0x101a1b, 1);
+      frame.fillRect(-18, 16, 36, 5);
+      frame.fillStyle(actor.side === 'ally' ? 0x8cbd99 : 0xc46f76, 1);
+      frame.fillRect(-18, 16, Math.max(0, 36 * actor.hp / Math.max(1, actor.maxhp)), 5);
+      if (view.x !== actor.x || view.y !== actor.y) {
+        this.tweens.killTweensOf(view.container);
+        if (reduceMotion) view.container.setPosition(x, y);
+        else this.tweens.add({
+          targets: view.container, x, y, duration: 220, ease: 'Sine.easeOut',
         });
       }
-      this.lastPositions.set(actor.id, { x: actor.x, y: actor.y });
-      this.lastHealth.set(actor.id, actor.hp);
-    }
-    for (const id of this.lastPositions.keys()) {
-      if (!liveIds.has(id)) {
-        this.lastPositions.delete(id);
-        this.lastHealth.delete(id);
+      if (view.hp > actor.hp && !reduceMotion) {
+        // Keep the very same container alive for the damage tween.
+        this.tweens.add({
+          targets: view.container, alpha: .42, duration: 85, yoyo: true, repeat: 2,
+        });
       }
+      view.x = actor.x;
+      view.y = actor.y;
+      view.hp = actor.hp;
+    }
+    for (const [id, view] of this.actorViews) {
+      if (liveIds.has(id)) continue;
+      this.tweens.killTweensOf(view.container);
+      view.container.destroy();
+      this.actorViews.delete(id);
+    }
+    const unitCounter = document.getElementById('game');
+    if (unitCounter) {
+      unitCounter.dataset.unitObjects = String(this.actorViews.size);
+      unitCounter.dataset.unitAllocations = String(this.actorAllocations);
     }
 
     this.drawHud(state, selectedActor);
@@ -551,6 +588,7 @@ export class BattleScene extends Phaser.Scene {
           button.addEventListener('click', () => {
             this.engine.advanceMission(upgrade.id);
             this.engine.deployMission();
+            this.resetActorViews();
             this.selected = 'a0';
             this.selectedSkill = null;
             this.note = '';
