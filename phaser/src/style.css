@@ -40,3 +40,6 @@
 .playtestGuide p{margin:8px 0}
 .playtestGuide a{color:#c6dea2;text-decoration:underline}
 .playtestGuide a:focus-visible,.playtestGuide summary:focus-visible{outline:2px solid #ebcb7d;outline-offset:3px}
+
+.commandStatus{font:700 12px/1.45 system-ui,sans-serif;margin:8px auto;padding:7px 10px;max-width:480px;border-left:3px solid #b9af87;background:#1c2927;color:#f0e4c5}
+#game[data-input-locked="true"]+.helper+.commandStatus{border-left-color:#edb56a;color:#ffe1a7}
