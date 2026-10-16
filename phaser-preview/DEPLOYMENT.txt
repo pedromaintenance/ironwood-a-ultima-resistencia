@@ -1,1 +1,1 @@
-Phaser beta from feat/phaser-combat-ux-m3. Canvas main root retained.
+Phaser M3b beta: 9ffc702962102c27da66c14bc881a2a859fd1af5 (CI 38955658327). Canvas main root retained.
