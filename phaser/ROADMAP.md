@@ -1,6 +1,6 @@
 # Roadmap executivo — Ironwood Phaser
 
-**Atualização:** 16 de outubro de 2026 — M3g em validação; M3f já publicada como compilado no Pages  
+**Atualização:** 16 de outubro de 2026 — M3g validada em CI (25/25) e compilada no Pages; QA físico pendente  
 **Jogo público:** `main` continua executando o Canvas legado.  
 **Ramo da prévia:** `feat/phaser-impact-preview-m3b` ([PR #13](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/pull/13)); publicação pública independente compilada do commit `9ffc7029`.  
 **Roadmap do projeto inteiro:** [ROADMAP_IRONWOOD_PHASER.md](../ROADMAP_IRONWOOD_PHASER.md) (versão canônica publicada em `main`).
@@ -130,14 +130,15 @@ Este roteiro diferencia funcionalidades **implementadas**, **validadas em CI**, 
 
 **Limite do incremento:** a assinatura ainda percorre o estado para detectar mudanças. Redução de operações Graphics/DOM não equivale a FPS aferido em dispositivo físico. [Guia M3f](../docs/M3F_RENDER_CACHE.md).
 
-### M3g — Objetivos vivos e transição missão 1 → 2 (**implementado, validação em andamento**)
+### M3g — Objetivos vivos e transição missão 1 → 2 (**25/25 testes, build e beta publicados**)
 - [x] Compartilhar interpretação das sete modalidades de objetivo com `missionOutcome()` por uma função pura `missionProgress()`.
 - [x] Exibir ato, número da operação, meta, andamento numérico e barra acessível de progresso durante a batalha.
 - [x] Comunicar vitória/derrota com mensagem contextual e atualizar meta na mudança de missão.
 - [x] Teste de core para eliminação, resgate, totens, seis rodadas, purificação, marcos e chefe sem mutação.
 - [x] Smoke Chromium com importação de save válido próximo da vitória, ação real que conclui a missão, escolha de melhoria e início da missão 2.
-- [ ] CI 24+ testes, compilação Phaser e Playwright desktop/mobile verde.
-- [ ] Publicar novo beta com SHA aprovado e testar no Pages.
+- [x] **25/25 testes**, Vite/Phaser e smoke Chromium desktop/mobile aprovados no SHA `bfffb911` ([execução](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/actions/runs/38969025016)).
+- [x] [Publicação de beta M3g](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/actions/runs/38969342926) aprovou o SHA e gravou o build em `main/phaser-preview/`.
+- [ ] QA humano da beta em dispositivo físico e conclusão das oito missões.
 - [ ] Jogar a missão 1 por inteiro sem fixture; avançar até a missão 8 e os três finais.
 
 **Limite:** teste de transição usa fixture próxima da vitória, não a resolução humana de todo o combate. [Guia técnico M3g](../docs/M3G_MISSION_GOALS.md).
