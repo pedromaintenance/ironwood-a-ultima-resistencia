@@ -20,6 +20,8 @@ try {
   assert.equal(await page.locator('#teamCount').innerText(), '3/3');
   await page.locator('#startCampaign').click();
   assert.equal(await page.locator('#lobby').isHidden(), true);
+  assert.equal(await page.locator('#game').getAttribute('data-art'), 'original-16px-pixel-atlas');
+  assert.equal(await page.locator('#game').getAttribute('data-textures'), '36');
   const canvas = page.locator('#game canvas');
   await canvas.waitFor({ state: 'visible', timeout: 15000 });
   assert.match(await page.locator('#missionTitle').innerText(), /A Trilha Fechada/);
