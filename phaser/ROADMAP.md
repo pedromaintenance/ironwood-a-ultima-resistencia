@@ -1,8 +1,8 @@
 # Roadmap executivo — Ironwood Phaser
 
-**Atualização:** 16 de outubro de 2026 — marco M3a  
+**Atualização:** 16 de outubro de 2026 — M3b aprovada no CI, beta distribuído no Pages  
 **Jogo público:** `main` continua executando o Canvas legado.  
-**Ramo da prévia:** `feat/phaser-pixel-art-m2` (baseado em `feat/phaser-battle-preview`), com PR dependente [#7](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/pull/7).  
+**Ramo da prévia:** `feat/phaser-impact-preview-m3b` ([PR #13](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/pull/13)); publicação pública independente compilada do commit `9ffc7029`.  
 **Roadmap do projeto inteiro:** [ROADMAP_IRONWOOD_PHASER.md](../ROADMAP_IRONWOOD_PHASER.md) (versão canônica publicada em `main`).
 
 Este roteiro diferencia funcionalidades **implementadas**, **validadas em CI**, **em revisão** e **ainda planejadas**. Os testes automatizados não substituem o playthrough humano em aparelho físico.
@@ -24,7 +24,8 @@ Este roteiro diferencia funcionalidades **implementadas**, **validadas em CI**, 
 | Pixel-art original | **36 sprites/texturas 16×16 gerados localmente; teste Chromium aprovado** | `phaser/src/PixelAtlas.ts`, [guia artístico](../docs/PIXEL_ART_M2.md) | Refinar desenho, contraste e animações |
 | Free-assets de terceiros | Nenhum arquivo externo incorporado; CC0 Kenney apenas candidato | [Manifest](../docs/assets-manifest.json), [Kenney Roguelike/RPG](https://kenney.nl/assets/roguelike-rpg-pack) | Baixar, inspecionar, selecionar, incorporar e registrar arquivos CC0 |
 | Renderer incremental | M3a concluído parcialmente | 144 sprites estáticos reutilizados; layers separados para terreno/efeitos/unidades | Pool de unidades, culling e profiling físico |
-| PWA e publicação | Não iniciada no Phaser | Legado mantém PWA atual | SW, manifest, instalação e offline do Vite |
+| Publicação de beta no Pages | **M3b distribuída** em `/phaser-preview/`, sem substituir Canvas | [Jogar no Pages](https://pedromaintenance.github.io/ironwood-a-ultima-resistencia/phaser-preview/), [CI M3b](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/actions/runs/38955658327) | QA físico e acessibilidade |
+| PWA offline independente | Ainda não iniciada no Phaser | Legado mantém PWA atual; SW Canvas exclui a prévia de seu cache | SW próprio, web manifest, botão instalar e validação offline |
 
 ## Sequência de trabalho — próximos PRs
 
@@ -58,7 +59,7 @@ Este roteiro diferencia funcionalidades **implementadas**, **validadas em CI**, 
 
 **Aceite:** toda arte incorporada tem origem documentada, é carregada localmente e é legível no celular; nenhum pacote externo sem licença auditada. **Gate parcial:** arte autoral e renderização passaram no CI; revisão visual humana e assets externos continuam pendentes.
 
-### M3 — Combate legível e input robusto (**M3a publicado como beta; M3b implementado na branch de desenvolvimento**)
+### M3 — Combate legível e input robusto (**M3a e M3b disponíveis para playtest**)
 - [x] **M3a:** `previewSkill` no core consulta as mesmas verificações de alvo e linha de visão da magia executada; sem gastar PA/mana/RNG.
 - [x] **M3a:** destacar apenas casas legalmente selecionáveis; mostrar nome, mana, alcance e descrição no celular.
 - [x] **M3a:** botão INSPECIONAR e atalho `I`, cancelamento por `Esc`, relatório de terreno, efeitos, objetivos e personagens; inspeção não consome turno.
@@ -69,12 +70,13 @@ Este roteiro diferencia funcionalidades **implementadas**, **validadas em CI**, 
 - [x] **M3b:** pré-visualizar a geometria **inicial** afetada (3×3, 5×5, linhas, paredes e rajadas) ao mirar, sem consumo de RNG. *A propagação secundária de fogo/eletricidade é condicional e ainda não previsível*.
 - [x] **M3b:** avisar quando aliados estão na área de dano e exigir **segundo toque de confirmação** para magias de área ofensivas.
 - [x] **M3b:** adicionar testes de AOE 5×5, bordas do mapa, risco a aliados e imutabilidade do estado, além de smoke de duplo toque.
-- [ ] **M3b:** validar o commit final no CI e revisar screenshots desktop/mobile, antes de integrar ao beta público.
+- [x] **M3b:** CI do build + teste headless 24/24 + Chromium desktop/mobile aprovado no commit `9ffc7029` ([execução](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/actions/runs/38955658327)).
+- [x] **M3b:** versão identificada, guia de playtest e link de reporte de bugs na própria página; arquivos compilados enviados para `main/phaser-preview/` ([publicação](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/actions/runs/38955934746)).
 - [ ] **M3b:** fila de ações durante tweens, hit/miss, objetivos, sprites de unidades em pool e feedback de custos.
 - [ ] **M3b:** acessibilidade com anúncios descritivos, teclado completo, tablet, física de render e benchmark FPS/memória.
 - [ ] Testar uma missão integral sem atalhos de QA, em Android/iOS físico.
 
-**Aceite parcial:** motor e Phaser passaram em testes unitários/de paridade e smoke; o cache de terreno é real, porém o renderer **ainda recria unidades e overlays a cada ação**. A visualização de alvo e da **área geométrica inicial** existe. A propagação ambiental e danos finais continuam sendo resolvidos pelo motor no momento da ação. [Guia técnico M3a](../docs/M3_COMBAT_UX.md).
+**Aceite parcial:** M3b passou em 24 testes de core/paridade, build e smoke Chromium (incluindo a mira e confirmação). o cache de terreno é real, porém o renderer **ainda recria unidades e overlays a cada ação**. A visualização de alvo e da **área geométrica inicial** existe. A propagação ambiental e danos finais continuam sendo resolvidos pelo motor no momento da ação. [Guia técnico M3a](../docs/M3_COMBAT_UX.md).
 
 ### M4 — Campanha 8 missões
 - [ ] Telas de briefing, vitória, derrota, retry e progressão.
@@ -86,8 +88,9 @@ Este roteiro diferencia funcionalidades **implementadas**, **validadas em CI**, 
 **Aceite:** concluir as 8 missões e atingir os três finais por escolhas/estatísticas correspondentes.
 
 ### M5 — PWA e release
-- [x] Compilar e copiar o **beta M3a** do Phaser em `main/phaser-preview/` por GitHub Actions, preservando os arquivos da versão Canvas.
-- [ ] Homologar disponibilidade pública no Pages, `base`, cache e compatibilidade de atualização em dispositivos físicos.
+- [x] Compilar e copiar o **beta M3b** do Phaser em `main/phaser-preview/` por GitHub Actions, com commit de origem fixado em `9ffc7029`, preservando arquivos Canvas.
+- [x] Publicar o build isolado no Pages e impedir cache obsoleto do beta pelo service worker Canvas.
+- [ ] Homologar carregamento e atualização em dispositivos físicos (Android/iOS), desempenho e compatibilidade de saves de produção.
 - [ ] Service Worker versionado, assets cacheados, limpeza de caches antigos.
 - [ ] Web Manifest e botão manual de instalação onde for possível.
 - [ ] Teste em modo avião e atualização sem perder saves.
@@ -123,7 +126,7 @@ Para testar o pacote compilado, execute `npm run build` e `npm run preview`. [RE
 
 O workflow `.github/workflows/publish-phaser-beta.yml`, presente na `main`, construiu a branch **M3a** testada e fez commit dos arquivos prontos na subpasta `phaser-preview/`. A versão antiga continua na raiz do Pages. Este **não** é um merge do novo motor com o Canvas: é um compilado independente e reversível.
 
-A nova interface de mira **M3b** está em `feat/phaser-impact-preview-m3b` e entra no beta público **somente após testes e uma nova execução da publicação**.
+A nova interface de mira **M3b** foi compilada do commit `9ffc7029`, validado pela CI, e enviada ao beta público via GitHub Actions. O PR #13 continua **draft** enquanto aguardamos homologação humana.
 
 **Roteiro de teste:** escolher três heróis, inspecionar uma unidade, mover, atacar, conjurar, encerrar turno, salvar e recarregar. Problemas conhecidos: sem PWA offline independente, sem QA físico, sem playthrough integral e nenhuma garantia de balanceamento das oito missões.
 
@@ -137,4 +140,4 @@ A nova interface de mira **M3b** está em `feat/phaser-impact-preview-m3b` e ent
 
 O compromisso de manter o jogo Canvas original publicado na `main` permanece. As novas texturas não fazem reivindicação de vínculo ou origem nos packs Kenney.
 
-| M3b — área inicial de magias, risco a aliados e confirmação dupla | `feat/phaser-impact-preview-m3b` | [Especificação M3b](../docs/M3B_IMPACT_PREVIEW.md), CI aguardando validação |
+| M3b — área inicial de magias, risco a aliados e confirmação dupla | `feat/phaser-impact-preview-m3b` | [Especificação M3b](../docs/M3B_IMPACT_PREVIEW.md), [CI 24/24](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/actions/runs/38955658327), [Pages](https://pedromaintenance.github.io/ironwood-a-ultima-resistencia/phaser-preview/) |
