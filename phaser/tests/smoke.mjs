@@ -73,6 +73,46 @@ try {
   assert.deepEqual(afterFailedImport, stateBefore);
   await page.locator('#continueCampaign').click();
 
+  // Importing a valid exported save must actually restore the same battle.
+  const exportedPath = await download.path();
+  await page.locator('#restart').click();
+  await page.locator('#importFile').setInputFiles(exportedPath);
+  assert.equal(await page.locator('#lobby').isHidden(), true);
+  const importedState = await page.evaluate(() => JSON.parse(localStorage.getItem('ironwood_phaser_preview_v1')));
+  assert.deepEqual(importedState, stateBefore);
+
+  // Touchscreen regression: team selection, difficulty, movement and refresh.
+  const mobileContext = await browser.newContext({
+    viewport: { width: 390, height: 844 },
+    screen: { width: 390, height: 844 },
+    isMobile: true, hasTouch: true,
+  });
+  const mobile = await mobileContext.newPage();
+  mobile.on('pageerror', error => errors.push('mobile: ' + error.message));
+  await mobile.goto('http://127.0.0.1:4173/', { waitUntil: 'networkidle' });
+  assert.equal(await mobile.locator('#lobby').isVisible(), true);
+  await mobile.locator('[data-hero="guardian"]').click();
+  assert.equal(await mobile.locator('#teamCount').innerText(), '2/3');
+  assert.equal(await mobile.locator('#startCampaign').isDisabled(), true);
+  await mobile.locator('[data-hero="cleric"]').click();
+  assert.equal(await mobile.locator('#teamCount').innerText(), '3/3');
+  await mobile.locator('#difficulty').selectOption('hard');
+  await mobile.locator('#startCampaign').click();
+  const mobileState = await mobile.evaluate(() => JSON.parse(localStorage.getItem('ironwood_phaser_preview_v1')));
+  assert.equal(mobileState.difficulty, 'hard');
+  assert.deepEqual(mobileState.team, ['ranger','druid','cleric']);
+  assert.equal(await mobile.locator('#lobby').isHidden(), true);
+  const mobileCanvas = mobile.locator('#game canvas');
+  await mobileCanvas.tap({ position: await cell(mobileCanvas, 3, 10) });
+  assert.match(await mobile.locator('#unitStats').innerText(), /PA 1\/2/);
+  await mobile.screenshot({ path: 'artifacts/preview/05-touch-mobile.png', fullPage: true });
+  const overflow = await mobile.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+  assert.ok(overflow <= 1, 'mobile should not require horizontal scrolling');
+  await mobile.reload({ waitUntil: 'networkidle' });
+  await mobile.locator('#continueCampaign').click();
+  assert.match(await mobile.locator('#unitStats').innerText(), /PA 1\/2/);
+  await mobileContext.close();
+
   assert.deepEqual(errors, [], 'Phaser should not throw browser errors');
   console.log('PASS: lobby, Phaser battle, movement, turn, spell, persist/reload, export and invalid import');
 } finally {
