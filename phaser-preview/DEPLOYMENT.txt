@@ -1,1 +1,1 @@
-Phaser M3d beta: 16c73ea53b8058a8785f1cb9b2a8cdc4f8ba99c9 (CI 38961163306). Canvas main root retained.
+Phaser M3e beta: fd27434a4112d3edd84456e31e6d85e12e5eca5b (CI 38964097106). Canvas main root retained.
