@@ -26,9 +26,9 @@ jobs:
       - name: Checkout tested Phaser preview independently
         uses: actions/checkout@v4
         with:
-          # Immutable, CI-verified M3d release candidate.
-          # tests/build/browser: https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/actions/runs/38961163306
-          ref: 16c73ea53b8058a8785f1cb9b2a8cdc4f8ba99c9
+          # Immutable, CI-verified M3e release candidate.
+          # tests/build/browser: https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/actions/runs/38964097106
+          ref: fd27434a4112d3edd84456e31e6d85e12e5eca5b
           path: .phaser-build-src
           persist-credentials: false
       - name: Node 22
@@ -37,7 +37,7 @@ jobs:
           node-version: '22'
       - name: Assert exactly the commit tested in CI
         run: |
-          test "$(git -C .phaser-build-src rev-parse HEAD)" = "16c73ea53b8058a8785f1cb9b2a8cdc4f8ba99c9"
+          test "$(git -C .phaser-build-src rev-parse HEAD)" = "fd27434a4112d3edd84456e31e6d85e12e5eca5b"
       - name: Verify core regressions
         run: npm test
         working-directory: .phaser-build-src
@@ -54,7 +54,7 @@ jobs:
           test -s phaser-preview/index.html
           test -f index.html
           test -f sw.js
-          printf '%s\n' 'Phaser M3d beta: 16c73ea53b8058a8785f1cb9b2a8cdc4f8ba99c9 (CI 38961163306). Canvas main root retained.' > phaser-preview/DEPLOYMENT.txt
+          printf '%s\n' 'Phaser M3e beta: fd27434a4112d3edd84456e31e6d85e12e5eca5b (CI 38964097106). Canvas main root retained.' > phaser-preview/DEPLOYMENT.txt
       - name: Commit the generated standalone preview to main
         run: |
           git config user.name 'github-actions[bot]'
@@ -64,7 +64,7 @@ jobs:
             echo 'Published preview is already up to date.'
             exit 0
           fi
-          git commit -m 'build(pages): publish tested M3d beta under phaser-preview'
+          git commit -m 'build(pages): publish tested M3e beta under phaser-preview'
           git pull --rebase origin main
           git push origin HEAD:main
       - name: Note preview path
