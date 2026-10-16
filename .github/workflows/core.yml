@@ -18,3 +18,5 @@ jobs:
           node-version: '22'
       - name: Run legacy and core tests
         run: npm test
+      - name: Headless mission demonstration
+        run: node examples/headless-mission.mjs
