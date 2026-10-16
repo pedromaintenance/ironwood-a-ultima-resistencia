@@ -17,7 +17,8 @@ Apesar de 144 tiles de terreno já estarem em cache (M3a), unidades serem persis
 2. **Estado invalidado quando necessário.** Movimento real, troca de aliado selecionado, uso de magia, rodada, ambiente, estado da grade e habilidades forçam novo desenho. Importar/retomar campanha ou trocar de missão invalida explicitamente o cache.
 3. **Registro de combate incremental.** A janela de cinco mensagens só altera o DOM quando a lista efetivamente mudou. Não há perda de eventos, e `aria-live` original permanece.
 4. **Menu de melhorias sem reconstruções repetidas.** Os botões do upgrade são montados uma vez por combinação missão/opções e reaproveitados entre renders da tela de vitória. A transição para outra missão ou save invalida a assinatura.
-5. **Diagnóstico legível.** O guia de teste mostra a contagem de redesenhos, de reconstruções do registro e de menus de melhoria. Dados de auditoria: `#game[data-overlay-draws]`, `#battleLog[data-builds]`, `#upgradeOptions[data-builds]`.
+5. **FPS de observação.** `BattleScene.update()` acumula o tempo entre 60 frames e atualiza `#game[data-render-fps]` e `#fpsReadout` com taxa aproximada; o valor depende de navegador, foco da aba, emulação e hardware. Não participa da simulação e não constitui benchmark comparável entre máquinas.
+6. **Diagnóstico legível.** O guia de teste mostra a contagem de redesenhos, de reconstruções do registro e de menus de melhoria. Dados de auditoria: `#game[data-overlay-draws]`, `#battleLog[data-builds]`, `#upgradeOptions[data-builds]`.
 
 **Observação técnica:** a assinatura ainda faz uma varredura/serialização dos dados do snapshot para manter a semântica; esta versão reduz chamadas ao Graphics e operações de DOM, **não** prova ganho de FPS ou memória real. O overlay de mira (hover), o desenho do frame dos personagens e parte do HUD ainda exigem otimizações posteriores.
 
@@ -27,7 +28,7 @@ Apesar de 144 tiles de terreno já estarem em cache (M3a), unidades serem persis
 - [x] Invalidar cache em mudança de campanha/estado.
 - [x] Atualizar mensagens do combate apenas quando novas entradas aparecem.
 - [x] Reutilizar botões de escolha de upgrade na mesma tela de vitória.
-- [x] Expor métricas legíveis na própria página de playtest.
+- [x] Expor métricas legíveis na própria página de playtest e contador observacional de FPS em janelas de 60 frames.
 - [x] Criar regressões Playwright: inspeção e movimento inválido não redesenham; movimento válido e log novo invalidam.
 - [ ] CI verde do commit final: 24 testes de core, build TypeScript e navegador Chromium desktop/mobile.
 - [ ] Publicar build validado sob `main/phaser-preview/` e confirmar deploy do Pages.
