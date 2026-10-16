@@ -28,7 +28,22 @@ try {
   assert.match(await page.locator('#phaseStatus').innerText(), /Rodada 1/);
   await page.screenshot({ path: 'artifacts/preview/01-battle.png', fullPage: true });
 
+  // Inspection must not move actors, spend AP, advance RNG or overwrite saves.
+  assert.equal(await page.locator('#game').getAttribute('data-terrain-objects'), '144');
+  const tilesBefore = Number(await page.locator('#game').getAttribute('data-terrain-updates'));
+  const saveBeforeInspect = await page.evaluate(() => localStorage.getItem('ironwood_phaser_preview_v1'));
+  await page.locator('#inspectMode').click();
+  assert.equal(await page.locator('#inspectMode').getAttribute('aria-pressed'), 'true');
+  await canvas.click({ position: await cell(canvas, 2, 10) });
+  assert.match(await page.locator('#tileInfo').innerText(), /Morna/);
+  assert.equal(await page.evaluate(() => localStorage.getItem('ironwood_phaser_preview_v1')), saveBeforeInspect);
+  await page.locator('#inspectMode').click();
+  assert.equal(await page.locator('#inspectMode').getAttribute('aria-pressed'), 'false');
+  assert.equal(Number(await page.locator('#game').getAttribute('data-terrain-updates')), tilesBefore);
+
   await canvas.click({ position: await cell(canvas, 3, 10) });
+  assert.equal(await page.locator('#game').getAttribute('data-terrain-objects'), '144');
+  assert.equal(Number(await page.locator('#game').getAttribute('data-terrain-updates')), tilesBefore);
   assert.match(await page.locator('#unitStats').innerText(), /PA 1\/2/);
   assert.match(await page.locator('#battleLog').innerText(), /avança pela floresta/);
 
@@ -106,6 +121,10 @@ try {
   assert.deepEqual(mobileState.team, ['ranger','druid','cleric']);
   assert.equal(await mobile.locator('#lobby').isHidden(), true);
   const mobileCanvas = mobile.locator('#game canvas');
+  await mobile.locator('#inspectMode').click();
+  await mobileCanvas.tap({ position: await cell(mobileCanvas, 2, 10) });
+  assert.match(await mobile.locator('#tileInfo').innerText(), /Arven/);
+  await mobile.locator('#inspectMode').click();
   await mobileCanvas.tap({ position: await cell(mobileCanvas, 3, 10) });
   assert.match(await mobile.locator('#unitStats').innerText(), /PA 1\/2/);
   await mobile.screenshot({ path: 'artifacts/preview/05-touch-mobile.png', fullPage: true });
@@ -117,7 +136,7 @@ try {
   await mobileContext.close();
 
   assert.deepEqual(errors, [], 'Phaser should not throw browser errors');
-  console.log('PASS: lobby, Phaser battle, movement, turn, spell, persist/reload, export and invalid import');
+  console.log('PASS: core parity, cached 144 tiles, inspection, lobby, combat, saves and mobile touch');
 } finally {
   await browser.close();
 }
