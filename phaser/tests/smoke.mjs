@@ -77,7 +77,8 @@ try {
   const exportedPath = await download.path();
   await page.locator('#restart').click();
   await page.locator('#importFile').setInputFiles(exportedPath);
-  assert.equal(await page.locator('#lobby').isHidden(), true);
+  // File.text() is asynchronous; wait for the import handler to complete.
+  await page.locator('#lobby').waitFor({ state: 'hidden', timeout: 15000 });
   const importedState = await page.evaluate(() => JSON.parse(localStorage.getItem('ironwood_phaser_preview_v1')));
   assert.deepEqual(importedState, stateBefore);
 
