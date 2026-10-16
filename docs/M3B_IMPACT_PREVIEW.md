@@ -1,6 +1,6 @@
 # M3b — Prévia da área de impacto e confirmação de magias
 
-**Situação:** funcionalidade implementada em `feat/phaser-impact-preview-m3b`; depende de aprovação dos testes de core e navegador antes de publicar o build desta branch. A prévia pública M3a anterior continua isolada em `/phaser-preview/`.
+**Situação:** M3b implementada em `feat/phaser-impact-preview-m3b` e publicada em beta a partir do commit **`9ffc7029`**. [CI 24/24, build e navegador aprovados](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/actions/runs/38955658327); [Playtest no Pages](https://pedromaintenance.github.io/ironwood-a-ultima-resistencia/phaser-preview/). O PR #13 segue em draft até revisão em dispositivo físico.
 
 ## Mudanças entregues no código-fonte
 
@@ -27,13 +27,13 @@ O aviso de fogo amigo se limita às habilidades que afetam aliados diretamente (
 - [x] Confirmação de duas etapas para magias perigosas.
 - [x] Destaque das casas de efeito e aliados em risco.
 - [x] Texto legível no celular e sobreposição sem destruir 144 tiles.
-- [ ] Testes do core, build e Chromium do **commit final** aprovados.
+- [x] Testes do core (24/24), build e Chromium do commit distribuído `9ffc7029` aprovados.
 - [ ] Revisão manual e playthrough, inclusive em Android/iOS físico.
 - [ ] Consequências secundárias de propagação animadas (fase seguinte).
 - [ ] Acessibilidade por teclado para escolha de casa sem mouse (fase seguinte).
 
 ## Publicação e segurança
 
-O [workflow de beta](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/actions/workflows/publish-phaser-beta.yml) gera o build da branch **testada** e o copia para `main/phaser-preview/`, sem trocar `index.html`, `app.js` ou o `sw.js` da versão Canvas. A chave de save também é separada: `ironwood_phaser_preview_v1`.
+O [workflow de beta](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/actions/workflows/publish-phaser-beta.yml) verifica o **SHA testado** `9ffc7029`, compila o código e copia o resultado para `main/phaser-preview/`, sem trocar `index.html`, `app.js` ou o `sw.js` da versão Canvas. O SW do Canvas agora **ignora a subpasta do beta** para evitar HTML/JS obsoleto. A chave de save também é separada: `ironwood_phaser_preview_v1`.
 
 O Pages beta não tem PWA autônomo homologado. Não anunciar suporte offline pleno nem substituir a versão original antes dos gates de campanha, performance e aparelhos físicos.
