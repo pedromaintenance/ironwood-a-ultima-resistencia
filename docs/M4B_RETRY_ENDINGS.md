@@ -28,8 +28,8 @@ Os parágrafos narrativos são os originais do Canvas, não alternativas novas. 
 - [x] Teste Chromium desktop: importar derrota v1, mostrar resultado, salvar, recarregar, continuar **sem auto-retry**.
 - [x] Botão de retry dispara recomeço da mesma operação sem perder upgrades, vitória/derrota acumulada ou equipe.
 - [x] Teste Chromium dos três epílogos por importação de saves v1 válidos de campanha concluída; encerra turno desabilitado.
-- [ ] CI com 29/29 testes core, build Vite/Phaser e smoke desktop/mobile aprovado no SHA final.
-- [ ] Publicar M4b em `main/phaser-preview/` preservando `main/index.html` e PWA Canvas.
+- [x] [29/29 testes core, build Vite/Phaser e Chromium desktop/mobile aprovados](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/actions/runs/38988894146), SHA `74b0c154`.
+- [x] [Publicação isolada M4b concluída](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/actions/runs/38989071534); `main/phaser-preview/` identifica a beta M4b e o SHA aprovado, com Canvas original preservado.
 - [ ] Playthrough integral das oito missões e dos três finais sem fixture, QA físico Android/iOS.
 
 **Limite importante:** o teste dos três finais usa snapshots válidos de conclusão da campanha, não um playthrough inteiro. O teste de rodadas iniciais parte do zero e não simula uma vitória completa da primeira missão. Os testes não provam balanço final nem ritmo de campanha.
@@ -39,3 +39,5 @@ Os parágrafos narrativos são os originais do Canvas, não alternativas novas. 
 - Teste de jogo da missão 1 inteira sem configurar derrotas/saves, incluindo ataque, magia, posicionamento e obtenção de melhoria.
 - Revisão dos objetivos contextuais de todas as missões, especialmente interação com reféns e reinício após derrota real.
 - Perfil de FPS e memória em dispositivos físicos.
+
+**Nota de entrega:** workflow de compilação/publicação e CI concluídos; o job final do Pages e QA humano são etapas independentes. O teste de epílogos usa saves v1 válidos, não campanha integral jogada.
