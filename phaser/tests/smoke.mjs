@@ -6,6 +6,7 @@ import { playSecondMission } from '../../tests/rescue-driver.mjs';
 import { playThirdMission } from '../../tests/totem-driver.mjs';
 import { playFourthMission } from '../../tests/survival-driver.mjs';
 import { playFifthMission } from '../../tests/cleanse-driver.mjs';
+import { playSixthMission } from '../../tests/ashes-driver.mjs';
 
 await mkdir('artifacts/preview', { recursive: true });
 const browser = await chromium.launch({ headless: true });
@@ -22,7 +23,7 @@ async function cell(canvas, x, y) {
 try {
   await page.goto('http://127.0.0.1:4173/', { waitUntil: 'networkidle' });
   assert.equal(await page.locator('#lobby').isVisible(), true, 'lobby should open first');
-  assert.match(await page.locator('.mast').innerText(), /BETA M4h/);
+  assert.match(await page.locator('.mast').innerText(), /BETA M4i/);
   assert.equal(await page.locator('.playtestGuide summary').isVisible(), true);
   assert.equal(await page.locator('#teamCount').innerText(), '3/3');
   await page.locator('#startCampaign').click();
@@ -781,8 +782,89 @@ try {
   assert.match(await page.locator('#missionTitle').innerText(),/A Marcha das Cinzas/);
   await page.screenshot({path:'artifacts/preview/28-m4h-sixth-mission.png',fullPage:true});
 
+
+  // M4i: opening state earned by five victories using ONLY the core.
+  // Replay every sixth-operation player command via real Phaser controls,
+  // including environmental fire spread during enemy turns (portable RNG).
+  const ashes=playSixthMission({seed:1,team:expectedTeam,difficulty:'story'});
+  assert.equal(ashes.phase,'between','sixth battle must be truly winnable');
+  assert.equal(ashes.initial.mission,5);
+  assert.equal(ashes.initial.wins,5);
+  assert.equal(ashes.initial.aiOrder,'portable-v2');
+  assert.equal(ashes.initial.actors.filter(a=>a.side==='enemy').length,7);
+  assert.ok(ashes.initial.board.some(t=>t.fire>0));
+  await page.locator('#restart').click();
+  await page.locator('#importFile').setInputFiles({
+    name:'natural-sixth-operation-v1.json',mimeType:'application/json',
+    buffer:Buffer.from(JSON.stringify(ashes.initial)),
+  });
+  await page.locator('#lobby').waitFor({state:'hidden',timeout:15000});
+  assert.equal(await page.locator('#goalPanel').getAttribute('data-goal-kind'),'kill');
+  assert.equal(await page.locator('#goalPanel').getAttribute('data-goal-total'),'7');
+  assert.equal(await page.locator('#ashStatus').getAttribute('data-burning'),
+    String(ashes.initial.board.filter(t=>t.fire>0).length));
+  assert.equal(await page.locator('#ashStatus').getAttribute('data-enemies'),'7');
+  await page.screenshot({path:'artifacts/preview/29-m4i-forest-fire-start.png',fullPage:true});
+  let checkedFireAfterTurn=0;
+  for(const step of ashes.commands){
+    await page.waitForFunction(()=>document.getElementById('game')?.dataset.inputLocked==='false');
+    if(step.command==='endTurn'){
+      await page.locator('#endTurn').click();
+      checkedFireAfterTurn++;
+    }else{
+      const before=await page.evaluate(()=>JSON.parse(localStorage.getItem('ironwood_phaser_preview_v1')));
+      const actor=before.actors.find(a=>a.id===step.args[0]);
+      assert.ok(actor&&actor.hp>0,'Sixth operation requires living ally '+step.args[0]);
+      if(!(await page.locator('#unitName').innerText()).includes(actor.name)){
+        await canvas.click({position:await cell(canvas,actor.x,actor.y)});
+      }
+      if(step.command==='move'){
+        await canvas.click({position:await cell(canvas,step.args[1],step.args[2])});
+      }else if(step.command==='attack'){
+        const target=before.actors.find(a=>a.id===step.args[1]);
+        assert.ok(target&&target.hp>0,'Enemy attack target must be alive');
+        await canvas.click({position:await cell(canvas,target.x,target.y)});
+      }else if(step.command==='useSkill'){
+        const [_,skill,x,y]=step.args;
+        await page.locator(`#skills button[data-skill="${skill}"]`).click();
+        await canvas.click({position:await cell(canvas,x,y)});
+        if(/TOQUE NOVAMENTE/.test(await page.locator('#impactInfo').innerText())){
+          await canvas.click({position:await cell(canvas,x,y)});
+        }
+      }else throw new Error('Unexpected M4i action '+step.command);
+    }
+    const actual=await page.evaluate(()=>JSON.parse(localStorage.getItem('ironwood_phaser_preview_v1')));
+    assert.deepEqual(actual,step.checkpoint,
+      'Sixth operation browser must match actual Node battle including wildfire, AI and RNG: '+step.command+' '+JSON.stringify(step.args));
+    const burning=actual.board.filter(t=>t.fire>0).length;
+    const foes=actual.actors.filter(a=>a.side==='enemy'&&a.hp>0).length;
+    const danger=actual.actors.filter(a=>a.side==='ally'&&a.hp>0&&actual.board[a.y*12+a.x].fire>0).length;
+    assert.equal(await page.locator('#ashStatus').getAttribute('data-burning'),String(burning));
+    assert.equal(await page.locator('#ashStatus').getAttribute('data-enemies'),String(foes));
+    assert.equal(await page.locator('#ashStatus').getAttribute('data-threatened'),String(danger));
+    assert.equal(await page.locator('#ashStatus').getAttribute('data-destroyed-trees'),String(actual.stats.trees||0));
+    if(step.command==='endTurn'&&checkedFireAfterTurn===1){
+      await page.screenshot({path:'artifacts/preview/30-m4i-spreading-fire.png',fullPage:true});
+    }
+  }
+  assert.ok(checkedFireAfterTurn>=1,'forest fire must be observed after a real enemy round');
+  assert.equal(await page.locator('#goalPanel').getAttribute('data-goal-status'),'victory');
+  assert.equal(await page.locator('#goalPanel').getAttribute('data-goal-completed'),'7');
+  assert.equal(await page.locator('#ashStatus').getAttribute('data-enemies'),'0');
+  await page.screenshot({path:'artifacts/preview/31-m4i-forest-battle-won.png',fullPage:true});
+  await page.locator('#upgradeOptions button').first().click();
+  const beacon=await page.evaluate(()=>JSON.parse(localStorage.getItem('ironwood_phaser_preview_v1')));
+  assert.equal(beacon.mission,6);
+  assert.equal(beacon.wins,6);
+  assert.equal(beacon.phase,'player');
+  assert.equal(beacon.board.filter(t=>t.objective==='beacon'&&!t.cleared).length,3);
+  assert.equal(await page.locator('#goalPanel').getAttribute('data-goal-kind'),'beacon');
+  assert.equal(await page.locator('#ashStatus').isHidden(),true);
+  assert.match(await page.locator('#missionTitle').innerText(),/Os Faróis do Crepúsculo/);
+  await page.screenshot({path:'artifacts/preview/32-m4i-beacon-mission.png',fullPage:true});
+
   assert.deepEqual(errors, [], 'Phaser should not throw browser errors');
-  console.log('PASS: M4h authentic corruption cleansing and sixth mission, M4g six-round convoy survival and two enemy waves, M4f exact portable cross-runtime combat turns and old-save compatibility, M4e full totem replay, fourth mission, M4d contextual natural rescue checkpoints and mission three, M4c fixture-free Phaser victory to mission 2 and seed replay, core parity, M4b defeat/retry/three endings, M4a totem attacks, M3g goals/victory/upgrades/mission2, M3f cache, HUD, tween lock, pooled units, AOE, mobile');
+  console.log('PASS: M4i six victories and wildfire-by-turn parity, M4h authentic corruption cleansing and sixth mission, M4g six-round convoy survival and two enemy waves, M4f exact portable cross-runtime combat turns and old-save compatibility, M4e full totem replay, fourth mission, M4d contextual natural rescue checkpoints and mission three, M4c fixture-free Phaser victory to mission 2 and seed replay, core parity, M4b defeat/retry/three endings, M4a totem attacks, M3g goals/victory/upgrades/mission2, M3f cache, HUD, tween lock, pooled units, AOE, mobile');
 } finally {
   await browser.close();
 }
