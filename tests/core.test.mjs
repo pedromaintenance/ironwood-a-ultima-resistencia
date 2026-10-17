@@ -311,3 +311,65 @@ test('physical totem attacks use the original combat rules and unblock mission 3
   const { missionProgress } = await import('../src/core/objectives.js');
   assert.equal(missionProgress('totem', destroyed.board, destroyed.actors).completed, 1);
 });
+
+test('M4b: three endings reproduce Canvas thresholds and narrative without mutation', async () => {
+  const { campaignEnding } = await import('../src/core/ending.js');
+  const base = { phase: 'ending', mission: 7, wins: 8, casts: 32, losses: 0,
+    stats: { trees: 0, rescued: 0 } };
+  assert.equal(campaignEnding({ ...base, phase: 'player' }), null);
+  const before = structuredClone(base);
+  const resistance = campaignEnding(base);
+  assert.equal(resistance.kind, 'resistencia');
+  assert.equal(resistance.title, 'A Última Chama Livre');
+  assert.match(resistance.description, /A campeã caiu/);
+  const solidarity = campaignEnding({ ...base, stats: { trees: 25, rescued: 5 }, losses: 1 });
+  assert.equal(solidarity.kind, 'solidariedade');
+  assert.equal(solidarity.title, 'A Floresta de Todos');
+  const scars = campaignEnding({ ...base, stats: { trees: 26, rescued: 10 }, losses: 0 });
+  assert.equal(scars.kind, 'cicatrizes', 'too many destroyed trees take priority over rescue');
+  assert.equal(scars.title, 'A Vitória das Cinzas');
+  const manyLosses = campaignEnding({ ...base, stats: { trees: 25, rescued: 5 }, losses: 2 });
+  assert.equal(manyLosses.kind, 'resistencia');
+  assert.deepEqual(base, before);
+});
+
+test('M4b: defeat survives a saved checkpoint and retry keeps team and earned upgrades', () => {
+  const e = deployed(8800, ['guardian', 'ranger', 'druid']);
+  const state = e.snapshot();
+  state.mission = 2;
+  state.wins = 2;
+  state.upgrades = { hp: 2, mp: 1 };
+  state.actors.filter(a => a.side === 'ally').forEach(a => { a.hp = 0; });
+  e.restoreSave(state);
+  assert.equal(e.endTurn(), true, 'defeat is resolved by a real engine turn');
+  const lost = e.snapshot();
+  assert.equal(lost.phase, 'defeat');
+  assert.equal(lost.losses, 1);
+  const restored = createIronwoodEngine();
+  restored.restoreSave(lost);
+  assert.deepEqual(restored.snapshot(), lost);
+  restored.deployMission();
+  const retry = restored.snapshot();
+  assert.equal(retry.mission, 2);
+  assert.equal(retry.wins, 2);
+  assert.equal(retry.losses, 1);
+  assert.deepEqual(retry.team, lost.team);
+  assert.deepEqual(retry.upgrades, lost.upgrades);
+  assert.equal(retry.phase, 'player');
+  assert.equal(retry.round, 1);
+  assert.equal(retry.actors.filter(a => a.side === 'ally' && a.hp > 0).length, 3);
+});
+
+test('M4b: real fresh-campaign turns stay deterministic without importing fixtures', () => {
+  const a = deployed(543219, ['guardian','ranger','druid']);
+  const b = deployed(543219, ['guardian','ranger','druid']);
+  let rounds = 0;
+  while (rounds < 8 && a.snapshot().phase === 'player') {
+    assert.equal(a.endTurn(), b.endTurn());
+    assert.deepEqual(a.snapshot(), b.snapshot());
+    rounds++;
+  }
+  assert.ok(rounds >= 1);
+  assert.ok(['player', 'defeat'].includes(a.snapshot().phase));
+  assert.equal(a.snapshot().mission, 0);
+});
