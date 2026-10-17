@@ -17,7 +17,7 @@ async function cell(canvas, x, y) {
 try {
   await page.goto('http://127.0.0.1:4173/', { waitUntil: 'networkidle' });
   assert.equal(await page.locator('#lobby').isVisible(), true, 'lobby should open first');
-  assert.match(await page.locator('.mast').innerText(), /BETA M4a/);
+  assert.match(await page.locator('.mast').innerText(), /BETA M4b/);
   assert.equal(await page.locator('.playtestGuide summary').isVisible(), true);
   assert.equal(await page.locator('#teamCount').innerText(), '3/3');
   await page.locator('#startCampaign').click();
@@ -312,8 +312,73 @@ try {
   assert.equal(await page.locator('#goalPanel').getAttribute('data-goal-completed'), '1');
   await page.screenshot({ path: 'artifacts/preview/09-totem-strike.png', fullPage: true });
 
+  // M4b: save/load retains defeat rather than silently redeploying the map.
+  // State is a valid v1 save. Retry is an explicit user gesture with all upgrades.
+  const defeated = structuredClone(destroyedTotem);
+  defeated.phase = 'defeat';
+  defeated.losses = 2;
+  defeated.actors.filter(a => a.side === 'ally').forEach(a => { a.hp = 0; });
+  await page.locator('#restart').click();
+  await page.locator('#importFile').setInputFiles({
+    name: 'defeat-v1.json', mimeType: 'application/json',
+    buffer: Buffer.from(JSON.stringify(defeated)),
+  });
+  await page.locator('#lobby').waitFor({ state: 'hidden', timeout: 15000 });
+  assert.equal(await page.locator('#goalPanel').getAttribute('data-goal-status'), 'defeat');
+  assert.match(await page.locator('#resultTitle').innerText(), /A RESISTÊNCIA RECUA/);
+  assert.equal(await page.locator('#retryMission').isVisible(), true);
+  assert.equal(await page.locator('#endTurn').isDisabled(), true);
+  assert.equal(await page.evaluate(() => JSON.parse(localStorage.getItem('ironwood_phaser_preview_v1')).phase), 'defeat');
+
+  await page.reload({ waitUntil: 'networkidle' });
+  await page.locator('#continueCampaign').click();
+  assert.equal(await page.evaluate(() => JSON.parse(localStorage.getItem('ironwood_phaser_preview_v1')).phase), 'defeat',
+    'continue must never auto-retry a lost campaign');
+  await page.screenshot({ path: 'artifacts/preview/10-defeat.png', fullPage: true });
+  await page.locator('#retryMission').click();
+  const retryState = await page.evaluate(() => JSON.parse(localStorage.getItem('ironwood_phaser_preview_v1')));
+  assert.equal(retryState.phase, 'player');
+  assert.equal(retryState.mission, defeated.mission);
+  assert.equal(retryState.losses, defeated.losses);
+  assert.deepEqual(retryState.upgrades, defeated.upgrades);
+  assert.deepEqual(retryState.team, defeated.team);
+  assert.equal(retryState.round, 1);
+  assert.equal(retryState.actors.filter(a => a.side === 'ally' && a.hp > 0).length, 3);
+  assert.equal(await page.locator('#retryMission').isHidden(), true);
+  assert.equal(await page.locator('#resultPanel').isHidden(), true);
+  await page.screenshot({ path: 'artifacts/preview/11-retry.png', fullPage: true });
+
+  // Three canonical endings using valid v1 completion saves. Narration and
+  // thresholds come directly from Canvas renderEnding(), not an invented ruleset.
+  const epilogueCases = [
+    { trees: 26, rescued: 10, losses: 0, title: 'A Vitória das Cinzas', kind: 'cicatrizes' },
+    { trees: 25, rescued: 5, losses: 1, title: 'A Floresta de Todos', kind: 'solidariedade' },
+    { trees: 0, rescued: 0, losses: 2, title: 'A Última Chama Livre', kind: 'resistencia' },
+  ];
+  for (const ending of epilogueCases) {
+    const finale = structuredClone(retryState);
+    finale.phase = 'ending';
+    finale.mission = 7;
+    finale.wins = 8;
+    finale.losses = ending.losses;
+    finale.stats = { ...finale.stats, trees: ending.trees, rescued: ending.rescued };
+    await page.locator('#restart').click();
+    await page.locator('#importFile').setInputFiles({
+      name: 'finale-valid-v1.json', mimeType: 'application/json',
+      buffer: Buffer.from(JSON.stringify(finale)),
+    });
+    await page.locator('#lobby').waitFor({ state: 'hidden', timeout: 15000 });
+    assert.equal(await page.locator('#resultPanel').getAttribute('data-ending-kind'), ending.kind);
+    assert.equal(await page.locator('#resultTitle').innerText(), ending.title);
+    assert.equal(await page.locator('#resultPanel').isVisible(), true);
+    assert.equal(await page.locator('#endTurn').isDisabled(), true);
+    assert.equal(await page.locator('#retryMission').isHidden(), true);
+    assert.match(await page.locator('#resultStats').innerText(), /Missões vencidas: 8\/8/);
+  }
+  await page.screenshot({ path: 'artifacts/preview/12-campaign-ending.png', fullPage: true });
+
   assert.deepEqual(errors, [], 'Phaser should not throw browser errors');
-  console.log('PASS: core parity, M4a totem attacks, M3g goals/victory/upgrades/mission2, M3f cache, HUD, tween lock, pooled units, AOE, mobile');
+  console.log('PASS: core parity, M4b defeat/retry/three endings, M4a totem attacks, M3g goals/victory/upgrades/mission2, M3f cache, HUD, tween lock, pooled units, AOE, mobile');
 } finally {
   await browser.close();
 }
