@@ -3,6 +3,7 @@ import { chromium } from 'playwright';
 import { mkdir } from 'node:fs/promises';
 import { playFreshMission } from '../../tests/playthrough-driver.mjs';
 import { playSecondMission } from '../../tests/rescue-driver.mjs';
+import { playThirdMission } from '../../tests/totem-driver.mjs';
 
 await mkdir('artifacts/preview', { recursive: true });
 const browser = await chromium.launch({ headless: true });
@@ -19,7 +20,7 @@ async function cell(canvas, x, y) {
 try {
   await page.goto('http://127.0.0.1:4173/', { waitUntil: 'networkidle' });
   assert.equal(await page.locator('#lobby').isVisible(), true, 'lobby should open first');
-  assert.match(await page.locator('.mast').innerText(), /BETA M4d/);
+  assert.match(await page.locator('.mast').innerText(), /BETA M4e/);
   assert.equal(await page.locator('.playtestGuide summary').isVisible(), true);
   assert.equal(await page.locator('#teamCount').innerText(), '3/3');
   await page.locator('#startCampaign').click();
@@ -510,8 +511,80 @@ try {
     }
   }
 
+
+  // M4e: all three totems are destroyed by actual player clicks and spells.
+  // Starting state was earned from real missions 1 and 2, not manipulated.
+  // This browser scenario focuses on mission 3: the preceding two victories
+  // are verified by the separate natural-progression headless CI.
+  const thirdRun=playThirdMission({seed:1,team:expectedTeam,difficulty:'story'});
+  assert.equal(thirdRun.phase,'between','third mission must be genuinely winnable');
+  assert.equal(thirdRun.initial.wins,2,'first two missions must be won before test begins');
+  assert.equal(thirdRun.initial.board.filter(t=>t.objective==='totem'&&!t.cleared).length,3);
+  await page.locator('#restart').click();
+  await page.locator('#importFile').setInputFiles({
+    name:'natural-third-mission-start-v1.json',
+    mimeType:'application/json',
+    buffer:Buffer.from(JSON.stringify(thirdRun.initial)),
+  });
+  await page.locator('#lobby').waitFor({state:'hidden',timeout:15000});
+  assert.equal(await page.locator('#goalPanel').getAttribute('data-goal-kind'),'totem');
+  assert.equal(await page.locator('#totemStatus').getAttribute('data-remaining'),'3');
+  assert.equal((await page.locator('#totemStatus').innerText()).match(/18\/18 integridade/g)?.length,3);
+  await page.screenshot({path:'artifacts/preview/18-m4e-three-totems.png',fullPage:true});
+  for(const step of thirdRun.commands) {
+    await page.waitForFunction(()=>document.getElementById('game')?.dataset.inputLocked==='false');
+    if(step.command==='endTurn') {
+      await page.locator('#endTurn').click();
+    } else {
+      const current=await page.evaluate(()=>JSON.parse(localStorage.getItem('ironwood_phaser_preview_v1')));
+      const actor=current.actors.find(a=>a.id===step.args[0]);
+      assert.ok(actor&&actor.hp>0,'M4e replay needs a living hero '+step.args[0]);
+      if(!(await page.locator('#unitName').innerText()).includes(actor.name)){
+        await canvas.click({position:await cell(canvas,actor.x,actor.y)});
+      }
+      if(step.command==='move'){
+        await canvas.click({position:await cell(canvas,step.args[1],step.args[2])});
+      }else if(step.command==='attackObjective'){
+        await canvas.click({position:await cell(canvas,step.args[1],step.args[2])});
+      }else if(step.command==='attack'){
+        const enemy=current.actors.find(a=>a.id===step.args[1]);
+        assert.ok(enemy&&enemy.hp>0);
+        await canvas.click({position:await cell(canvas,enemy.x,enemy.y)});
+      }else if(step.command==='useSkill'){
+        const [_,skill,x,y]=step.args;
+        await page.locator(`#skills button[data-skill="${skill}"]`).click();
+        await canvas.click({position:await cell(canvas,x,y)});
+        if(/TOQUE NOVAMENTE/.test(await page.locator('#impactInfo').innerText())){
+          await canvas.click({position:await cell(canvas,x,y)});
+        }
+      }else throw new Error('Unexpected M4e command '+step.command);
+    }
+    const actual=await page.evaluate(()=>JSON.parse(localStorage.getItem('ironwood_phaser_preview_v1')));
+    assert.deepEqual(actual,step.checkpoint,
+      'M4e UI diverged from authentic battle at '+step.command+' '+JSON.stringify(step.args));
+    const remaining=actual.board.filter(t=>t.objective==='totem'&&!t.cleared).length;
+    assert.equal(await page.locator('#totemStatus').getAttribute('data-remaining'),String(remaining));
+    if(step.command==='attackObjective'||step.command==='useSkill'){
+      const list=actual.board.filter(t=>t.objective==='totem').sort((a,b)=>a.y-b.y||a.x-b.x);
+      const text=await page.locator('#totemStatus').innerText();
+      for(const [index,t] of list.entries()){
+        assert.ok(text.includes(`Totem ${index+1} (${t.x+1},${t.y+1}): ${t.cleared?'DESTRUÍDO':t.objhp+'/18 integridade'}`));
+      }
+    }
+  }
+  assert.equal(await page.locator('#goalPanel').getAttribute('data-goal-status'),'victory');
+  assert.equal(await page.locator('#totemStatus').getAttribute('data-remaining'),'0');
+  assert.equal(await page.locator('#goalPanel').getAttribute('data-goal-completed'),'3');
+  await page.screenshot({path:'artifacts/preview/19-m4e-three-totems-destroyed.png',fullPage:true});
+  await page.locator('#upgradeOptions button').first().click();
+  assert.match(await page.locator('#missionTitle').innerText(),/A Noite Mais Longa/);
+  const mission4=await page.evaluate(()=>JSON.parse(localStorage.getItem('ironwood_phaser_preview_v1')));
+  assert.equal(mission4.mission,3);
+  assert.equal(mission4.wins,3);
+  await page.screenshot({path:'artifacts/preview/20-m4e-mission-four.png',fullPage:true});
+
   assert.deepEqual(errors, [], 'Phaser should not throw browser errors');
-  console.log('PASS: M4d contextual natural rescue checkpoints and mission three, M4c fixture-free Phaser victory to mission 2 and seed replay, core parity, M4b defeat/retry/three endings, M4a totem attacks, M3g goals/victory/upgrades/mission2, M3f cache, HUD, tween lock, pooled units, AOE, mobile');
+  console.log('PASS: M4e authentic totem replay and fourth mission, M4d contextual natural rescue checkpoints and mission three, M4c fixture-free Phaser victory to mission 2 and seed replay, core parity, M4b defeat/retry/three endings, M4a totem attacks, M3g goals/victory/upgrades/mission2, M3f cache, HUD, tween lock, pooled units, AOE, mobile');
 } finally {
   await browser.close();
 }
