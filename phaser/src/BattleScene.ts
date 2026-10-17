@@ -813,6 +813,23 @@ export class BattleScene extends Phaser.Scene {
     const objective = missionProgress(mission.kind, state.board, state.actors, state.round, state.phase);
     setText('missionSequence', `${mission.act} · OPERAÇÃO ${state.mission + 1}/${MISSIONS.length}`);
     setText('goalName', objective.label);
+    // M4e: expose individual totem integrity, coordinates and completion.
+    // Read-only HUD from the authoritative board; never approximate damage.
+    const totemStatus = document.getElementById('totemStatus');
+    if (totemStatus) {
+      totemStatus.hidden = mission.kind !== 'totem';
+      if (mission.kind === 'totem') {
+        const totems = (state.board as Tile[]).filter(t => t.objective === 'totem')
+          .sort((a,b) => a.y - b.y || a.x - b.x);
+        totemStatus.textContent = totems.map((tile, i) =>
+          `Totem ${i+1} (${tile.x+1},${tile.y+1}): ${tile.cleared ? 'DESTRUÍDO' : `${tile.objhp}/18 integridade`}`
+        ).join(' · ');
+        totemStatus.dataset.remaining = String(totems.filter(t => !t.cleared).length);
+      } else {
+        totemStatus.textContent = '';
+        delete totemStatus.dataset.remaining;
+      }
+    }
     setText('goalDetail', objective.status === 'victory'
       ? (state.phase === 'ending' ? 'CAMPANHA CONCLUÍDA — o destino de Ironwood foi decidido.' : 'OBJETIVO CONCLUÍDO — escolha uma melhoria para prosseguir.')
       : objective.status === 'defeat' ? 'MISSÃO PERDIDA — use TENTAR NOVAMENTE para recomeçar sem perder melhorias.'

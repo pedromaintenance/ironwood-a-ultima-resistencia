@@ -1,0 +1,23 @@
+name: Ironwood M4e three natural missions
+
+on:
+  push:
+    branches: [feat/phaser-totem-playthrough-m4e]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  real-totem-progression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Regression parity
+        run: npm test
+      - name: Verify natural victory in missions one and two
+        run: node --test tests/playthrough.test.mjs tests/rescue.test.mjs
+      - name: Verify third mission totems and progression to fourth mission
+        run: node --test tests/totem.test.mjs

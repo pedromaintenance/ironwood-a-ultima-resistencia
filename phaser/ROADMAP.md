@@ -1,11 +1,28 @@
 # Roadmap executivo — Ironwood Phaser
 
-**Atualização:** 16 de outubro de 2026 — M4b publicada; M4c com playthrough autêntico e semente reproduzível em QA  
+**Atualização:** 17 de outubro de 2026 — M4d publicada; M4e em validação com três missões completas  
 **Jogo público:** `main` continua executando o Canvas legado.  
-**Ramo de desenvolvimento:** `feat/phaser-playthrough-m4c`, baseado na M4b. **Release público anterior confirmado:** M4b compilada do SHA `74b0c154`; Canvas preservado na raiz.  
+**Ramo de desenvolvimento:** `feat/phaser-totem-playthrough-m4e`, baseado na M4d publicada (`73883e70`); Canvas preservado na raiz.  
 **Roadmap do projeto inteiro:** [ROADMAP_IRONWOOD_PHASER.md](../ROADMAP_IRONWOOD_PHASER.md) (versão canônica publicada em `main`).
 
 Este roteiro diferencia funcionalidades **implementadas**, **validadas em CI**, **em revisão** e **ainda planejadas**. Os testes automatizados não substituem o playthrough humano em aparelho físico.
+
+## M4e — Três operações reais, totens rastreáveis e missão 4 (17/10/2026)
+
+- [x] Prova de campanha real pela API headless: três vitórias seguidas,
+  destruindo todos os três totens da operação 3, sem importar saves alterados.
+- [x] Determinismo com semente 1, Aprendiz, Morna/Arven/Vaelis: 4, 1, 3
+  rodadas nas missões 1–3; 16 comandos no terceiro confronto.
+- [x] Entrar normalmente na missão 4 (*A Noite Mais Longa*).
+- [x] Exibir no painel de objetivos coordenadas e integridade individuais
+  (18/18 e estado DESTRUÍDO) com leitura direta do snapshot do motor.
+- [x] Implementar teste de replay do terceiro confronto por clicks reais no
+  Phaser, com conferência exata do estado após cada ação.
+- [ ] Confirmar CI de browser e build para o SHA imutável, publicar no Pages.
+- [ ] QA em hardware físico e terminar missões 4–8 naturalmente.
+
+[Guia técnico M4e](../docs/M4E_NATURAL_TOTEMS.md) ·
+[Prova de core](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/actions/runs/39024644891).
 
 ## M4c — Missão 1 do começo ao fim e seed reproduzível (16/10/2026)
 
