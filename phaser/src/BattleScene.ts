@@ -2,6 +2,7 @@ import Phaser from 'phaser';
 import { createIronwoodEngine } from '../../src/core/engine.js';
 import { HEROES, MISSIONS, SKILLS, UPGRADES } from '../../src/core/data.js';
 import { missionProgress } from '../../src/core/objectives.js';
+import { campaignEnding } from '../../src/core/ending.js';
 import { installPixelAtlas } from './PixelAtlas';
 import { readPreviewSave, writePreviewSave, exportCampaign, parseImportedSave } from './PreviewSave';
 
@@ -225,6 +226,22 @@ export class BattleScene extends Phaser.Scene {
       this.renderBattle();
     });
     document.getElementById('restart')?.addEventListener('click', () => this.showLobby());
+    document.getElementById('retryMission')?.addEventListener('click', () => {
+      if (!this.active || this.engine.snapshot()?.phase !== 'defeat' || this.commandLocked()) return;
+      // Engine explicitly permits retry after defeat; the same team and acquired
+      // improvements are retained while the terrain, opponents and AP reset.
+      this.engine.deployMission();
+      this.resetActorViews();
+      this.selected = 'a0';
+      this.selectedSkill = null;
+      this.inspectMode = false;
+      this.armedSpell = null;
+      this.aimCell = null;
+      this.note = '';
+      this.reportAction('Nova tentativa iniciada: companhia reunida e melhorias preservadas.');
+      this.persist();
+      this.renderBattle();
+    });
     document.getElementById('saveCampaign')?.addEventListener('click', () => this.persist());
     document.getElementById('exportCampaign')?.addEventListener('click', () => {
       if (!this.active) return;
@@ -361,7 +378,7 @@ export class BattleScene extends Phaser.Scene {
     const candidate = createIronwoodEngine({ seed: value.seed });
     // Validate before replacing the running engine, preserving the active game on error.
     candidate.restoreSave(value);
-    if (['ready', 'brief', 'defeat'].includes(candidate.snapshot().phase)) {
+    if (['ready', 'brief'].includes(candidate.snapshot().phase)) {
       candidate.deployMission();
     }
     this.engine = candidate;
@@ -770,8 +787,8 @@ export class BattleScene extends Phaser.Scene {
     setText('missionSequence', `${mission.act} · OPERAÇÃO ${state.mission + 1}/${MISSIONS.length}`);
     setText('goalName', objective.label);
     setText('goalDetail', objective.status === 'victory'
-      ? 'OBJETIVO CONCLUÍDO — escolha uma melhoria para prosseguir.'
-      : objective.status === 'defeat' ? 'MISSÃO PERDIDA — volte ao menu para recomeçar.'
+      ? (state.phase === 'ending' ? 'CAMPANHA CONCLUÍDA — o destino de Ironwood foi decidido.' : 'OBJETIVO CONCLUÍDO — escolha uma melhoria para prosseguir.')
+      : objective.status === 'defeat' ? 'MISSÃO PERDIDA — use TENTAR NOVAMENTE para recomeçar sem perder melhorias.'
       : objective.detail);
     const goalBar = document.getElementById('goalProgress') as HTMLProgressElement | null;
     if (goalBar) {
@@ -787,6 +804,31 @@ export class BattleScene extends Phaser.Scene {
       goalPanel.dataset.goalTotal = String(objective.total);
     }
     setText('phaseStatus', `Rodada ${state.round} · ${phase} · ${state.weather || 'tempo estável'}${this.note ? ' · ' + this.note : ''}`);
+    const retry = document.getElementById('retryMission') as HTMLButtonElement | null;
+    if (retry) {
+      retry.hidden = state.phase !== 'defeat';
+      retry.disabled = state.phase !== 'defeat' || this.commandLocked();
+    }
+    const resultPanel = document.getElementById('resultPanel');
+    if (resultPanel) {
+      const ended = state.phase === 'ending';
+      resultPanel.hidden = state.phase !== 'defeat' && !ended;
+      resultPanel.dataset.result = state.phase;
+      if (ended) {
+        const outcome = campaignEnding(state);
+        setText('resultTitle', outcome?.title ?? '');
+        setText('resultDesc', outcome?.description ?? '');
+        setText('resultStats', outcome
+          ? `Missões vencidas: ${outcome.wins}/8 · Magias: ${outcome.casts} · Árvores destruídas: ${outcome.trees} · Reféns e focos libertados: ${outcome.rescued} · Derrotas: ${outcome.losses}`
+          : '');
+        resultPanel.dataset.endingKind = outcome?.kind ?? '';
+      } else if (state.phase === 'defeat') {
+        setText('resultTitle', 'A RESISTÊNCIA RECUA');
+        setText('resultDesc', 'Sua companhia foi derrotada. Ironwood ainda possui sobreviventes: você pode tentar esta missão novamente com uma nova floresta, sem perder as melhorias conquistadas. Elara Stormoak reorganiza os destacamentos para a próxima incursão.');
+        setText('resultStats', `Derrotas da companhia: ${state.losses}. As melhorias adquiridas permanecem.`);
+        resultPanel.dataset.endingKind = '';
+      }
+    }
     setText('unitName', actor?.name || 'Sem combatente selecionado');
     setText('unitStats', actor
       ? `PV ${actor.hp}/${actor.maxhp} · Mana ${actor.mp}/${actor.maxmp} · PA ${actor.ap}/2${actor.root ? ' · ENRAIZADO' : ''}`
