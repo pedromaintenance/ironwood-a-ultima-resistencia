@@ -14,8 +14,8 @@ test('M4g: defend convoy through two reinforcement waves and begin mission five'
   }
   assert.ok(winner,'No natural four-mission success: '+JSON.stringify(trials));
   const {initial,state,commands,waveSpawns,engine,previous}=winner;
-  assert.equal(previous.previous.second.first.state.wins,1);
-  assert.equal(previous.previous.second.state.wins,2);
+  assert.equal(previous.second.first.state.wins,1);
+  assert.equal(previous.second.state.wins,2);
   assert.equal(previous.state.wins,3);
   assert.equal(initial.mission,3);
   assert.equal(initial.wave,0);
@@ -46,8 +46,8 @@ test('M4g: defend convoy through two reinforcement waves and begin mission five'
   assert.equal(engine.snapshot().mission,4);
   assert.equal(engine.snapshot().board.filter(t=>t.objective==='shrine'&&!t.cleared).length,3);
   console.log('M4g authentic four missions',JSON.stringify({
-    seed:winner.seed,first:previous.previous.second.first.state.round,
-    second:previous.previous.second.state.round,
+    seed:winner.seed,first:previous.second.first.state.round,
+    second:previous.second.state.round,
     third:previous.state.round,fourth:state.round,
     waves:waveSpawns,actions:commands.length,
     remainingHeroes:state.actors.filter(a=>a.side==='ally'&&a.hp>0).map(a=>({name:a.name,hp:a.hp})),
