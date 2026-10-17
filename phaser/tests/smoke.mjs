@@ -485,7 +485,12 @@ try {
       buffer:Buffer.from(JSON.stringify(before)),
     });
     await page.locator('#lobby').waitFor({state:'hidden',timeout:15000});
-    await canvas.click({position:await cell(canvas,actor.x,actor.y)});
+    // If the imported save already selects the rescuer, clicking the hero
+    // standing on the captive would itself perform the contextual rescue.
+    // An ally who is not selected still receives one selection tap first.
+    if (before.selected !== actor.id) {
+      await canvas.click({position:await cell(canvas,actor.x,actor.y)});
+    }
     const beforeTap=await page.evaluate(()=>JSON.parse(localStorage.getItem('ironwood_phaser_preview_v1')));
     assert.deepEqual(beforeTap,before,'selecting a rescuer should not mutate saved battle state');
     await canvas.click({position:await cell(canvas,x,y)});
