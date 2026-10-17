@@ -4,6 +4,7 @@ import { mkdir } from 'node:fs/promises';
 import { playFreshMission } from '../../tests/playthrough-driver.mjs';
 import { playSecondMission } from '../../tests/rescue-driver.mjs';
 import { playThirdMission } from '../../tests/totem-driver.mjs';
+import { playFourthMission } from '../../tests/survival-driver.mjs';
 
 await mkdir('artifacts/preview', { recursive: true });
 const browser = await chromium.launch({ headless: true });
@@ -20,7 +21,7 @@ async function cell(canvas, x, y) {
 try {
   await page.goto('http://127.0.0.1:4173/', { waitUntil: 'networkidle' });
   assert.equal(await page.locator('#lobby').isVisible(), true, 'lobby should open first');
-  assert.match(await page.locator('.mast').innerText(), /BETA M4f/);
+  assert.match(await page.locator('.mast').innerText(), /BETA M4g/);
   assert.equal(await page.locator('.playtestGuide summary').isVisible(), true);
   assert.equal(await page.locator('#teamCount').innerText(), '3/3');
   await page.locator('#startCampaign').click();
@@ -613,8 +614,96 @@ try {
   assert.equal(mission4.wins,3);
   await page.screenshot({path:'artifacts/preview/20-m4e-mission-four.png',fullPage:true});
 
+
+  // M4g: headless campaign finishes operations 1–3 legitimately; import
+  // the resulting UNMODIFIED operation-4 opening to focus on six real
+  // defense rounds. All player commands, waves and final state are replayed
+  // against Node via Phaser controls, using portable-v2 RNG parity.
+  const defended=playFourthMission({seed:1,team:expectedTeam,difficulty:'story'});
+  assert.equal(defended.phase,'between','legitimate convoy defense must win');
+  assert.equal(defended.initial.mission,3);
+  assert.equal(defended.initial.wins,3);
+  assert.equal(defended.initial.aiOrder,'portable-v2');
+  await page.locator('#restart').click();
+  await page.locator('#importFile').setInputFiles({
+    name:'natural-fourth-mission-v1.json',mimeType:'application/json',
+    buffer:Buffer.from(JSON.stringify(defended.initial)),
+  });
+  await page.locator('#lobby').waitFor({state:'hidden',timeout:15000});
+  assert.equal(await page.locator('#goalPanel').getAttribute('data-goal-kind'),'survive');
+  assert.equal(await page.locator('#goalPanel').getAttribute('data-goal-total'),'6');
+  assert.equal(await page.locator('#defenseStatus').getAttribute('data-wave'),'0');
+  assert.equal(await page.locator('#defenseStatus').getAttribute('data-next-wave'),'4');
+  await page.screenshot({path:'artifacts/preview/21-m4g-defense-start.png',fullPage:true});
+  let sawWaveOne=false,sawWaveTwo=false;
+  for(const step of defended.commands){
+    await page.waitForFunction(()=>document.getElementById('game')?.dataset.inputLocked==='false');
+    if(step.command==='endTurn'){
+      await page.locator('#endTurn').click();
+    }else{
+      const before=await page.evaluate(()=>JSON.parse(localStorage.getItem('ironwood_phaser_preview_v1')));
+      const actor=before.actors.find(a=>a.id===step.args[0]);
+      assert.ok(actor&&actor.hp>0,'expected living defender');
+      if(!(await page.locator('#unitName').innerText()).includes(actor.name)){
+        await canvas.click({position:await cell(canvas,actor.x,actor.y)});
+      }
+      if(step.command==='move'){
+        await canvas.click({position:await cell(canvas,step.args[1],step.args[2])});
+      }else if(step.command==='attack'){
+        const enemy=before.actors.find(a=>a.id===step.args[1]);
+        assert.ok(enemy&&enemy.hp>0,'expected active target');
+        await canvas.click({position:await cell(canvas,enemy.x,enemy.y)});
+      }else if(step.command==='useSkill'){
+        const [id,skill,x,y]=step.args;
+        await page.locator(`#skills button[data-skill="${skill}"]`).click();
+        await canvas.click({position:await cell(canvas,x,y)});
+        if(/TOQUE NOVAMENTE/.test(await page.locator('#impactInfo').innerText())){
+          await canvas.click({position:await cell(canvas,x,y)});
+        }
+      }else throw new Error('Unexpected fourth-operation command '+step.command);
+    }
+    const actual=await page.evaluate(()=>JSON.parse(localStorage.getItem('ironwood_phaser_preview_v1')));
+    assert.deepEqual(actual,step.checkpoint,
+      'M4g Node-Chromium cross-runtime parity including reinforcements, RNG, AP, logs: '+
+      step.command+' '+JSON.stringify(step.args));
+    assert.equal(await page.locator('#goalPanel').getAttribute('data-goal-kind'),'survive');
+    assert.equal(await page.locator('#goalPanel').getAttribute('data-goal-completed'),
+      String(Math.min(6,Math.max(0,actual.round-1))));
+    assert.equal(await page.locator('#defenseStatus').getAttribute('data-wave'),String(actual.wave));
+    assert.equal(await page.locator('#defenseStatus').getAttribute('data-rounds'),
+      String(Math.min(6,Math.max(0,actual.round-1))));
+    assert.equal(await page.locator('#defenseStatus').getAttribute('data-next-wave'),
+      actual.wave===0?'4':actual.wave===1?'6':'none');
+    if(step.command==='endTurn'&&actual.round===4){
+      sawWaveOne=true;
+      assert.equal(actual.wave,1);
+      assert.match(await page.locator('#defenseStatus').innerText(),/REFORÇOS 1\/2/);
+      await page.screenshot({path:'artifacts/preview/22-m4g-first-wave.png',fullPage:true});
+    }
+    if(step.command==='endTurn'&&actual.round===6){
+      sawWaveTwo=true;
+      assert.equal(actual.wave,2);
+      assert.match(await page.locator('#defenseStatus').innerText(),/REFORÇOS 2\/2/);
+      await page.screenshot({path:'artifacts/preview/23-m4g-final-wave.png',fullPage:true});
+    }
+  }
+  assert.ok(sawWaveOne&&sawWaveTwo,'both reinforcement waves must be shown in browser');
+  assert.equal(await page.locator('#goalPanel').getAttribute('data-goal-status'),'victory');
+  assert.equal(await page.locator('#goalPanel').getAttribute('data-goal-completed'),'6');
+  assert.match(await page.locator('#defenseStatus').innerText(),/CORREDOR DEFENDIDO/);
+  await page.screenshot({path:'artifacts/preview/24-m4g-convoy-secured.png',fullPage:true});
+  await page.locator('#upgradeOptions button').first().click();
+  const fifth=await page.evaluate(()=>JSON.parse(localStorage.getItem('ironwood_phaser_preview_v1')));
+  assert.equal(fifth.mission,4);
+  assert.equal(fifth.wins,4);
+  assert.equal(await page.locator('#goalPanel').getAttribute('data-goal-kind'),'cleanse');
+  assert.equal(await page.locator('#goalPanel').getAttribute('data-goal-total'),'3');
+  assert.equal(await page.locator('#defenseStatus').isHidden(),true);
+  assert.match(await page.locator('#missionTitle').innerText(),/A Seiva Corrompida/);
+  await page.screenshot({path:'artifacts/preview/25-m4g-mission-five.png',fullPage:true});
+
   assert.deepEqual(errors, [], 'Phaser should not throw browser errors');
-  console.log('PASS: M4f exact portable cross-runtime combat turns and old-save compatibility, M4e full totem replay, fourth mission, M4d contextual natural rescue checkpoints and mission three, M4c fixture-free Phaser victory to mission 2 and seed replay, core parity, M4b defeat/retry/three endings, M4a totem attacks, M3g goals/victory/upgrades/mission2, M3f cache, HUD, tween lock, pooled units, AOE, mobile');
+  console.log('PASS: M4g six-round convoy survival and two enemy waves, M4f exact portable cross-runtime combat turns and old-save compatibility, M4e full totem replay, fourth mission, M4d contextual natural rescue checkpoints and mission three, M4c fixture-free Phaser victory to mission 2 and seed replay, core parity, M4b defeat/retry/three endings, M4a totem attacks, M3g goals/victory/upgrades/mission2, M3f cache, HUD, tween lock, pooled units, AOE, mobile');
 } finally {
   await browser.close();
 }
