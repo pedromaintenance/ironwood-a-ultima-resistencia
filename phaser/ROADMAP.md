@@ -1,11 +1,32 @@
 # Roadmap executivo — Ironwood Phaser
 
-**Atualização:** 16 de outubro de 2026 — M4a confirmada no Pages; M4b em CI com derrota/retry e epílogos  
+**Atualização:** 16 de outubro de 2026 — M4b publicada; M4c com playthrough autêntico e semente reproduzível em QA  
 **Jogo público:** `main` continua executando o Canvas legado.  
-**Ramo de desenvolvimento:** `feat/phaser-objective-attacks-m4a`, dependente da M3g. **Release público confirmado:** M3g compilada do commit `bfffb911`; Canvas preservado na raiz.  
+**Ramo de desenvolvimento:** `feat/phaser-playthrough-m4c`, baseado na M4b. **Release público anterior confirmado:** M4b compilada do SHA `74b0c154`; Canvas preservado na raiz.  
 **Roadmap do projeto inteiro:** [ROADMAP_IRONWOOD_PHASER.md](../ROADMAP_IRONWOOD_PHASER.md) (versão canônica publicada em `main`).
 
 Este roteiro diferencia funcionalidades **implementadas**, **validadas em CI**, **em revisão** e **ainda planejadas**. Os testes automatizados não substituem o playthrough humano em aparelho físico.
+
+## M4c — Missão 1 do começo ao fim e seed reproduzível (16/10/2026)
+
+- [x] Criação de campanha com seed real, sem fixture nem estados alterados.
+- [x] Vitória natural da missão 1 usando comandos públicos do motor, em duas equipes:
+  Morna/Arven/Vaelis (4 rodadas) e Arven/Vaelis/Dara (3 rodadas); seed 1, Aprendiz.
+- [x] Verificação do upgrade, entrada na missão 2 e dois prisioneiros pendentes.
+- [x] Interface com campo opcional de semente (1–4294967295), valor atual exibido
+  no HUD, recusa de valores inválidos e manutenção do save `ver:1`.
+- [x] Código de QA preparado para replay por cliques reais no Chromium com
+  conferência de cada checkpoint.
+- [ ] Confirmar CI completo (build Vite, Chromium desktop/mobile, replay real
+  com clique); somente depois publicar o SHA imutável aprovado.
+- [ ] Testar manualmente num dispositivo físico.
+- [ ] Validar a campanha 1–8, dificuldade Normal e Implacável, três finais
+  integralmente sem qualquer fixture.
+
+**Evidências:** [guia de validação](../docs/M4C_FULL_PLAYTHROUGH.md) ·
+[CI de core fixture-free](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/actions/runs/38992270580).
+A M4c diferencia a **prova de alcançabilidade real** da missão 1
+da experiência integral de um jogador humano ou da campanha completa.
 
 ## Estado atual
 

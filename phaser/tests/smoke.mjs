@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { chromium } from 'playwright';
 import { mkdir } from 'node:fs/promises';
+import { playFreshMission } from '../../tests/playthrough-driver.mjs';
 
 await mkdir('artifacts/preview', { recursive: true });
 const browser = await chromium.launch({ headless: true });
@@ -17,7 +18,7 @@ async function cell(canvas, x, y) {
 try {
   await page.goto('http://127.0.0.1:4173/', { waitUntil: 'networkidle' });
   assert.equal(await page.locator('#lobby').isVisible(), true, 'lobby should open first');
-  assert.match(await page.locator('.mast').innerText(), /BETA M4b/);
+  assert.match(await page.locator('.mast').innerText(), /BETA M4c/);
   assert.equal(await page.locator('.playtestGuide summary').isVisible(), true);
   assert.equal(await page.locator('#teamCount').innerText(), '3/3');
   await page.locator('#startCampaign').click();
@@ -377,8 +378,86 @@ try {
   }
   await page.screenshot({ path: 'artifacts/preview/12-campaign-ending.png', fullPage: true });
 
+  // M4c: seed is optional, validated, shown to players and reproducible.
+  // No fixture or save import is used for either campaign.
+  await page.locator('#restart').click();
+  await page.locator('#campaignSeed').fill('4294967296');
+  await page.locator('#startCampaign').click();
+  assert.equal(await page.locator('#lobby').isVisible(), true);
+  assert.match(await page.locator('#lobbyError').innerText(), /semente deve ser um inteiro/);
+  await page.locator('#campaignSeed').fill('1');
+  await page.locator('#difficulty').selectOption('story');
+  const expectedTeam = ['guardian','ranger','mage'];
+  for (const key of ['guardian','ranger','druid','mage','cleric','runesmith']) {
+    const choice = page.locator(`[data-hero="${key}"]`);
+    if (!expectedTeam.includes(key) && await choice.getAttribute('aria-pressed') === 'true') {
+      await choice.click();
+    }
+  }
+  for (const key of expectedTeam) {
+    const choice = page.locator(`[data-hero="${key}"]`);
+    if (await choice.getAttribute('aria-pressed') !== 'true') await choice.click();
+  }
+  await page.locator('#startCampaign').click();
+  const seeded = await page.evaluate(() => JSON.parse(localStorage.getItem('ironwood_phaser_preview_v1')));
+  assert.equal(seeded.seed, 1);
+  assert.deepEqual(seeded.team, expectedTeam);
+  assert.equal(seeded.difficulty, 'story');
+  assert.match(await page.locator('#seedDisplay').innerText(), /Semente do mapa: 1/);
+  await page.locator('#restart').click();
+  await page.locator('#startCampaign').click();
+  const repeated = await page.evaluate(() => JSON.parse(localStorage.getItem('ironwood_phaser_preview_v1')));
+  assert.deepEqual(repeated, seeded, 'identical seed/team/difficulty must generate identical fresh campaign');
+  await page.reload({ waitUntil: 'networkidle' });
+  await page.locator('#continueCampaign').click();
+  assert.match(await page.locator('#seedDisplay').innerText(), /Semente do mapa: 1/);
+  await page.screenshot({ path: 'artifacts/preview/13-m4c-seeded.png', fullPage: true });
+
+  // M4c hard gate: ACTUAL Phaser pointer/skill/end-turn controls replay a
+  // fixture-free engine victory with the same deterministic seed. Not a
+  // modified snapshot, not a generated near-victory import.
+  const played = playFreshMission({seed:1,team:expectedTeam,difficulty:'story'});
+  assert.equal(played.state.phase,'between','reference playthrough must genuinely win');
+  for (const step of played.commands) {
+    await page.waitForFunction(() => document.getElementById('game')?.dataset.inputLocked === 'false');
+    if (step.command === 'endTurn') {
+      await page.locator('#endTurn').click();
+    } else {
+      const now = await page.evaluate(() => JSON.parse(localStorage.getItem('ironwood_phaser_preview_v1')));
+      const actor = now.actors.find(a => a.id === step.args[0]);
+      assert.ok(actor && actor.hp > 0,'replay actor must remain alive');
+      await canvas.click({position:await cell(canvas,actor.x,actor.y)});
+      if (step.command === 'move') {
+        await canvas.click({position:await cell(canvas,step.args[1],step.args[2])});
+      } else if (step.command === 'attack') {
+        const enemy = now.actors.find(a => a.id === step.args[1]);
+        assert.ok(enemy && enemy.hp > 0,'replay target must remain alive');
+        await canvas.click({position:await cell(canvas,enemy.x,enemy.y)});
+      } else if (step.command === 'useSkill') {
+        const skill=step.args[1], x=step.args[2], y=step.args[3];
+        await page.locator(`#skills button[data-skill="${skill}"]`).click();
+        await canvas.click({position:await cell(canvas,x,y)});
+        if (/TOQUE NOVAMENTE/.test(await page.locator('#impactInfo').innerText())) {
+          await canvas.click({position:await cell(canvas,x,y)});
+        }
+      } else throw new Error('Unknown replay command '+step.command);
+    }
+    const actual = await page.evaluate(() => JSON.parse(localStorage.getItem('ironwood_phaser_preview_v1')));
+    assert.deepEqual(actual,step.checkpoint,
+      'Phaser public UI diverged from the real core at '+step.command+' '+JSON.stringify(step.args));
+  }
+  await page.waitForFunction(() => document.getElementById('game')?.dataset.inputLocked === 'false');
+  assert.equal(await page.locator('#goalPanel').getAttribute('data-goal-status'),'victory');
+  assert.equal((await page.evaluate(() => JSON.parse(localStorage.getItem('ironwood_phaser_preview_v1')))).wins,1);
+  await page.screenshot({ path: 'artifacts/preview/14-m4c-natural-victory.png', fullPage: true });
+  await page.locator('#upgradeOptions button').first().click();
+  assert.equal(await page.locator('#goalPanel').getAttribute('data-goal-kind'),'rescue');
+  assert.match(await page.locator('#missionTitle').innerText(),/Os Nomes dos Desaparecidos/);
+  await page.screenshot({ path: 'artifacts/preview/15-m4c-natural-mission2.png', fullPage: true });
+
+
   assert.deepEqual(errors, [], 'Phaser should not throw browser errors');
-  console.log('PASS: core parity, M4b defeat/retry/three endings, M4a totem attacks, M3g goals/victory/upgrades/mission2, M3f cache, HUD, tween lock, pooled units, AOE, mobile');
+  console.log('PASS: M4c fixture-free Phaser victory to mission 2 and seed replay, core parity, M4b defeat/retry/three endings, M4a totem attacks, M3g goals/victory/upgrades/mission2, M3f cache, HUD, tween lock, pooled units, AOE, mobile');
 } finally {
   await browser.close();
 }

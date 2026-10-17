@@ -397,7 +397,17 @@ export class BattleScene extends Phaser.Scene {
   }
 
   private newCampaign(team: string[], difficulty: string): void {
-    const seed = Date.now() >>> 0;
+    const input = document.getElementById('campaignSeed') as HTMLInputElement | null;
+    const rawSeed = input?.value.trim() || '';
+    const supplied = rawSeed !== '' ? Number(rawSeed) : null;
+    // Explicit seed only changes the random map's starting state. Blank keeps
+    // the existing Date.now() default, and invalid values never replace a save.
+    if (rawSeed && (!/^\d+$/.test(rawSeed) || !Number.isSafeInteger(supplied) ||
+      (supplied as number) < 1 || (supplied as number) > 0xFFFFFFFF)) {
+      this.setLobbyError('A semente deve ser um inteiro entre 1 e 4294967295.');
+      return;
+    }
+    const seed = supplied ?? (Date.now() >>> 0 || 1);
     this.engine = createIronwoodEngine({ seed });
     this.engine.startCampaign({ team, difficulty, seed });
     this.engine.deployMission();
@@ -804,6 +814,7 @@ export class BattleScene extends Phaser.Scene {
       goalPanel.dataset.goalTotal = String(objective.total);
     }
     setText('phaseStatus', `Rodada ${state.round} · ${phase} · ${state.weather || 'tempo estável'}${this.note ? ' · ' + this.note : ''}`);
+    setText('seedDisplay', `Semente do mapa: ${state.seed} · equipe e dificuldade preservadas no save.`);
     const retry = document.getElementById('retryMission') as HTMLButtonElement | null;
     if (retry) {
       retry.hidden = state.phase !== 'defeat';
