@@ -1,0 +1,22 @@
+name: Ironwood M4h authentic cleanse mission
+on:
+  push:
+    branches: [feat/phaser-cleanse-m4h]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  real-five-missions:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Existing core and portable-save regressions
+        run: npm test && node --test tests/portable-order.test.mjs
+      - name: Preserve four natural victories
+        run: node --test tests/playthrough.test.mjs tests/rescue.test.mjs tests/totem.test.mjs tests/survival.test.mjs
+      - name: Cleanse three shrines in a fifth authentic mission
+        run: node --test tests/cleanse.test.mjs

@@ -5,6 +5,7 @@ import { playFreshMission } from '../../tests/playthrough-driver.mjs';
 import { playSecondMission } from '../../tests/rescue-driver.mjs';
 import { playThirdMission } from '../../tests/totem-driver.mjs';
 import { playFourthMission } from '../../tests/survival-driver.mjs';
+import { playFifthMission } from '../../tests/cleanse-driver.mjs';
 
 await mkdir('artifacts/preview', { recursive: true });
 const browser = await chromium.launch({ headless: true });
@@ -21,7 +22,7 @@ async function cell(canvas, x, y) {
 try {
   await page.goto('http://127.0.0.1:4173/', { waitUntil: 'networkidle' });
   assert.equal(await page.locator('#lobby').isVisible(), true, 'lobby should open first');
-  assert.match(await page.locator('.mast').innerText(), /BETA M4g/);
+  assert.match(await page.locator('.mast').innerText(), /BETA M4h/);
   assert.equal(await page.locator('.playtestGuide summary').isVisible(), true);
   assert.equal(await page.locator('#teamCount').innerText(), '3/3');
   await page.locator('#startCampaign').click();
@@ -702,8 +703,86 @@ try {
   assert.match(await page.locator('#missionTitle').innerText(),/A Seiva Corrompida/);
   await page.screenshot({path:'artifacts/preview/25-m4g-mission-five.png',fullPage:true});
 
+
+  // M4h: the opening state is won naturally after four legitimate missions.
+  // Replay every fifth-mission player command (including the third cleanse)
+  // with Phaser board interactions, comparing entire states with Node.
+  const cleansed=playFifthMission({seed:1,team:expectedTeam,difficulty:'story'});
+  assert.equal(cleansed.phase,'between');
+  assert.equal(cleansed.initial.wins,4);
+  assert.equal(cleansed.initial.aiOrder,'portable-v2');
+  assert.equal(cleansed.initial.board.filter(t=>t.objective==='shrine'&&!t.cleared).length,3);
+  await page.locator('#restart').click();
+  await page.locator('#importFile').setInputFiles({
+    name:'natural-fifth-mission-v1.json',mimeType:'application/json',
+    buffer:Buffer.from(JSON.stringify(cleansed.initial)),
+  });
+  await page.locator('#lobby').waitFor({state:'hidden',timeout:15000});
+  assert.equal(await page.locator('#goalPanel').getAttribute('data-goal-kind'),'cleanse');
+  assert.equal(await page.locator('#cleanseStatus').getAttribute('data-remaining'),'3');
+  assert.equal((await page.locator('#cleanseStatus').innerText()).match(/corrupção 5/g)?.length,3);
+  await page.screenshot({path:'artifacts/preview/26-m4h-corruption-start.png',fullPage:true});
+  let purificationClicks=0;
+  for(const step of cleansed.commands){
+    await page.waitForFunction(()=>document.getElementById('game')?.dataset.inputLocked==='false');
+    if(step.command==='endTurn'){
+      await page.locator('#endTurn').click();
+    }else{
+      const before=await page.evaluate(()=>JSON.parse(localStorage.getItem('ironwood_phaser_preview_v1')));
+      const actor=before.actors.find(a=>a.id===step.args[0]);
+      assert.ok(actor&&actor.hp>0,'living actor required for fifth mission');
+      if(!(await page.locator('#unitName').innerText()).includes(actor.name)){
+        await canvas.click({position:await cell(canvas,actor.x,actor.y)});
+      }
+      if(step.command==='move'){
+        await canvas.click({position:await cell(canvas,step.args[1],step.args[2])});
+      }else if(step.command==='attack'){
+        const target=before.actors.find(a=>a.id===step.args[1]);
+        assert.ok(target&&target.hp>0);
+        await canvas.click({position:await cell(canvas,target.x,target.y)});
+      }else if(step.command==='useSkill'){
+        const [_,skill,x,y]=step.args;
+        if(skill==='interact'){
+          await canvas.click({position:await cell(canvas,x,y)});
+          purificationClicks++;
+        }else{
+          await page.locator(`#skills button[data-skill="${skill}"]`).click();
+          await canvas.click({position:await cell(canvas,x,y)});
+          if(/TOQUE NOVAMENTE/.test(await page.locator('#impactInfo').innerText())){
+            await canvas.click({position:await cell(canvas,x,y)});
+          }
+        }
+      }else throw new Error('Unexpected M4h command '+step.command);
+    }
+    const actual=await page.evaluate(()=>JSON.parse(localStorage.getItem('ironwood_phaser_preview_v1')));
+    assert.deepEqual(actual,step.checkpoint,
+      'M4h full Node-Chromium state parity at '+step.command+' '+JSON.stringify(step.args));
+    const remain=actual.board.filter(t=>t.objective==='shrine'&&!t.cleared).length;
+    assert.equal(await page.locator('#cleanseStatus').getAttribute('data-remaining'),String(remain));
+    assert.equal(await page.locator('#cleanseStatus').getAttribute('data-completed'),String(3-remain));
+    const targets=actual.board.filter(t=>t.objective==='shrine').sort((a,b)=>a.y-b.y||a.x-b.x);
+    const display=await page.locator('#cleanseStatus').innerText();
+    for(const [i,t] of targets.entries()){
+      assert.ok(display.includes(`Foco ${i+1} (${t.x+1},${t.y+1}): ${t.cleared?'PURIFICADO':'corrupção '+t.corrupt}`));
+    }
+  }
+  assert.equal(purificationClicks,3,'three genuine direct-tap purifications');
+  assert.equal(await page.locator('#goalPanel').getAttribute('data-goal-status'),'victory');
+  assert.equal(await page.locator('#goalPanel').getAttribute('data-goal-completed'),'3');
+  await page.screenshot({path:'artifacts/preview/27-m4h-three-foci-cleansed.png',fullPage:true});
+  await page.locator('#upgradeOptions button').first().click();
+  const sixth=await page.evaluate(()=>JSON.parse(localStorage.getItem('ironwood_phaser_preview_v1')));
+  assert.equal(sixth.mission,5);
+  assert.equal(sixth.wins,5);
+  assert.equal(sixth.phase,'player');
+  assert.equal(sixth.actors.filter(a=>a.side==='enemy').length,7);
+  assert.equal(await page.locator('#goalPanel').getAttribute('data-goal-kind'),'kill');
+  assert.equal(await page.locator('#cleanseStatus').isHidden(),true);
+  assert.match(await page.locator('#missionTitle').innerText(),/A Marcha das Cinzas/);
+  await page.screenshot({path:'artifacts/preview/28-m4h-sixth-mission.png',fullPage:true});
+
   assert.deepEqual(errors, [], 'Phaser should not throw browser errors');
-  console.log('PASS: M4g six-round convoy survival and two enemy waves, M4f exact portable cross-runtime combat turns and old-save compatibility, M4e full totem replay, fourth mission, M4d contextual natural rescue checkpoints and mission three, M4c fixture-free Phaser victory to mission 2 and seed replay, core parity, M4b defeat/retry/three endings, M4a totem attacks, M3g goals/victory/upgrades/mission2, M3f cache, HUD, tween lock, pooled units, AOE, mobile');
+  console.log('PASS: M4h authentic corruption cleansing and sixth mission, M4g six-round convoy survival and two enemy waves, M4f exact portable cross-runtime combat turns and old-save compatibility, M4e full totem replay, fourth mission, M4d contextual natural rescue checkpoints and mission three, M4c fixture-free Phaser victory to mission 2 and seed replay, core parity, M4b defeat/retry/three endings, M4a totem attacks, M3g goals/victory/upgrades/mission2, M3f cache, HUD, tween lock, pooled units, AOE, mobile');
 } finally {
   await browser.close();
 }

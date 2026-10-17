@@ -78,3 +78,7 @@
 /* M4g: survival reinforcement tracker, usable without relying on map colors. */
 .defenseStatus{font:600 11px/1.7 system-ui,sans-serif!important;color:#d8ecbe!important;background:#22302c;padding:9px 10px;border-left:3px solid #a8c992;overflow-wrap:anywhere}
 #goalPanel[data-goal-status="victory"] .defenseStatus{color:#cbe8cb!important;border-left-color:#9bbe89}
+
+/* M4h — individual corruption focuses, readable independently of map tint. */
+.cleanseStatus{font:600 11px/1.7 system-ui,sans-serif!important;color:#e9c4df!important;background:#312432;padding:9px 10px;border-left:3px solid #c99dc6;overflow-wrap:anywhere}
+#goalPanel[data-goal-status="victory"] .cleanseStatus{color:#cbe8cb!important;border-left-color:#9bbe89}
