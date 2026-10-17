@@ -6,13 +6,13 @@
   <meta name="theme-color" content="#10191d" />
   <meta name="description" content="Protótipo de batalha Ironwood em Phaser 4" />
   <title>Ironwood — Prévia Phaser</title>
-  <script type="module" crossorigin src="./assets/index-V3jaiPAG.js"></script>
-  <link rel="stylesheet" crossorigin href="./assets/index-ckzx8Mhl.css">
+  <script type="module" crossorigin src="./assets/index-Dl19EnCv.js"></script>
+  <link rel="stylesheet" crossorigin href="./assets/index-iXRoM2rI.css">
 </head>
 <body>
   <main class="shell">
     <header class="mast">
-      <div><span class="eyebrow">A ÚLTIMA RESISTÊNCIA</span><h1>IRONWOOD <small>• BETA M4i</small></h1></div>
+      <div><span class="eyebrow">A ÚLTIMA RESISTÊNCIA</span><h1>IRONWOOD <small>• BETA M4j</small></h1></div>
       <span class="branch">PRÉVIA DE TESTE · PAGES</span>
     </header>
     <section id="lobby" class="lobby" role="dialog" aria-modal="true" aria-labelledby="lobbyTitle">
@@ -48,8 +48,9 @@
         <p class="helper">Toque num aliado para selecioná-lo; toque numa casa para mover ou num inimigo para atacar. Magias de área mostram a zona afetada; um segundo toque confirma habilidades perigosas.</p>
         <p id="actionFeedback" class="actionFeedback" role="status" aria-live="polite">Selecione uma unidade e experimente uma habilidade. Ações recusadas aparecem aqui sem consumir recursos.</p>
         <p id="commandStatus" class="commandStatus" role="status" aria-live="polite">PRONTO — escolha uma ação.</p>
-        <details class="playtestGuide"><summary>Como testar esta versão · M4i</summary>
+        <details class="playtestGuide"><summary>Como testar esta versão · M4j</summary>
           <p>1. Escolha três heróis e inicie uma campanha. 2. Mova uma unidade e note o aviso ANIMANDO: comandos de combate ficam suspensos por uma fração de segundo, mas inspeção e seleção continuam. Depois encerre o turno. 3. Selecione a maga Vaelis e lance Bola de Fogo: observe o destaque e o aviso de fogo amigo. 4. Inspecione uma casa e experimente salvar e recarregar.</p>
+          <p><strong>M4j:</strong> Os Faróis do Crepúsculo: alcance os três marcos ancestrais, selecione um herói adjacente e toque diretamente na casa do marco. O painel mostra as coordenadas e muda AGUARDANDO para ATIVADO. Não é necessário matar toda a guarda para vencer. Na prova com semente 1, Aprendiz, Morna/Arven/Vaelis, os três marcos foram ativados até a rodada 4, liberando a última operação, O Espinho da Rainha.</p>
           <p><strong>M4i:</strong> na sexta missão, A Marcha das Cinzas, derrote os sete soldados da Corte enquanto o incêndio se espalha. O painel registra as casas em chamas, aliados expostos, árvores destruídas e inimigos restantes. O combate pode terminar mesmo que a mata continue queimando. Com semente 1, Aprendiz e Morna/Arven/Vaelis, o motor concluiu a operação na rodada 4 e liberou Os Faróis do Crepúsculo. Cuidado: o fogo pode aumentar com suas próprias magias.</p>
           <p><strong>M4h:</strong> A Seiva Corrompida tem três focos marcados no painel com coordenadas e corrupção restante. Um herói adjacente pode tocar no foco para purificar; Tília também pode usar a magia Purificar em área. A campanha de referência (semente 1, Aprendiz, Morna/Arven/Vaelis) terminou a operação 5 em duas rodadas e desbloqueou A Marcha das Cinzas. Siga os progressos da missão até 3/3.</p>
           <p><strong>M4g:</strong> A Noite Mais Longa exige resistir a seis rodadas, mesmo que sobrem inimigos. O painel agora mostra o avanço da defesa e avisa da primeira onda (rodada 4: Lobo e Arqueiro) e da segunda (rodada 6: Lanceiro e Lobo). Mantenha ao menos um herói vivo até o final da sexta rodada. Ao vencer, escolha uma melhoria e entre em A Seiva Corrompida.</p>
@@ -81,6 +82,7 @@
             <p id="defenseStatus" class="defenseStatus" role="status" aria-live="polite" hidden></p>
             <p id="cleanseStatus" class="cleanseStatus" role="status" aria-live="polite" hidden></p>
             <p id="ashStatus" class="ashStatus" role="status" aria-live="polite" hidden></p>
+            <p id="beaconStatus" class="beaconStatus" role="status" aria-live="polite" hidden></p>
           </div>
           <p id="phaseStatus" class="status">Preparando resistência...</p>
           <p id="seedDisplay" class="seedDisplay" aria-label="Semente da campanha"></p>
@@ -104,7 +106,7 @@
         <section class="panel report"><span class="eyebrow">REGISTRO DE CAMPO</span><div id="battleLog" aria-live="polite"></div></section>
       </aside>
     </div>
-    <footer>Beta M4i em Phaser 4.2.1 · motor tático independente · arte pixelada autoral · save separado da versão Canvas.</footer>
+    <footer>Beta M4j em Phaser 4.2.1 · motor tático independente · arte pixelada autoral · save separado da versão Canvas.</footer>
   </main>
 </body>
 </html>
