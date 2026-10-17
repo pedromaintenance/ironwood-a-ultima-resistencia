@@ -1,1 +1,1 @@
-Phaser M4e beta: 4c9d6a95317691e05d227064510c8c82718bcabd (CI 39025198586). Canvas main root retained.
+Phaser M4f beta: 00db07d4c7bdbbfc20d51ca3635c97154b3e808a (CI 39025948340). Canvas main root retained.
