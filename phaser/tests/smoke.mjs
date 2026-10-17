@@ -20,7 +20,7 @@ async function cell(canvas, x, y) {
 try {
   await page.goto('http://127.0.0.1:4173/', { waitUntil: 'networkidle' });
   assert.equal(await page.locator('#lobby').isVisible(), true, 'lobby should open first');
-  assert.match(await page.locator('.mast').innerText(), /BETA M4e/);
+  assert.match(await page.locator('.mast').innerText(), /BETA M4f/);
   assert.equal(await page.locator('.playtestGuide summary').isVisible(), true);
   assert.equal(await page.locator('#teamCount').innerText(), '3/3');
   await page.locator('#startCampaign').click();
@@ -401,8 +401,10 @@ try {
     if (await choice.getAttribute('aria-pressed') !== 'true') await choice.click();
   }
   await page.locator('#startCampaign').click();
+  // The new beta must explicitly persist the portable strategy.
   const seeded = await page.evaluate(() => JSON.parse(localStorage.getItem('ironwood_phaser_preview_v1')));
   assert.equal(seeded.seed, 1);
+  assert.equal(seeded.aiOrder,'portable-v2');
   assert.deepEqual(seeded.team, expectedTeam);
   assert.equal(seeded.difficulty, 'story');
   assert.match(await page.locator('#seedDisplay').innerText(), /Semente do mapa: 1/);
