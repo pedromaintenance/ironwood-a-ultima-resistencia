@@ -23,7 +23,20 @@ function enemyAction(a){const G = getState();if(a.hp<=0)return;let list=heroes()
 }
 
 function enemyTurn(){const G = getState();if(!G||G.phase!=='enemy')return;
- const order=hostiles().sort(()=>random()-.5);for(let a of order){if(a.hp>0)enemyAction(a);if(!heroes().length){defeat();return}}
+ // Versioned enemy ordering: the historical Canvas comparator must remain
+ // untouched for imported v1 saves lacking aiOrder. The portable opt-in
+ // uses an explicit Fisher-Yates shuffle (exactly n-1 RNG draws) so Node and
+ // browsers consume the same PRNG stream and issue identical enemy commands.
+ const order=hostiles();
+ if(G.aiOrder==='portable-v2'){
+   for(let i=order.length-1;i>0;i--){
+     const j=Math.floor(random()*(i+1));
+     [order[i],order[j]]=[order[j],order[i]];
+   }
+ }else{
+   order.sort(()=>random()-.5);
+ }
+ for(let a of order){if(a.hp>0)enemyAction(a);if(!heroes().length){defeat();return}}
  worldTick();if(G.phase!=='enemy')return;if(!heroes().length){defeat();return}
  G.round++;if(MISSIONS[G.mission].kind==='survive'&&G.round===4&&G.wave===0){spawnWave(['wolf','archer']);G.wave=1;log('⚠ Uma nova patrulha chega pela borda da mata.')}
  if(MISSIONS[G.mission].kind==='survive'&&G.round===6&&G.wave===1){spawnWave(['spear','wolf']);G.wave=2;log('⚠ Os últimos perseguidores avistam o comboio.')}
