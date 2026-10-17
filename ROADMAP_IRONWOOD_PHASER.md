@@ -6,6 +6,20 @@
 **Planejamento:** 15/10/2026  
 **Estado:** execução sequencial; não substituir o jogo publicado antes de validar a nova versão.
 
+## M4c — Playthrough autêntico e sementes reproduzíveis (16/10/2026)
+
+**Status:** implementação em [PR #28](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/pull/28) (draft); gate de Chromium e deploy M4c ainda pendentes. **A beta pública continua M4b até confirmação da M4c.**
+
+- [x] **Missão 1 vencida sem fixtures nem snapshots alterados**: o agente de QA inicia campanha normal e usa somente `move`, `attack`, `useSkill` e `endTurn`; duas equipes diferentes vencem no modo Aprendiz com seed 1 — Morna/Arven/Vaelis em 4 rodadas e Arven/Vaelis/Dara em 3 rodadas.
+- [x] Regressão automatizada comprova vitória, upgrade e entrada na missão 2 com seus dois prisioneiros; [CI da prova inicial](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/actions/runs/38992270580) passou.
+- [x] Campo opcional de semente inteira na interface Phaser; se vazio, partida aleatória como antes. A semente é exibida durante combate para reprodução de bugs. Formato de save `ver:1` e versão Canvas intocados.
+- [x] Driver de QA e teste Chromium escritos para reproduzir a trajetória vencedora por **cliques reais** e comparar o save a cada ação.
+- [ ] Confirmar workflow completo de Phaser (build, Chromium desktop/mobile, replay vitorioso) para o SHA imutável de release e publicar **somente** `phaser-preview/` após aprovação.
+- [ ] QA físico e continuidade real das missões 2–8 e dos três finais sem fixtures.
+
+**Detalhes:** [guia M4c no ramo de desenvolvimento](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/blob/feat/phaser-playthrough-m4c/docs/M4C_FULL_PLAYTHROUGH.md).
+A prova do motor é um ganho real de cobertura, mas **não é prova de campanha inteira** nem de balanceamento geral por semente e dificuldade.
+
 ## M4b — Derrota e epílogos canônicos (16/10/2026)
 
 **[JOGAR BETA M4b NO GITHUB PAGES](https://pedromaintenance.github.io/ironwood-a-ultima-resistencia/phaser-preview/)** — fonte `74b0c154`, 29/29 testes, [CI](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/actions/runs/38988894146), [publicação concluída](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/actions/runs/38989071534). [Implantação final do Pages aprovada](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/actions/runs/38989168527); URL pública confirmada como beta M4b pela pasta de release.
