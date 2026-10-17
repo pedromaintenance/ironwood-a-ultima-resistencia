@@ -1,0 +1,25 @@
+name: Ironwood M4d unmodified rescue playthrough
+
+on:
+  push:
+    branches: [feat/phaser-rescue-m4d]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  rescue-regressions:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Core regressions and parity
+        run: npm test
+      - name: M4c first natural victory
+        run: node --test tests/playthrough.test.mjs
+      - name: M4d two complete operations, no injected states
+        run: node --test tests/rescue.test.mjs
