@@ -1,6 +1,6 @@
 # Roadmap executivo — Ironwood Phaser
 
-**Atualização:** 16 de outubro de 2026 — M4a passou na CI (26/26) e está em publicação; M3g confirmada no Pages  
+**Atualização:** 16 de outubro de 2026 — M4a confirmada no Pages; M4b em CI com derrota/retry e epílogos  
 **Jogo público:** `main` continua executando o Canvas legado.  
 **Ramo de desenvolvimento:** `feat/phaser-objective-attacks-m4a`, dependente da M3g. **Release público confirmado:** M3g compilada do commit `bfffb911`; Canvas preservado na raiz.  
 **Roadmap do projeto inteiro:** [ROADMAP_IRONWOOD_PHASER.md](../ROADMAP_IRONWOOD_PHASER.md) (versão canônica publicada em `main`).
@@ -153,6 +153,20 @@ Este roteiro diferencia funcionalidades **implementadas**, **validadas em CI**, 
 - [ ] Jogar do começo ao fim a missão 1 sem preparar save, depois demais objetivos e finais.
 
 **Critério importante:** a missão 3 agora aceita ataques de aliados sem magia ofensiva; a UI não deve gastar PA em clique fora de alcance ou em totem concluído. [Relatório técnico M4a](../docs/M4A_OBJECTIVE_ATTACKS.md).
+
+### M4b — Derrota persistente, retry explícito e epílogos (**CI 29/29 e publicação aprovadas**)
+- [x] Corrigir o resume de `phase='defeat'`: salvar/carregar deve permanecer na tela de derrota, sem iniciar uma partida automaticamente.
+- [x] Botão **TENTAR NOVAMENTE** somente após derrota; preservar equipe, missão, upgrades, vitórias e perdas usando `engine.deployMission()`.
+- [x] Painel de resultado responsivo e anunciado por leitor de tela; vitória final mostra estatísticas.
+- [x] Reproduzir os critérios e textos dos **3 finais canônicos do Canvas** em `src/core/ending.js`, sem modificar RNG ou motor.
+- [x] Testes de core para os limiares, save e retry, além de simulação determinística dos primeiros turnos desde o início sem fixture.
+- [x] Smoke Chromium: derrota e reload, retry da mesma missão, 3 finais por saves válidos.
+- [x] [29/29 testes, build Phaser/Vite e Chromium desktop/mobile aprovados](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/actions/runs/38988894146), fonte imutável `74b0c154`.
+- [x] [Workflow seguro M4b concluiu](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/actions/runs/38989071534) e copiou a beta para `main/phaser-preview/` sem alterar Canvas.
+- [x] [Implantação final do GitHub Pages aprovada](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/actions/runs/38989168527); `DEPLOYMENT.txt` indica M4b SHA `74b0c154` e `index.html` contém retry e painel de resultado.
+- [ ] QA em aparelho real, 8 missões completas e três finais por playthrough.
+
+**Nota:** os três finais foram testados por estados válidos preparados; isso não equivale a 8 missões jogadas integralmente. [Guia técnico M4b](../docs/M4B_RETRY_ENDINGS.md).
 
 ### M4 — Campanha 8 missões
 - [ ] Telas de briefing, vitória, derrota, retry e progressão.
