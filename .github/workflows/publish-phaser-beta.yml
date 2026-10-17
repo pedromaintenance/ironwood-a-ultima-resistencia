@@ -7,7 +7,7 @@ on:
   workflow_run:
     workflows: ['Ironwood Phaser preview']
     types: [completed]
-    branches: ['feat/phaser-rescue-m4d']
+    branches: ['feat/phaser-totem-playthrough-m4e']
   workflow_dispatch:
 
 permissions:
@@ -22,7 +22,7 @@ jobs:
   publish-beta:
     # Only an approved immutable candidate CI may publish. A failed, cancelled
     # or newer unreviewed source run cannot overwrite the current beta.
-    if: ${{ github.event_name == 'push' || github.event_name == 'workflow_dispatch' || (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.id == 38994062904 && github.event.workflow_run.head_sha == '73883e7036948bfcfd7f2048da41cab8051e7c2a' && github.event.workflow_run.head_repository.full_name == 'pedromaintenance/ironwood-a-ultima-resistencia') }}
+    if: ${{ github.event_name == 'push' || github.event_name == 'workflow_dispatch' || (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.id == 39025198586 && github.event.workflow_run.head_sha == '4c9d6a95317691e05d227064510c8c82718bcabd' && github.event.workflow_run.head_repository.full_name == 'pedromaintenance/ironwood-a-ultima-resistencia') }}
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -31,18 +31,18 @@ jobs:
         with:
           ref: main
           persist-credentials: true
-      - name: Require completed green CI for the exact M4d candidate
+      - name: Require completed green CI for the exact M4e candidate
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          conclusion="$(gh api repos/${{ github.repository }}/actions/runs/38994062904 --jq '.conclusion')"
+          conclusion="$(gh api repos/${{ github.repository }}/actions/runs/39025198586 --jq '.conclusion')"
           test "$conclusion" = success
       - name: Checkout tested Phaser preview independently
         uses: actions/checkout@v4
         with:
-          # Immutable, CI-verified M4d release candidate.
-          # tests/build/browser: https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/actions/runs/38994062904
-          ref: 73883e7036948bfcfd7f2048da41cab8051e7c2a
+          # Immutable, CI-verified M4e release candidate.
+          # tests/build/browser: https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/actions/runs/39025198586
+          ref: 4c9d6a95317691e05d227064510c8c82718bcabd
           path: .phaser-build-src
           persist-credentials: false
       - name: Node 22
@@ -51,22 +51,25 @@ jobs:
           node-version: '22'
       - name: Assert exactly the commit tested in CI
         run: |
-          test "$(git -C .phaser-build-src rev-parse HEAD)" = "73883e7036948bfcfd7f2048da41cab8051e7c2a"
+          test "$(git -C .phaser-build-src rev-parse HEAD)" = "4c9d6a95317691e05d227064510c8c82718bcabd"
       - name: Verify core regressions
         run: npm test
         working-directory: .phaser-build-src
-      - name: Require independently green fixture-free M4d playthrough CI
+      - name: Require independently green fixture-free M4e playthrough CI
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          test "$(gh api repos/${{ github.repository }}/actions/runs/38994062943 --jq '.conclusion')" = success
-          test "$(gh api repos/${{ github.repository }}/actions/runs/38994062943 --jq '.head_sha')" = "73883e7036948bfcfd7f2048da41cab8051e7c2a"
+          test "$(gh api repos/${{ github.repository }}/actions/runs/39025198589 --jq '.conclusion')" = success
+          test "$(gh api repos/${{ github.repository }}/actions/runs/39025198589 --jq '.head_sha')" = "4c9d6a95317691e05d227064510c8c82718bcabd"
       - name: Replay fresh mission victory without forced save state
         working-directory: .phaser-build-src
         run: node --test tests/playthrough.test.mjs
       - name: Recheck two genuinely completed missions and natural rescues
         working-directory: .phaser-build-src
         run: node --test tests/rescue.test.mjs
+      - name: Require three naturally completed missions and all totems destroyed
+        working-directory: .phaser-build-src
+        run: node --test tests/totem.test.mjs
       - name: Build separate Phaser preview
         working-directory: .phaser-build-src/phaser
         run: |
@@ -80,7 +83,7 @@ jobs:
           test -s phaser-preview/index.html
           test -f index.html
           test -f sw.js
-          printf '%s\n' 'Phaser M4d beta: 73883e7036948bfcfd7f2048da41cab8051e7c2a (CI 38994062904). Canvas main root retained.' > phaser-preview/DEPLOYMENT.txt
+          printf '%s\n' 'Phaser M4e beta: 4c9d6a95317691e05d227064510c8c82718bcabd (CI 39025198586). Canvas main root retained.' > phaser-preview/DEPLOYMENT.txt
       - name: Commit the generated standalone preview to main
         run: |
           git config user.name 'github-actions[bot]'
@@ -90,7 +93,7 @@ jobs:
             echo 'Published preview is already up to date.'
             exit 0
           fi
-          git commit -m 'build(pages): publish tested M4d beta under phaser-preview'
+          git commit -m 'build(pages): publish tested M4e beta under phaser-preview'
           git pull --rebase origin main
           git push origin HEAD:main
       - name: Note preview path
