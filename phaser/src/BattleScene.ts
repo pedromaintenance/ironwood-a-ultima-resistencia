@@ -409,7 +409,9 @@ export class BattleScene extends Phaser.Scene {
     }
     const seed = supplied ?? (Date.now() >>> 0 || 1);
     this.engine = createIronwoodEngine({ seed });
-    this.engine.startCampaign({ team, difficulty, seed });
+    // M4f: only NEW Phaser campaigns opt into portable enemy ordering.
+    // Old saves missing aiOrder continue to use their original Canvas rules.
+    this.engine.startCampaign({ team, difficulty, seed, aiOrder: 'portable-v2' });
     this.engine.deployMission();
     this.resetActorViews();
     this.active = true;
