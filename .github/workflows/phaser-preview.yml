@@ -12,6 +12,7 @@ on:
       - feat/phaser-render-cache-m3f
       - feat/phaser-mission-goals-m3g
       - feat/phaser-objective-attacks-m4a
+      - feat/phaser-retry-endings-m4b
   pull_request:
     branches:
       - feat/ironwood-core-phase1
