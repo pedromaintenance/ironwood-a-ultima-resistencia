@@ -1,0 +1,22 @@
+name: Ironwood M4i six genuine victories
+on:
+  push:
+    branches: [feat/phaser-ashes-m4i]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  natural-ashes:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Preserve core regressions and portable AI saves
+        run: npm test && node --test tests/portable-order.test.mjs
+      - name: Five previous authentic missions
+        run: node --test tests/playthrough.test.mjs tests/rescue.test.mjs tests/totem.test.mjs tests/survival.test.mjs tests/cleanse.test.mjs
+      - name: Kill all seven enemies in sixth actual mission and unlock beacons
+        run: node --test tests/ashes.test.mjs

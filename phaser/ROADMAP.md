@@ -1,11 +1,29 @@
 # Roadmap executivo — Ironwood Phaser
 
-**Atualização:** 17 de outubro de 2026 — M4g publicada; M4h em validação com cinco missões legítimas  
+**Atualização:** 17 de outubro de 2026 — M4h publicada; M4i em validação com seis missões legítimas  
 **Jogo público:** `main` continua executando o Canvas legado.  
-**Ramo de desenvolvimento:** `feat/phaser-cleanse-m4h`, baseado na M4g publicada (`0fe53347`); Canvas preservado na raiz.  
+**Ramo de desenvolvimento:** `feat/phaser-ashes-m4i`, baseado na M4h publicada (`92284b15`); Canvas preservado na raiz.  
 **Roadmap do projeto inteiro:** [ROADMAP_IRONWOOD_PHASER.md](../ROADMAP_IRONWOOD_PHASER.md) (versão canônica publicada em `main`).
 
 Este roteiro diferencia funcionalidades **implementadas**, **validadas em CI**, **em revisão** e **ainda planejadas**. Os testes automatizados não substituem o playthrough humano em aparelho físico.
+
+## M4i — A Marcha das Cinzas, fogo real e seis vitórias consecutivas (17/10/2026)
+
+- [x] Campanha legítima alcança seis vitórias: operações 1–6 concluídas
+  sem alterar saves, posições, HP, RNG ou objetivos.
+- [x] Missão 6 em quatro rodadas; sete inimigos derrotados,
+  com três heróis sobreviventes, `wins=6`, `losses=0`.
+- [x] Observado fogo inicial em 3 casas; 18 casas incendiadas
+  ao fim do confronto, sem que a missão exija apagar as chamas.
+- [x] HUD informa incêndios ativos, inimigos restantes, aliados
+  em casas incendiadas e árvores perdidas, usando apenas snapshots.
+- [x] Smoke Chromium implementado para reproduzir **toda a
+  sexta operação**, conferir snapshots a cada ação, fogo/IA/RNG,
+  vitória, upgrade e abertura da missão 7 (3 marcos).
+- [ ] CI do Vite/Chromium e SHA definitivo; publicar só após aprovação.
+- [ ] Aparelhos físicos; missões 7–8 e epílogos sem fixtures.
+
+[Documentação técnica M4i](../docs/M4I_NATURAL_ASHES.md).
 
 ## M4h — Purificação real dos três focos e acesso à missão 6 (17/10/2026)
 

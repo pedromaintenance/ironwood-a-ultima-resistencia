@@ -82,3 +82,7 @@
 /* M4h — individual corruption focuses, readable independently of map tint. */
 .cleanseStatus{font:600 11px/1.7 system-ui,sans-serif!important;color:#e9c4df!important;background:#312432;padding:9px 10px;border-left:3px solid #c99dc6;overflow-wrap:anywhere}
 #goalPanel[data-goal-status="victory"] .cleanseStatus{color:#cbe8cb!important;border-left-color:#9bbe89}
+
+/* M4i — genuine wildfire tracking, no colour-only fire status. */
+.ashStatus{font:600 11px/1.7 system-ui,sans-serif!important;color:#ffe0ba!important;background:#34261f;padding:9px 10px;border-left:3px solid #eaa46d;overflow-wrap:anywhere}
+#goalPanel[data-goal-status="victory"] .ashStatus{color:#e9d2bc!important;border-left-color:#9bbe89}

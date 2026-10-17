@@ -876,6 +876,29 @@ export class BattleScene extends Phaser.Scene {
         delete cleanseStatus.dataset.completed;
       }
     }
+    // M4i — live wildfire observability, independent of a colour-only map.
+    // Tile fire intensity and campaign damage are read-only engine values.
+    const ashStatus=document.getElementById('ashStatus');
+    if(ashStatus){
+      ashStatus.hidden=mission.kind!=='kill'||state.mission!==5;
+      if(mission.kind==='kill'&&state.mission===5){
+        const burning=(state.board as Tile[]).filter(t=>t.fire>0);
+        const enemies=(state.actors as Actor[]).filter(a=>a.side==='enemy'&&a.hp>0).length;
+        const threatened=(state.actors as Actor[]).filter(a=>a.side==='ally'&&a.hp>0
+          &&(state.board as Tile[])[a.y*SIZE+a.x]?.fire>0).length;
+        ashStatus.textContent=`INCÊNDIO: ${burning.length} casas em chamas · ${enemies} inimigos restantes · ${threatened} herói(s) em chamas · ${state.stats?.trees||0} árvore(s) destruída(s) na campanha.`;
+        ashStatus.dataset.burning=String(burning.length);
+        ashStatus.dataset.enemies=String(enemies);
+        ashStatus.dataset.threatened=String(threatened);
+        ashStatus.dataset.destroyedTrees=String(state.stats?.trees||0);
+      }else{
+        ashStatus.textContent='';
+        delete ashStatus.dataset.burning;
+        delete ashStatus.dataset.enemies;
+        delete ashStatus.dataset.threatened;
+        delete ashStatus.dataset.destroyedTrees;
+      }
+    }
     setText('goalDetail', objective.status === 'victory'
       ? (state.phase === 'ending' ? 'CAMPANHA CONCLUÍDA — o destino de Ironwood foi decidido.' : 'OBJETIVO CONCLUÍDO — escolha uma melhoria para prosseguir.')
       : objective.status === 'defeat' ? 'MISSÃO PERDIDA — use TENTAR NOVAMENTE para recomeçar sem perder melhorias.'
