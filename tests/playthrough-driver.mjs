@@ -81,7 +81,7 @@ export function doMove(engine, actor, foes, friends, state) {
 
 export function playFreshMission({seed,team,difficulty,maxRounds=35}) {
   const engine = createIronwoodEngine({seed});
-  engine.startCampaign({seed,team,difficulty});
+  engine.startCampaign({seed,team,difficulty,aiOrder:'portable-v2'});
   engine.deployMission();
   // Collect authenticated player commands and immutable-after-command snapshots
   // so Chromium can replay the exact same path through the public UI.
