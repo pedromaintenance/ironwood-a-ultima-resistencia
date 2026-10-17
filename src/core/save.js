@@ -23,6 +23,9 @@ export function validateLegacySave(value) {
   if (!isObject(value.stats)) invalid('statistics');
   if (!Number.isSafeInteger(value.seed) || value.seed < 0) invalid('seed');
   if (value.rngState !== undefined && !integer(value.rngState, 0, 0xffffffff)) invalid('rngState');
+  // Optional new-campaign strategy; missing field must remain valid for all
+  // historical Canvas/Phaser v1 saves. Never silently upgrade old saves.
+  if (value.aiOrder !== undefined && value.aiOrder !== 'portable-v2') invalid('aiOrder');
   for (const key of ['wins','losses','casts']) {
     if (!integer(value[key], 0, 1000000)) invalid(key);
   }

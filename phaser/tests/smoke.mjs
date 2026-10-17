@@ -20,7 +20,7 @@ async function cell(canvas, x, y) {
 try {
   await page.goto('http://127.0.0.1:4173/', { waitUntil: 'networkidle' });
   assert.equal(await page.locator('#lobby').isVisible(), true, 'lobby should open first');
-  assert.match(await page.locator('.mast').innerText(), /BETA M4e/);
+  assert.match(await page.locator('.mast').innerText(), /BETA M4f/);
   assert.equal(await page.locator('.playtestGuide summary').isVisible(), true);
   assert.equal(await page.locator('#teamCount').innerText(), '3/3');
   await page.locator('#startCampaign').click();
@@ -401,8 +401,10 @@ try {
     if (await choice.getAttribute('aria-pressed') !== 'true') await choice.click();
   }
   await page.locator('#startCampaign').click();
+  // The new beta must explicitly persist the portable strategy.
   const seeded = await page.evaluate(() => JSON.parse(localStorage.getItem('ironwood_phaser_preview_v1')));
   assert.equal(seeded.seed, 1);
+  assert.equal(seeded.aiOrder,'portable-v2');
   assert.deepEqual(seeded.team, expectedTeam);
   assert.equal(seeded.difficulty, 'story');
   assert.match(await page.locator('#seedDisplay').innerText(), /Semente do mapa: 1/);
@@ -540,12 +542,10 @@ try {
     });
     await page.locator('#lobby').waitFor({state:'hidden',timeout:15000});
   };
-  // M4e cross-runtime note: original enemy AI shuffles with a random
-  // Array.sort comparator, whose order/call count is not specified by JS.
-  // Node and Chromium can diverge AFTER a turn even from the same RNG state.
-  // Verify the combat actions *exactly* within each player round, then use
-  // the authentic Node checkpoint for the next round. Test browser-to-browser
-  // save/reload determinism separately without concealing this limitation.
+  // M4f portable-v2 makes Fisher-Yates PRNG draw count deterministic across
+  // Node and Chromium; compare the entire enemy turn with its reference.
+  // Also replay each turn from the same save to verify reload integrity.
+  assert.equal(thirdRun.initial.aiOrder,'portable-v2');
   let browserTurnChecks=0;
   for(const step of thirdRun.commands) {
     await page.waitForFunction(()=>document.getElementById('game')?.dataset.inputLocked==='false');
@@ -553,17 +553,16 @@ try {
       const beforeTurn=await page.evaluate(()=>JSON.parse(localStorage.getItem('ironwood_phaser_preview_v1')));
       await page.locator('#endTurn').click();
       const browserResult=await page.evaluate(()=>JSON.parse(localStorage.getItem('ironwood_phaser_preview_v1')));
-      assert.equal(browserResult.round,step.checkpoint.round);
-      assert.equal(browserResult.phase,step.checkpoint.phase);
+      assert.deepEqual(browserResult,step.checkpoint,
+        'portable-v2 enemy turn must match headless node including positions, logs and RNG');
       // Same browser, same RNG checkpoint: an exported turn must replay
       // identically after import (within one JS engine/runtime).
       await importM4eState(beforeTurn);
       await page.locator('#endTurn').click();
       const repeated=await page.evaluate(()=>JSON.parse(localStorage.getItem('ironwood_phaser_preview_v1')));
       assert.deepEqual(repeated,browserResult,'Chromium turn should survive save/import deterministically');
-      // Continue with *genuine* headless state, not fabricated positions,
-      // and verify each later player command against its real checkpoint.
-      await importM4eState(step.checkpoint);
+      // Continue in the same browser after proving the replay is identical:
+      // no re-imported checkpoint is needed to mask cross-runtime divergence.
       browserTurnChecks++;
       continue;
     }
@@ -602,7 +601,7 @@ try {
       }
     }
   }
-  assert.ok(browserTurnChecks>=1,'at least one complete enemy turn should be checked twice');
+  assert.ok(browserTurnChecks>=1,'at least one complete cross-runtime enemy turn must be compared and replayed');
   assert.equal(await page.locator('#goalPanel').getAttribute('data-goal-status'),'victory');
   assert.equal(await page.locator('#totemStatus').getAttribute('data-remaining'),'0');
   assert.equal(await page.locator('#goalPanel').getAttribute('data-goal-completed'),'3');
@@ -615,7 +614,7 @@ try {
   await page.screenshot({path:'artifacts/preview/20-m4e-mission-four.png',fullPage:true});
 
   assert.deepEqual(errors, [], 'Phaser should not throw browser errors');
-  console.log('PASS: M4e player-round totem replay and browser reload determinism, fourth mission, M4d contextual natural rescue checkpoints and mission three, M4c fixture-free Phaser victory to mission 2 and seed replay, core parity, M4b defeat/retry/three endings, M4a totem attacks, M3g goals/victory/upgrades/mission2, M3f cache, HUD, tween lock, pooled units, AOE, mobile');
+  console.log('PASS: M4f exact portable cross-runtime combat turns and old-save compatibility, M4e full totem replay, fourth mission, M4d contextual natural rescue checkpoints and mission three, M4c fixture-free Phaser victory to mission 2 and seed replay, core parity, M4b defeat/retry/three endings, M4a totem attacks, M3g goals/victory/upgrades/mission2, M3f cache, HUD, tween lock, pooled units, AOE, mobile');
 } finally {
   await browser.close();
 }

@@ -201,7 +201,8 @@ function victory(){if(G.phase==='between'||G.phase==='ending')return;G.wins++;lo
   function snapshot() { return G ? structuredClone(G) : null; }
   function drainEvents() { return events.splice(0); }
 
-  function startCampaign({ difficulty = 'normal', team = ['guardian','ranger','druid'], seed: campaignSeed = seed } = {}) {
+  function startCampaign({ difficulty = 'normal', team = ['guardian','ranger','druid'], seed: campaignSeed = seed, aiOrder = 'legacy' } = {}) {
+    if (!['legacy','portable-v2'].includes(aiOrder)) throw new RangeError('Invalid enemy order algorithm');
     if (!['story','normal','hard'].includes(difficulty)) throw new RangeError('Invalid difficulty');
     if (!Array.isArray(team) || team.length !== 3 || new Set(team).size !== 3 || team.some(id => !HEROES[id])) {
       throw new RangeError('Select three distinct available heroes');
@@ -212,6 +213,8 @@ function victory(){if(G.phase==='between'||G.phase==='ending')return;G.wins++;lo
       ver: 1, difficulty, mission: 0, team: [...team], upgrades: {},
       wins: 0, losses: 0, casts: 0, round: 1,
       seed: Number(campaignSeed) >>> 0, phase: 'ready', logs: [],
+      // Optional save capability: absent = exact historical Canvas AI order.
+      ...(aiOrder === 'portable-v2' ? {aiOrder: 'portable-v2'} : {}),
       stats: { fires: 0, trees: 0, shocked: 0, rescued: 0 },
     };
     save();
