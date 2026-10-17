@@ -17,7 +17,7 @@ async function cell(canvas, x, y) {
 try {
   await page.goto('http://127.0.0.1:4173/', { waitUntil: 'networkidle' });
   assert.equal(await page.locator('#lobby').isVisible(), true, 'lobby should open first');
-  assert.match(await page.locator('.mast').innerText(), /BETA M4b/);
+  assert.match(await page.locator('.mast').innerText(), /BETA M4c/);
   assert.equal(await page.locator('.playtestGuide summary').isVisible(), true);
   assert.equal(await page.locator('#teamCount').innerText(), '3/3');
   await page.locator('#startCampaign').click();
@@ -377,8 +377,43 @@ try {
   }
   await page.screenshot({ path: 'artifacts/preview/12-campaign-ending.png', fullPage: true });
 
+  // M4c: seed is optional, validated, shown to players and reproducible.
+  // No fixture or save import is used for either campaign.
+  await page.locator('#restart').click();
+  await page.locator('#campaignSeed').fill('4294967296');
+  await page.locator('#startCampaign').click();
+  assert.equal(await page.locator('#lobby').isVisible(), true);
+  assert.match(await page.locator('#lobbyError').innerText(), /semente deve ser um inteiro/);
+  await page.locator('#campaignSeed').fill('1');
+  await page.locator('#difficulty').selectOption('story');
+  const expectedTeam = ['guardian','ranger','mage'];
+  for (const key of ['guardian','ranger','druid','mage','cleric','runesmith']) {
+    const choice = page.locator(`[data-hero="${key}"]`);
+    if (!expectedTeam.includes(key) && await choice.getAttribute('aria-pressed') === 'true') {
+      await choice.click();
+    }
+  }
+  for (const key of expectedTeam) {
+    const choice = page.locator(`[data-hero="${key}"]`);
+    if (await choice.getAttribute('aria-pressed') !== 'true') await choice.click();
+  }
+  await page.locator('#startCampaign').click();
+  const seeded = await page.evaluate(() => JSON.parse(localStorage.getItem('ironwood_phaser_preview_v1')));
+  assert.equal(seeded.seed, 1);
+  assert.deepEqual(seeded.team, expectedTeam);
+  assert.equal(seeded.difficulty, 'story');
+  assert.match(await page.locator('#seedDisplay').innerText(), /Semente do mapa: 1/);
+  await page.locator('#restart').click();
+  await page.locator('#startCampaign').click();
+  const repeated = await page.evaluate(() => JSON.parse(localStorage.getItem('ironwood_phaser_preview_v1')));
+  assert.deepEqual(repeated, seeded, 'identical seed/team/difficulty must generate identical fresh campaign');
+  await page.reload({ waitUntil: 'networkidle' });
+  await page.locator('#continueCampaign').click();
+  assert.match(await page.locator('#seedDisplay').innerText(), /Semente do mapa: 1/);
+  await page.screenshot({ path: 'artifacts/preview/13-m4c-seeded.png', fullPage: true });
+
   assert.deepEqual(errors, [], 'Phaser should not throw browser errors');
-  console.log('PASS: core parity, M4b defeat/retry/three endings, M4a totem attacks, M3g goals/victory/upgrades/mission2, M3f cache, HUD, tween lock, pooled units, AOE, mobile');
+  console.log('PASS: M4c seed replay, core parity, M4b defeat/retry/three endings, M4a totem attacks, M3g goals/victory/upgrades/mission2, M3f cache, HUD, tween lock, pooled units, AOE, mobile');
 } finally {
   await browser.close();
 }
