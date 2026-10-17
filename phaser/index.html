@@ -10,7 +10,7 @@
 <body>
   <main class="shell">
     <header class="mast">
-      <div><span class="eyebrow">A ÚLTIMA RESISTÊNCIA</span><h1>IRONWOOD <small>• BETA M4f</small></h1></div>
+      <div><span class="eyebrow">A ÚLTIMA RESISTÊNCIA</span><h1>IRONWOOD <small>• BETA M4g</small></h1></div>
       <span class="branch">PRÉVIA DE TESTE · PAGES</span>
     </header>
     <section id="lobby" class="lobby" role="dialog" aria-modal="true" aria-labelledby="lobbyTitle">
@@ -46,8 +46,9 @@
         <p class="helper">Toque num aliado para selecioná-lo; toque numa casa para mover ou num inimigo para atacar. Magias de área mostram a zona afetada; um segundo toque confirma habilidades perigosas.</p>
         <p id="actionFeedback" class="actionFeedback" role="status" aria-live="polite">Selecione uma unidade e experimente uma habilidade. Ações recusadas aparecem aqui sem consumir recursos.</p>
         <p id="commandStatus" class="commandStatus" role="status" aria-live="polite">PRONTO — escolha uma ação.</p>
-        <details class="playtestGuide"><summary>Como testar esta versão · M4f</summary>
+        <details class="playtestGuide"><summary>Como testar esta versão · M4g</summary>
           <p>1. Escolha três heróis e inicie uma campanha. 2. Mova uma unidade e note o aviso ANIMANDO: comandos de combate ficam suspensos por uma fração de segundo, mas inspeção e seleção continuam. Depois encerre o turno. 3. Selecione a maga Vaelis e lance Bola de Fogo: observe o destaque e o aviso de fogo amigo. 4. Inspecione uma casa e experimente salvar e recarregar.</p>
+          <p><strong>M4g:</strong> A Noite Mais Longa exige resistir a seis rodadas, mesmo que sobrem inimigos. O painel agora mostra o avanço da defesa e avisa da primeira onda (rodada 4: Lobo e Arqueiro) e da segunda (rodada 6: Lanceiro e Lobo). Mantenha ao menos um herói vivo até o final da sexta rodada. Ao vencer, escolha uma melhoria e entre em A Seiva Corrompida.</p>
           <p><strong>M4f:</strong> novas campanhas usam ordem inimiga reproduzível (Fisher–Yates, `portable-v2`). A mesma semente, equipe e sequência de ações agora geram os mesmos turnos e posições em Node.js e no navegador. Saves antigos sem o campo continuam usando o algoritmo anterior, sem conversão automática. Experimente exportar, importar e prosseguir após um turno, usando a semente 1, Aprendiz, Morna/Arven/Vaelis.</p>
           <p><strong>M4e:</strong> após libertar os dois prisioneiros, destrua os três totens da missão 3. O painel de objetivo agora informa a integridade real de cada totem e suas coordenadas. Ataques físicos no losango e feitiços ofensivos danificam a estrutura; cada golpe consome seus custos normais. O motor comprovou três vitórias consecutivas (semente 1, Aprendiz, Morna/Arven/Vaelis) e progressão até A Noite Mais Longa.</p>
           <p><strong>M4d:</strong> na missão 2, aproxime o herói de um prisioneiro e toque diretamente em sua casa para libertá-lo. Também funciona quando o herói está sobre a mesma casa. O mesmo gesto ativa marcos e purifica focos nas missões seguintes; totens exigem ataques. A campanha com semente 1, Aprendiz e Morna/Arven/Vaelis chegou naturalmente à missão 3 nos testes automáticos.</p>
@@ -73,6 +74,7 @@
             <progress id="goalProgress" value="0" max="4" aria-label="Progresso da missão"></progress>
             <p id="goalDetail" role="status" aria-live="polite">Objetivo disponível após começar a campanha.</p>
             <p id="totemStatus" class="totemStatus" role="status" aria-live="polite" hidden></p>
+            <p id="defenseStatus" class="defenseStatus" role="status" aria-live="polite" hidden></p>
           </div>
           <p id="phaseStatus" class="status">Preparando resistência...</p>
           <p id="seedDisplay" class="seedDisplay" aria-label="Semente da campanha"></p>
@@ -96,7 +98,7 @@
         <section class="panel report"><span class="eyebrow">REGISTRO DE CAMPO</span><div id="battleLog" aria-live="polite"></div></section>
       </aside>
     </div>
-    <footer>Beta M4f em Phaser 4.2.1 · motor tático independente · arte pixelada autoral · save separado da versão Canvas.</footer>
+    <footer>Beta M4g em Phaser 4.2.1 · motor tático independente · arte pixelada autoral · save separado da versão Canvas.</footer>
   </main>
   <script type="module" src="/src/main.ts"></script>
 </body>

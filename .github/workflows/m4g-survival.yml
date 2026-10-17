@@ -1,0 +1,22 @@
+name: Ironwood M4g natural convoy defense
+on:
+  push:
+    branches: [feat/phaser-survival-m4g]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  genuine-defense:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Existing regressions and portable save modes
+        run: npm test && node --test tests/portable-order.test.mjs
+      - name: Three preceding missions must remain winnable
+        run: node --test tests/playthrough.test.mjs tests/rescue.test.mjs tests/totem.test.mjs
+      - name: Real six-round convoy defense and reinforcement verification
+        run: node --test tests/survival.test.mjs
