@@ -832,6 +832,31 @@ export class BattleScene extends Phaser.Scene {
         delete totemStatus.dataset.remaining;
       }
     }
+    // M4g: show the authoritative reinforcement schedule and progress in the
+    // survival mission. UI-only; spawning and victory remain engine-owned.
+    const defenseStatus = document.getElementById('defenseStatus');
+    if (defenseStatus) {
+      defenseStatus.hidden = mission.kind !== 'survive';
+      if (mission.kind === 'survive') {
+        const wave = Math.max(0, Math.min(2, Number(state.wave) || 0));
+        const text = objective.status === 'victory'
+          ? 'CORREDOR DEFENDIDO · seis rodadas resistidas · duas ondas enfrentadas.'
+          : wave === 0
+            ? 'REFORÇOS 0/2 · próxima onda na rodada 4 (Lobo + Arqueiro).'
+            : wave === 1
+              ? 'REFORÇOS 1/2 · última onda na rodada 6 (Lanceiro + Lobo).'
+              : 'REFORÇOS 2/2 · últimas patrulhas chegaram. Resista até concluir a 6ª rodada.';
+        defenseStatus.textContent = text;
+        defenseStatus.dataset.wave = String(wave);
+        defenseStatus.dataset.rounds = String(objective.completed);
+        defenseStatus.dataset.nextWave = wave === 0 ? '4' : wave === 1 ? '6' : 'none';
+      } else {
+        defenseStatus.textContent = '';
+        delete defenseStatus.dataset.wave;
+        delete defenseStatus.dataset.rounds;
+        delete defenseStatus.dataset.nextWave;
+      }
+    }
     setText('goalDetail', objective.status === 'victory'
       ? (state.phase === 'ending' ? 'CAMPANHA CONCLUÍDA — o destino de Ironwood foi decidido.' : 'OBJETIVO CONCLUÍDO — escolha uma melhoria para prosseguir.')
       : objective.status === 'defeat' ? 'MISSÃO PERDIDA — use TENTAR NOVAMENTE para recomeçar sem perder melhorias.'
