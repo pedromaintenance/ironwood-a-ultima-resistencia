@@ -154,15 +154,16 @@ Este roteiro diferencia funcionalidades **implementadas**, **validadas em CI**, 
 
 **Critério importante:** a missão 3 agora aceita ataques de aliados sem magia ofensiva; a UI não deve gastar PA em clique fora de alcance ou em totem concluído. [Relatório técnico M4a](../docs/M4A_OBJECTIVE_ATTACKS.md).
 
-### M4b — Derrota persistente, retry explícito e epílogos (**implementado, CI pendente**)
+### M4b — Derrota persistente, retry explícito e epílogos (**CI 29/29 e publicação aprovadas**)
 - [x] Corrigir o resume de `phase='defeat'`: salvar/carregar deve permanecer na tela de derrota, sem iniciar uma partida automaticamente.
 - [x] Botão **TENTAR NOVAMENTE** somente após derrota; preservar equipe, missão, upgrades, vitórias e perdas usando `engine.deployMission()`.
 - [x] Painel de resultado responsivo e anunciado por leitor de tela; vitória final mostra estatísticas.
 - [x] Reproduzir os critérios e textos dos **3 finais canônicos do Canvas** em `src/core/ending.js`, sem modificar RNG ou motor.
 - [x] Testes de core para os limiares, save e retry, além de simulação determinística dos primeiros turnos desde o início sem fixture.
 - [x] Smoke Chromium: derrota e reload, retry da mesma missão, 3 finais por saves válidos.
-- [ ] CI com todos os testes, compilação Phaser e Playwright desktop/mobile verdes no SHA publicado.
-- [ ] Beta M4b no Pages e QA em aparelho real, 8 missões completas.
+- [x] [29/29 testes, build Phaser/Vite e Chromium desktop/mobile aprovados](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/actions/runs/38988894146), fonte imutável `74b0c154`.
+- [x] [Workflow seguro M4b concluiu](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/actions/runs/38989071534) e copiou a beta para `main/phaser-preview/` sem alterar Canvas.
+- [ ] QA em aparelho real, 8 missões completas e três finais por playthrough.
 
 **Nota:** os três finais foram testados por estados válidos preparados; isso não equivale a 8 missões jogadas integralmente. [Guia técnico M4b](../docs/M4B_RETRY_ENDINGS.md).
 
