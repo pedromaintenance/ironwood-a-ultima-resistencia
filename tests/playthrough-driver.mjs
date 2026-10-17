@@ -13,7 +13,7 @@ function available(engine, actor, key, x, y) {
   return engine.previewSkill(actor.id, key, x, y).allowed;
 }
 
-function doAttack(engine, actor, foes, friends) {
+export function doAttack(engine, actor, foes, friends) {
   const sorted = [...foes].sort((a, b) =>
     a.hp - b.hp || distance(actor, a) - distance(actor, b) || a.id.localeCompare(b.id));
   if (actor.kind === 'cleric') {
@@ -55,7 +55,7 @@ function doAttack(engine, actor, foes, friends) {
   return false;
 }
 
-function doMove(engine, actor, foes, friends, state) {
+export function doMove(engine, actor, foes, friends, state) {
   const options = engine.reachable(actor.id);
   const tile = (x,y) => state.board[y*12+x];
   const skillRange = actor.kind === 'ranger' ? 6 : actor.kind === 'mage' ? 5 : actor.range;

@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { chromium } from 'playwright';
 import { mkdir } from 'node:fs/promises';
 import { playFreshMission } from '../../tests/playthrough-driver.mjs';
+import { playSecondMission } from '../../tests/rescue-driver.mjs';
 
 await mkdir('artifacts/preview', { recursive: true });
 const browser = await chromium.launch({ headless: true });
@@ -18,7 +19,7 @@ async function cell(canvas, x, y) {
 try {
   await page.goto('http://127.0.0.1:4173/', { waitUntil: 'networkidle' });
   assert.equal(await page.locator('#lobby').isVisible(), true, 'lobby should open first');
-  assert.match(await page.locator('.mast').innerText(), /BETA M4c/);
+  assert.match(await page.locator('.mast').innerText(), /BETA M4d/);
   assert.equal(await page.locator('.playtestGuide summary').isVisible(), true);
   assert.equal(await page.locator('#teamCount').innerText(), '3/3');
   await page.locator('#startCampaign').click();
@@ -456,8 +457,61 @@ try {
   await page.screenshot({ path: 'artifacts/preview/15-m4c-natural-mission2.png', fullPage: true });
 
 
+  // M4d contextual rescue: these are genuine core checkpoints generated
+  // from victories/actions, never mutated near-goal saves. We import them
+  // solely to focus the UI test on each normal interaction, not to claim a
+  // continuous UI playthrough from mission 1 to mission 3.
+  const rescuedRun = (() => {
+    for(let seed=1;seed<=32;seed++) {
+      const trial=playSecondMission({seed:seed,team:expectedTeam,difficulty:'story',maxRounds:24});
+      if(trial.phase==='between')return trial;
+    }
+    throw new Error('M4d lacks a natural second mission victory');
+  })();
+  const rescueSteps = rescuedRun.commands
+    .map((step,i)=>({step,i}))
+    .filter(({step})=>step.command==='useSkill' && step.args[1]==='interact');
+  assert.equal(rescueSteps.length,2,'test policy must rescue exactly two captives');
+  for(const {step,i} of rescueSteps) {
+    const before=i===0 ? rescuedRun.initial : rescuedRun.commands[i-1].checkpoint;
+    const actor=before.actors.find(a=>a.id===step.args[0]);
+    assert.ok(actor && actor.hp>0 && actor.ap>0);
+    const [x,y]=step.args.slice(2);
+    assert.ok(Math.abs(actor.x-x)+Math.abs(actor.y-y)<=1,'test target must be adjacent');
+    await page.locator('#restart').click();
+    await page.locator('#importFile').setInputFiles({
+      name:'natural-rescue-checkpoint-v1.json',
+      mimeType:'application/json',
+      buffer:Buffer.from(JSON.stringify(before)),
+    });
+    await page.locator('#lobby').waitFor({state:'hidden',timeout:15000});
+    // If the imported save already selects the rescuer, clicking the hero
+    // standing on the captive would itself perform the contextual rescue.
+    // An ally who is not selected still receives one selection tap first.
+    if (before.selected !== actor.id) {
+      await canvas.click({position:await cell(canvas,actor.x,actor.y)});
+    }
+    const beforeTap=await page.evaluate(()=>JSON.parse(localStorage.getItem('ironwood_phaser_preview_v1')));
+    assert.deepEqual(beforeTap,before,'selecting a rescuer should not mutate saved battle state');
+    await canvas.click({position:await cell(canvas,x,y)});
+    const afterTap=await page.evaluate(()=>JSON.parse(localStorage.getItem('ironwood_phaser_preview_v1')));
+    assert.deepEqual(afterTap,step.checkpoint,'one tap must reproduce authoritative interact including RNG and AP');
+    assert.match(await page.locator('#actionFeedback').innerText(),/Prisioneiro libertado/);
+    assert.equal(afterTap.board.filter(t=>t.objective==='captive'&&!t.cleared).length,
+      before.board.filter(t=>t.objective==='captive'&&!t.cleared).length-1);
+    if(afterTap.phase==='between') {
+      assert.equal(afterTap.wins,2);
+      assert.equal(await page.locator('#upgradeOptions').isVisible(),true);
+      await page.screenshot({path:'artifacts/preview/16-m4d-rescue-complete.png',fullPage:true});
+      await page.locator('#upgradeOptions button').first().click();
+      assert.equal(await page.locator('#goalPanel').getAttribute('data-goal-kind'),'totem');
+      assert.equal(await page.locator('#goalPanel').getAttribute('data-goal-total'),'3');
+      await page.screenshot({path:'artifacts/preview/17-m4d-third-mission.png',fullPage:true});
+    }
+  }
+
   assert.deepEqual(errors, [], 'Phaser should not throw browser errors');
-  console.log('PASS: M4c fixture-free Phaser victory to mission 2 and seed replay, core parity, M4b defeat/retry/three endings, M4a totem attacks, M3g goals/victory/upgrades/mission2, M3f cache, HUD, tween lock, pooled units, AOE, mobile');
+  console.log('PASS: M4d contextual natural rescue checkpoints and mission three, M4c fixture-free Phaser victory to mission 2 and seed replay, core parity, M4b defeat/retry/three endings, M4a totem attacks, M3g goals/victory/upgrades/mission2, M3f cache, HUD, tween lock, pooled units, AOE, mobile');
 } finally {
   await browser.close();
 }

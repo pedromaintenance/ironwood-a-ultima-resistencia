@@ -474,6 +474,23 @@ export class BattleScene extends Phaser.Scene {
         this.reportAction(`${SKILLS[skillId as keyof typeof SKILLS]?.name ?? 'Habilidade'} executada.`);
       } else this.reportAction('A habilidade não pôde ser executada. Confira o log.', 'warning');
       this.armedSpell = null;
+    } else if (['captive', 'shrine', 'beacon'].includes((state.board as Tile[])[y * SIZE + x].objective) &&
+               !(state.board as Tile[])[y * SIZE + x].cleared && (!clicked || (clicked.side === 'ally' && clicked.id === this.selected)) &&
+               (state.actors as Actor[]).some(a => a.id === this.selected && a.hp > 0 &&
+                 Math.abs(a.x - x) + Math.abs(a.y - y) <= 1)) {
+      // M4d: touching a nearby rescue/purification/beacon uses the same core
+      // 'interact' command as the skill button. Distant taps retain movement.
+      // No game rules, mana, AP or save shape are reimplemented in Phaser.
+      const objective = (state.board as Tile[])[y * SIZE + x].objective;
+      performed = this.engine.useSkill(this.selected, 'interact', x, y);
+      const success = {
+        captive: 'Prisioneiro libertado!',
+        shrine: 'Foco de corrupção purificado!',
+        beacon: 'Marco ancestral ativado!',
+      }[objective] || 'Objetivo concluído!';
+      this.reportAction(performed ? success :
+        'Interação indisponível: verifique a proximidade e os pontos de ação.',
+        performed ? 'info' : 'warning');
     } else if (clicked?.side === 'ally') {
       this.selected = clicked.id;
       this.reportAction(`${clicked.name} selecionado(a). Selecione uma ação.`);
@@ -553,9 +570,9 @@ export class BattleScene extends Phaser.Scene {
       .map(key => `${key}: ${tile[key]}`);
     const goalNames: Record<string, string> = {
       totem: 'Totem da Servidão — toque para atacar, após se aproximar',
-      captive: 'Prisioneiro — use Interagir',
-      shrine: 'Foco de Corrupção — use Interagir ou Purificar',
-      beacon: 'Marco Ancestral — use Interagir',
+      captive: 'Prisioneiro — toque quando estiver adjacente ou use Interagir',
+      shrine: 'Foco de Corrupção — toque quando estiver adjacente ou use Purificar',
+      beacon: 'Marco Ancestral — toque quando estiver adjacente ou use Interagir',
     };
     const objective = tile.objective && !tile.cleared
       ? ` · Objetivo: ${goalNames[tile.objective] || tile.objective}${tile.objective === 'totem' ? ` · Integridade ${tile.objhp}` : ''}` : '';
