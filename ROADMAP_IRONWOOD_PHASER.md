@@ -8,7 +8,7 @@
 
 ## M4b — Derrota e epílogos canônicos (16/10/2026)
 
-**[JOGAR BETA M4b NO GITHUB PAGES](https://pedromaintenance.github.io/ironwood-a-ultima-resistencia/phaser-preview/)** — fonte `74b0c154`, 29/29 testes, [CI](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/actions/runs/38988894146), [publicação concluída](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/actions/runs/38989071534). Conferir implantação final antes de considerar a URL atualizada.
+**[JOGAR BETA M4b NO GITHUB PAGES](https://pedromaintenance.github.io/ironwood-a-ultima-resistencia/phaser-preview/)** — fonte `74b0c154`, 29/29 testes, [CI](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/actions/runs/38988894146), [publicação concluída](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/actions/runs/38989071534). [Implantação final do Pages aprovada](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/actions/runs/38989168527); URL pública confirmada como beta M4b pela pasta de release.
 
 
 **CI 29/29 e compilação pública aprovadas:** [PR #26](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/pull/26) · [Issue #27](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/issues/27) · [Guia técnico](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/blob/feat/phaser-retry-endings-m4b/docs/M4B_RETRY_ENDINGS.md).
@@ -18,10 +18,20 @@
 - [x] **Três finais originais:** exibir títulos, parágrafos e estatísticas de `A Vitória das Cinzas` (mais de 25 árvores destruídas), `A Floresta de Todos` (ao menos cinco resgates e no máximo uma derrota, sem ultrapassar limiar de árvores) e `A Última Chama Livre` (restante).
 - [x] **Regressões escritas:** testes puros dos três finais, retry após derrota resolvida pelo motor e rodadas iniciais determinísticas de uma campanha nova; smoke Chromium de derrota, reload, retry e três epílogos por saves v1 válidos.
 - [x] **[29/29 testes de core, build Vite e Chromium desktop/mobile aprovados](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/actions/runs/38988894146)** no commit `74b0c154`.
-- [x] **[Publicação M4b concluída](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/actions/runs/38989071534)**: somente `main/phaser-preview/`, contendo `BETA M4b`, botão de retry e epílogos. A implantação do Pages é uma etapa adicional.
+- [x] **[Publicação M4b concluída](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/actions/runs/38989071534)**: somente `main/phaser-preview/`, contendo `BETA M4b`, botão de retry e epílogos. [Implantação final do Pages concluída](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/actions/runs/38989168527) — pasta pública confirmada com painel de resultado, botão de retry e rótulo BETA M4b.
 - [ ] Testar em aparelhos reais e concluir integralmente as oito missões e três finais **sem fixtures**.
 
 **Limites:** este incremento valida o comportamento dos epílogos e do retry usando snapshots importados; os testes de turnos iniciais partem de campanha nova, mas ainda não provam que a primeira missão foi vencida em uma execução completa. A versão Canvas e seu save permanecem preservados.
+
+
+### Próxima validação — M4c: primeira missão integral sem fixtures
+- [ ] Executar uma campanha nova do início da missão 1 até a vitória **somente com comandos reais do motor**, sem importar ou alterar snapshots; registrar ações, rodadas, personagens e resultado.
+- [ ] Reproduzir o mesmo teste pela interface Phaser desktop e toque emulado, verificando salvamento e retorno após recarregar.
+- [ ] Conferir transição real para a missão 2 e upgrades, sob pelo menos duas equipes e dificuldades.
+- [ ] Se a simulação revelar bloqueio de mapa, IA, LOS, economia de PA ou balanceamento, corrigir e criar regressão determinística antes de publicar.
+- [ ] Repetir para as oito missões e os três finais, sem inferir jogabilidade completa a partir de saves próximos de vitória.
+
+**Contexto:** M4b validou retry e epílogos por saves válidos preparados, além de turnos iniciais normais; o playthrough completo ainda **não** foi testado. Os tempos de FPS emulado não substituem medição física.
 
 ## M4a — Ataques físicos a totens e objetivos legíveis (16/10/2026)
 
