@@ -56,3 +56,11 @@
 .goalTracker p{font:12px/1.45 system-ui,sans-serif!important;color:#d1cab0!important}
 #goalPanel[data-goal-status="victory"] .goalTracker{border-color:#99b887;background:#213a31}
 #goalPanel[data-goal-status="defeat"] .goalTracker{border-color:#b77778;background:#392a2d}
+
+/* M4b: persistent campaign conclusion and deliberate restart. */
+.resultPanel{border-color:#aa8660;background:linear-gradient(140deg,#342a2a,#1b2928);display:grid;gap:8px}
+.resultPanel h2{font-size:clamp(19px,2.8vw,26px);color:#f0d29e}
+.resultPanel p{font-size:13px;color:#e0d9be;line-height:1.6}
+.resultPanel[data-result="defeat"]{border-color:#c27875}
+.resultPanel[data-result="ending"]{border-color:#a2c49c}
+#retryMission:not([hidden]){border:2px solid #dfbb75;min-height:48px}
