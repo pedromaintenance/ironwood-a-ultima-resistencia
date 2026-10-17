@@ -1,0 +1,23 @@
+name: Ironwood M4c fixture-free mission playthrough
+
+on:
+  push:
+    branches: [feat/phaser-playthrough-m4c]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  real-playthrough:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Existing core parity regressions
+        run: npm test
+      - name: Fresh mission, victory and progression without fixtures
+        run: node --test tests/playthrough.test.mjs
