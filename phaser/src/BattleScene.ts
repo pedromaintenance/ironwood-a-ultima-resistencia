@@ -474,17 +474,8 @@ export class BattleScene extends Phaser.Scene {
         this.reportAction(`${SKILLS[skillId as keyof typeof SKILLS]?.name ?? 'Habilidade'} executada.`);
       } else this.reportAction('A habilidade não pôde ser executada. Confira o log.', 'warning');
       this.armedSpell = null;
-    } else if (clicked?.side === 'ally') {
-      this.selected = clicked.id;
-      this.reportAction(`${clicked.name} selecionado(a). Selecione uma ação.`);
-      this.renderBattle();
-      return;
-    } else if (clicked?.side === 'enemy') {
-      performed = this.engine.attack(this.selected, clicked.id);
-      this.reportAction(performed ? `Ataque realizado contra ${clicked.name}.` :
-        'Ataque indisponível: verifique PA, distância e cobertura.', performed ? 'info' : 'warning');
     } else if (['captive', 'shrine', 'beacon'].includes((state.board as Tile[])[y * SIZE + x].objective) &&
-               !(state.board as Tile[])[y * SIZE + x].cleared && !clicked &&
+               !(state.board as Tile[])[y * SIZE + x].cleared && (!clicked || (clicked.side === 'ally' && clicked.id === this.selected)) &&
                (state.actors as Actor[]).some(a => a.id === this.selected && a.hp > 0 &&
                  Math.abs(a.x - x) + Math.abs(a.y - y) <= 1)) {
       // M4d: touching a nearby rescue/purification/beacon uses the same core
@@ -500,6 +491,15 @@ export class BattleScene extends Phaser.Scene {
       this.reportAction(performed ? success :
         'Interação indisponível: verifique a proximidade e os pontos de ação.',
         performed ? 'info' : 'warning');
+    } else if (clicked?.side === 'ally') {
+      this.selected = clicked.id;
+      this.reportAction(`${clicked.name} selecionado(a). Selecione uma ação.`);
+      this.renderBattle();
+      return;
+    } else if (clicked?.side === 'enemy') {
+      performed = this.engine.attack(this.selected, clicked.id);
+      this.reportAction(performed ? `Ataque realizado contra ${clicked.name}.` :
+        'Ataque indisponível: verifique PA, distância e cobertura.', performed ? 'info' : 'warning');
     } else if ((state.board as Tile[])[y * SIZE + x].objective === 'totem' &&
                !(state.board as Tile[])[y * SIZE + x].cleared && !clicked) {
       performed = this.engine.attackObjective(this.selected, x, y);
