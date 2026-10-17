@@ -6,6 +6,19 @@
 **Planejamento:** 15/10/2026  
 **Estado:** execução sequencial; não substituir o jogo publicado antes de validar a nova versão.
 
+## M4j — Os Faróis do Crepúsculo e acesso à batalha final (17/10/2026)
+
+**Status:** [PR #35](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/pull/35) em revisão e validação. **A M4i permanece publicada no GitHub Pages** até confirmação dos gates de Chromium e implantação da nova beta. [Guia de prova M4j](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/blob/feat/phaser-beacons-m4j/docs/M4J_NATURAL_BEACONS.md).
+
+- [x] **Sete missões consecutivas legitimamente vencidas no motor**, semente `1`, Aprendiz, Morna/Arven/Vaelis, IA `portable-v2`, sem manipular HP, seed, RNG, saves ou fase.
+- [x] **Ativação real dos três marcos ancestrais** na sétima operação, até a rodada 4, com três `useSkill('interact')` em coordenadas distintas. Dois guardas permaneciam vivos: vencer requer ativar marcos, não exterminar inimigos.
+- [x] **Batalha final desbloqueada normalmente:** avanço `wins=7`, `losses=0`, upgrade legítimo e implantação de `O Espinho da Rainha`, com a campeã e cinco guardas.
+- [x] **Interface dos marcos** indica posição e situação AGUARDANDO/ATIVADO diretamente de snapshots do motor; não altera regras de ação, mana ou PA.
+- [x] **Smoke Chromium escrito** para jogar toda a sétima missão por cliques e comparar os estados com o motor após cada comando; início importado apenas após seis vitórias genuínas.
+- [ ] Verificar o mesmo SHA nos dois workflows, publicar apenas `main/phaser-preview/`, aguardar a implantação GitHub Pages e conferir preservação dos arquivos Canvas.
+- [ ] **M4k:** ganhar a batalha final autenticamente, produzir um dos epílogos por progresso de oito missões, verificar UI e alternativas de finais.
+- [ ] QA físico, outras dificuldades, e campanha 1–8 pelo navegador sem checkpoint de teste.
+
 ## M4i — A Marcha das Cinzas e combate contra incêndio (17/10/2026)
 
 **[JOGAR IRONWOOD — BETA M4i NO GITHUB PAGES](https://pedromaintenance.github.io/ironwood-a-ultima-resistencia/phaser-preview/)** — fonte imutável `ff2d7588f6eed0ff5aaa105ed60fc3f556f20a6e`. [CI de seis vitórias naturais](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/actions/runs/39038440514), [build + Chromium com replay completo do incêndio](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/actions/runs/39038440516), [publicação segura](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/actions/runs/39038685927), [implantação GitHub Pages concluída](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/actions/runs/39038716564). [PR #34](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/pull/34) permanece draft para QA humano. [Guia técnico M4i](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/blob/feat/phaser-ashes-m4i/docs/M4I_NATURAL_ASHES.md).
