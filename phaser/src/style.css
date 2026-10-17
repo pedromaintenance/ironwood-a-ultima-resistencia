@@ -70,3 +70,7 @@
 #campaignSeed{display:block;width:100%;background:#182c2b;color:#f0ddbb;border:1px solid #a38a65;padding:12px;font:13px system-ui,sans-serif;min-height:44px}
 #campaignSeed:focus-visible{outline:3px solid #c8d997;outline-offset:2px}
 .seedDisplay{font:11px/1.4 system-ui,sans-serif!important;color:#a7bbab!important;overflow-wrap:anywhere}
+
+/* M4e — mission-three integrity is readable independently of the pixel map. */
+.totemStatus{font:600 11px/1.7 system-ui,sans-serif!important;color:#e6be88!important;background:#342c23;padding:9px 10px;border-left:3px solid #e0a36b;overflow-wrap:anywhere}
+#goalPanel[data-goal-status="victory"] .totemStatus{color:#bde0ae!important;border-left-color:#9bbe89}
