@@ -7,6 +7,7 @@ import { playThirdMission } from '../../tests/totem-driver.mjs';
 import { playFourthMission } from '../../tests/survival-driver.mjs';
 import { playFifthMission } from '../../tests/cleanse-driver.mjs';
 import { playSixthMission } from '../../tests/ashes-driver.mjs';
+import { playSeventhMission } from '../../tests/beacons-driver.mjs';
 
 await mkdir('artifacts/preview', { recursive: true });
 const browser = await chromium.launch({ headless: true });
@@ -23,7 +24,7 @@ async function cell(canvas, x, y) {
 try {
   await page.goto('http://127.0.0.1:4173/', { waitUntil: 'networkidle' });
   assert.equal(await page.locator('#lobby').isVisible(), true, 'lobby should open first');
-  assert.match(await page.locator('.mast').innerText(), /BETA M4i/);
+  assert.match(await page.locator('.mast').innerText(), /BETA M4j/);
   assert.equal(await page.locator('.playtestGuide summary').isVisible(), true);
   assert.equal(await page.locator('#teamCount').innerText(), '3/3');
   await page.locator('#startCampaign').click();
@@ -863,8 +864,88 @@ try {
   assert.match(await page.locator('#missionTitle').innerText(),/Os Faróis do Crepúsculo/);
   await page.screenshot({path:'artifacts/preview/32-m4i-beacon-mission.png',fullPage:true});
 
+
+  // M4j: first SIX victories earned by real engine calls. Import only the
+  // legitimate seventh-mission opening and replay all actions using actual
+  // Phaser controls. No intervention between enemy turns or save patching.
+  const beaconsRun=playSeventhMission({seed:1,team:expectedTeam,difficulty:'story'});
+  assert.equal(beaconsRun.phase,'between','seventh mission must win legitimately');
+  assert.equal(beaconsRun.initial.wins,6);
+  assert.equal(beaconsRun.initial.mission,6);
+  assert.equal(beaconsRun.initial.aiOrder,'portable-v2');
+  assert.equal(beaconsRun.initial.board.filter(t=>t.objective==='beacon'&&!t.cleared).length,3);
+  await page.locator('#restart').click();
+  await page.locator('#importFile').setInputFiles({
+    name:'natural-seventh-mission-v1.json',mimeType:'application/json',
+    buffer:Buffer.from(JSON.stringify(beaconsRun.initial)),
+  });
+  await page.locator('#lobby').waitFor({state:'hidden',timeout:15000});
+  assert.equal(await page.locator('#goalPanel').getAttribute('data-goal-kind'),'beacon');
+  assert.equal(await page.locator('#goalPanel').getAttribute('data-goal-total'),'3');
+  assert.equal(await page.locator('#beaconStatus').getAttribute('data-remaining'),'3');
+  assert.equal((await page.locator('#beaconStatus').innerText()).match(/AGUARDANDO/g)?.length,3);
+  await page.screenshot({path:'artifacts/preview/33-m4j-three-inactive-beacons.png',fullPage:true});
+  let beaconTouches=0;
+  for(const step of beaconsRun.commands){
+    await page.waitForFunction(()=>document.getElementById('game')?.dataset.inputLocked==='false');
+    if(step.command==='endTurn'){
+      await page.locator('#endTurn').click();
+    }else{
+      const current=await page.evaluate(()=>JSON.parse(localStorage.getItem('ironwood_phaser_preview_v1')));
+      const actor=current.actors.find(a=>a.id===step.args[0]);
+      assert.ok(actor&&actor.hp>0,'seventh mission requires living hero');
+      if(!(await page.locator('#unitName').innerText()).includes(actor.name)){
+        await canvas.click({position:await cell(canvas,actor.x,actor.y)});
+      }
+      if(step.command==='move'){
+        await canvas.click({position:await cell(canvas,step.args[1],step.args[2])});
+      }else if(step.command==='attack'){
+        const foe=current.actors.find(a=>a.id===step.args[1]);
+        assert.ok(foe&&foe.hp>0,'target must be alive');
+        await canvas.click({position:await cell(canvas,foe.x,foe.y)});
+      }else if(step.command==='useSkill'){
+        const [_,skill,x,y]=step.args;
+        if(skill==='interact'){
+          await canvas.click({position:await cell(canvas,x,y)});
+          beaconTouches++;
+        }else{
+          await page.locator(`#skills button[data-skill="${skill}"]`).click();
+          await canvas.click({position:await cell(canvas,x,y)});
+          if(/TOQUE NOVAMENTE/.test(await page.locator('#impactInfo').innerText())){
+            await canvas.click({position:await cell(canvas,x,y)});
+          }
+        }
+      }else throw new Error('Unexpected M4j command '+step.command);
+    }
+    const actual=await page.evaluate(()=>JSON.parse(localStorage.getItem('ironwood_phaser_preview_v1')));
+    assert.deepEqual(actual,step.checkpoint,
+      'M4j browser/core divergence at '+step.command+' '+JSON.stringify(step.args));
+    const remaining=actual.board.filter(t=>t.objective==='beacon'&&!t.cleared).length;
+    assert.equal(await page.locator('#beaconStatus').getAttribute('data-remaining'),String(remaining));
+    assert.equal(await page.locator('#beaconStatus').getAttribute('data-activated'),String(3-remaining));
+    const all=actual.board.filter(t=>t.objective==='beacon').sort((a,b)=>a.y-b.y||a.x-b.x);
+    const display=await page.locator('#beaconStatus').innerText();
+    for(const [i,t] of all.entries()){
+      assert.ok(display.includes(`Marco ${i+1} (${t.x+1},${t.y+1}): ${t.cleared?'ATIVADO':'AGUARDANDO'}`));
+    }
+  }
+  assert.equal(beaconTouches,3,'three natural beacon interactions via Phaser taps');
+  assert.equal(await page.locator('#goalPanel').getAttribute('data-goal-status'),'victory');
+  assert.equal(await page.locator('#goalPanel').getAttribute('data-goal-completed'),'3');
+  await page.screenshot({path:'artifacts/preview/34-m4j-beacons-active.png',fullPage:true});
+  await page.locator('#upgradeOptions button').first().click();
+  const boss=await page.evaluate(()=>JSON.parse(localStorage.getItem('ironwood_phaser_preview_v1')));
+  assert.equal(boss.mission,7);
+  assert.equal(boss.wins,7);
+  assert.equal(boss.phase,'player');
+  assert.equal(boss.actors.filter(a=>a.side==='enemy'&&a.kind==='boss'&&a.hp>0).length,1);
+  assert.equal(await page.locator('#goalPanel').getAttribute('data-goal-kind'),'boss');
+  assert.equal(await page.locator('#beaconStatus').isHidden(),true);
+  assert.match(await page.locator('#missionTitle').innerText(),/O Espinho da Rainha/);
+  await page.screenshot({path:'artifacts/preview/35-m4j-queen-thorn.png',fullPage:true});
+
   assert.deepEqual(errors, [], 'Phaser should not throw browser errors');
-  console.log('PASS: M4i six victories and wildfire-by-turn parity, M4h authentic corruption cleansing and sixth mission, M4g six-round convoy survival and two enemy waves, M4f exact portable cross-runtime combat turns and old-save compatibility, M4e full totem replay, fourth mission, M4d contextual natural rescue checkpoints and mission three, M4c fixture-free Phaser victory to mission 2 and seed replay, core parity, M4b defeat/retry/three endings, M4a totem attacks, M3g goals/victory/upgrades/mission2, M3f cache, HUD, tween lock, pooled units, AOE, mobile');
+  console.log('PASS: M4j seven natural victories and final boss mission, M4i six victories and wildfire-by-turn parity, M4h authentic corruption cleansing and sixth mission, M4g six-round convoy survival and two enemy waves, M4f exact portable cross-runtime combat turns and old-save compatibility, M4e full totem replay, fourth mission, M4d contextual natural rescue checkpoints and mission three, M4c fixture-free Phaser victory to mission 2 and seed replay, core parity, M4b defeat/retry/three endings, M4a totem attacks, M3g goals/victory/upgrades/mission2, M3f cache, HUD, tween lock, pooled units, AOE, mobile');
 } finally {
   await browser.close();
 }

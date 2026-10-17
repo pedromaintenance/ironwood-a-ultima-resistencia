@@ -86,3 +86,7 @@
 /* M4i — genuine wildfire tracking, no colour-only fire status. */
 .ashStatus{font:600 11px/1.7 system-ui,sans-serif!important;color:#ffe0ba!important;background:#34261f;padding:9px 10px;border-left:3px solid #eaa46d;overflow-wrap:anywhere}
 #goalPanel[data-goal-status="victory"] .ashStatus{color:#e9d2bc!important;border-left-color:#9bbe89}
+
+/* M4j — precise, accessible ancestral signal status without colour-only cues. */
+.beaconStatus{font:600 11px/1.7 system-ui,sans-serif!important;color:#e8e0b2!important;background:#302f24;padding:9px 10px;border-left:3px solid #d1c27e;overflow-wrap:anywhere}
+#goalPanel[data-goal-status="victory"] .beaconStatus{color:#cbe8cb!important;border-left-color:#9bbe89}

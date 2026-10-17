@@ -1,11 +1,27 @@
 # Roadmap executivo — Ironwood Phaser
 
-**Atualização:** 17 de outubro de 2026 — M4h publicada; M4i em validação com seis missões legítimas  
+**Atualização:** 17 de outubro de 2026 — M4i publicada; M4j em validação com sete missões legítimas  
 **Jogo público:** `main` continua executando o Canvas legado.  
-**Ramo de desenvolvimento:** `feat/phaser-ashes-m4i`, baseado na M4h publicada (`92284b15`); Canvas preservado na raiz.  
+**Ramo de desenvolvimento:** `feat/phaser-beacons-m4j`, baseado na M4i publicada (`ff2d7588`); Canvas preservado na raiz.  
 **Roadmap do projeto inteiro:** [ROADMAP_IRONWOOD_PHASER.md](../ROADMAP_IRONWOOD_PHASER.md) (versão canônica publicada em `main`).
 
 Este roteiro diferencia funcionalidades **implementadas**, **validadas em CI**, **em revisão** e **ainda planejadas**. Os testes automatizados não substituem o playthrough humano em aparelho físico.
+
+## M4j — Três marcos ativados legitimamente, acesso à batalha final (17/10/2026)
+
+- [x] Campanha sem fixtures alcança **sete vitórias** consecutivas, seed 1,
+  Aprendiz, Morna/Arven/Vaelis, `portable-v2`.
+- [x] `Os Faróis do Crepúsculo`: três interações `interact` autênticas,
+  em coordenadas distintas, até a rodada 4, mesmo com guardas sobreviventes.
+- [x] `wins=7`, `losses=0`, três heróis vivos e avanço com upgrade
+  legítimo à missão final `O Espinho da Rainha`, com a campeã e escolta.
+- [x] Painel exibe coordenadas e situação individual AGUARDANDO / ATIVADO.
+- [x] Teste Chromium por cliques reais preparado para reproduzir **toda a
+  sétima missão** e conferir snapshots completos após cada ação.
+- [ ] Aprovar ambos os workflows no SHA definitivo e publicar no Pages.
+- [ ] QA em aparelhos físicos e concluir a última missão / três epílogos.
+
+[Documentação técnica M4j](../docs/M4J_NATURAL_BEACONS.md).
 
 ## M4i — A Marcha das Cinzas, fogo real e seis vitórias consecutivas (17/10/2026)
 

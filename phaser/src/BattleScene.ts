@@ -899,6 +899,25 @@ export class BattleScene extends Phaser.Scene {
         delete ashStatus.dataset.destroyedTrees;
       }
     }
+    // M4j: beacon objective positions and activation states from the engine.
+    // Read-only: activation, AP, completion and saves are all core-owned.
+    const beaconStatus=document.getElementById('beaconStatus');
+    if(beaconStatus){
+      beaconStatus.hidden=mission.kind!=='beacon';
+      if(mission.kind==='beacon'){
+        const markers=(state.board as Tile[]).filter(t=>t.objective==='beacon')
+          .sort((a,b)=>a.y-b.y||a.x-b.x);
+        beaconStatus.textContent=markers.map((t,i)=>
+          `Marco ${i+1} (${t.x+1},${t.y+1}): ${t.cleared?'ATIVADO':'AGUARDANDO'}`
+        ).join(' · ');
+        beaconStatus.dataset.remaining=String(markers.filter(t=>!t.cleared).length);
+        beaconStatus.dataset.activated=String(markers.filter(t=>t.cleared).length);
+      }else{
+        beaconStatus.textContent='';
+        delete beaconStatus.dataset.remaining;
+        delete beaconStatus.dataset.activated;
+      }
+    }
     setText('goalDetail', objective.status === 'victory'
       ? (state.phase === 'ending' ? 'CAMPANHA CONCLUÍDA — o destino de Ironwood foi decidido.' : 'OBJETIVO CONCLUÍDO — escolha uma melhoria para prosseguir.')
       : objective.status === 'defeat' ? 'MISSÃO PERDIDA — use TENTAR NOVAMENTE para recomeçar sem perder melhorias.'

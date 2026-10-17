@@ -20,6 +20,7 @@ on:
       - feat/phaser-survival-m4g
       - feat/phaser-cleanse-m4h
       - feat/phaser-ashes-m4i
+      - feat/phaser-beacons-m4j
   pull_request:
     branches:
       - feat/ironwood-core-phase1
