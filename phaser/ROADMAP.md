@@ -1,11 +1,26 @@
 # Roadmap executivo — Ironwood Phaser
 
-**Atualização:** 17 de outubro de 2026 — M4f publicada; M4g em validação com quatro missões legítimas  
+**Atualização:** 17 de outubro de 2026 — M4g publicada; M4h em validação com cinco missões legítimas  
 **Jogo público:** `main` continua executando o Canvas legado.  
-**Ramo de desenvolvimento:** `feat/phaser-survival-m4g`, baseado na M4f publicada (`00db07d4`); Canvas preservado na raiz.  
+**Ramo de desenvolvimento:** `feat/phaser-cleanse-m4h`, baseado na M4g publicada (`0fe53347`); Canvas preservado na raiz.  
 **Roadmap do projeto inteiro:** [ROADMAP_IRONWOOD_PHASER.md](../ROADMAP_IRONWOOD_PHASER.md) (versão canônica publicada em `main`).
 
 Este roteiro diferencia funcionalidades **implementadas**, **validadas em CI**, **em revisão** e **ainda planejadas**. Os testes automatizados não substituem o playthrough humano em aparelho físico.
+
+## M4h — Purificação real dos três focos e acesso à missão 6 (17/10/2026)
+
+- [x] Cinco operações completas numa campanha do core, sem alterá-la artificialmente.
+- [x] `A Seiva Corrompida`: focos purificados nas rodadas 1–2, cinco
+  resgates/purificações acumulados, `wins=5`, `losses=0`.
+- [x] Entrada legítima em `A Marcha das Cinzas` (sete inimigos).
+- [x] HUD mostra localização, corrupção exata e resultado PURIFICADO
+  de cada foco; não modifica efeitos ambientais nem regras do core.
+- [x] Smoke Chromium da quinta operação preparado para comparar cada
+  comando e turno com o motor; testa também a passagem à sexta operação.
+- [ ] Verificar workflow browser e publicar apenas com SHA integralmente aprovado.
+- [ ] QA físico; operações 6–8 e os três finais por campanhas reais.
+
+[Guia M4h](../docs/M4H_NATURAL_CLEANSING.md).
 
 ## M4g — Defesa do comboio e duas ondas genuínas (17/10/2026)
 
