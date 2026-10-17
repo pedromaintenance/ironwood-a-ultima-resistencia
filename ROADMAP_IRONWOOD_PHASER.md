@@ -6,6 +6,20 @@
 **Planejamento:** 15/10/2026  
 **Estado:** execução sequencial; não substituir o jogo publicado antes de validar a nova versão.
 
+## M4d — Dois resgates reais e interação contextual (16/10/2026)
+
+**Status:** em validação na [PR #29](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/pull/29) (draft). **M4c continua sendo a versão pública** até aprovação integral e implantação da M4d.
+
+- [x] Missão 1 vencida desde campanha recém-criada, upgrade aplicado e missão 2 concluída com **dois comandos reais `interact`**, sem salvar snapshots artificiais ou importar fixtures. Na semente `1`, dificuldade Aprendiz, equipe Morna/Arven/Vaelis, a missão 1 foi concluída em 4 rodadas e a missão 2 em 1 rodada; avanço da campanha para a missão 3 confirmado pelo motor.
+- [x] [CI headless M4d](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/actions/runs/38993831155) aprovou 29 regressões prévias, prova real da missão 1 e prova real das missões 1–2 seguidas.
+- [x] Adicionado toque contextual para `captive` (resgate), `shrine` (purificação) e `beacon` (ativação), **apenas ao alcance do herói selecionado**. A execução permanece no motor `useSkill('interact')`, com os mesmos custos e travas; totens continuam usando ataques.
+- [x] Teste Chromium identifica falha de interação quando o herói ocupa a própria casa do prisioneiro: o toque selecionava o herói em vez de resgatar. Fluxo de cliques corrigido para contemplar esse caso, mantendo seleção de outros aliados.
+- [ ] **Gate pendente:** concluir novo CI do Phaser com o fix, regressões de Chromium desktop/mobile emulado e comparação de saves obtidos de uma campanha natural.
+- [ ] Publicar `phaser-preview/` somente após gate verde para SHA imutável, sem alterar Canvas e `ironwood_campaign_v1`.
+- [ ] QA em dispositivos reais, balanço em Normal/Implacável e missões 3–8 concluídas sem fixtures.
+
+**Evidência técnica:** [branch M4d](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/tree/feat/phaser-rescue-m4d) e [PR #29](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/pull/29). Testes no core não são equivalentes à comprovação de toda a campanha pela interface do Phaser.
+
 ## M4c — Playthrough autêntico e sementes reproduzíveis (16/10/2026)
 
 **[JOGAR BETA M4c NO GITHUB PAGES](https://pedromaintenance.github.io/ironwood-a-ultima-resistencia/phaser-preview/)** — candidate imutável `c830e7df`, [29 regressões e Chromium desktop/mobile, replay de vitória natural aprovados](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/actions/runs/38992611371), [playthrough headless aprovado](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/actions/runs/38992611378), [build publicado em main/phaser-preview/](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/actions/runs/38992859321), [implantação GitHub Pages concluída](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/actions/runs/38992879404). [PR #28](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/pull/28) segue draft por QA físico e campanha completa pendentes.
