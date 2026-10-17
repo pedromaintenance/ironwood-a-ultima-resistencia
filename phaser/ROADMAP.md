@@ -163,6 +163,7 @@ Este roteiro diferencia funcionalidades **implementadas**, **validadas em CI**, 
 - [x] Smoke Chromium: derrota e reload, retry da mesma missão, 3 finais por saves válidos.
 - [x] [29/29 testes, build Phaser/Vite e Chromium desktop/mobile aprovados](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/actions/runs/38988894146), fonte imutável `74b0c154`.
 - [x] [Workflow seguro M4b concluiu](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/actions/runs/38989071534) e copiou a beta para `main/phaser-preview/` sem alterar Canvas.
+- [x] [Implantação final do GitHub Pages aprovada](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/actions/runs/38989168527); `DEPLOYMENT.txt` indica M4b SHA `74b0c154` e `index.html` contém retry e painel de resultado.
 - [ ] QA em aparelho real, 8 missões completas e três finais por playthrough.
 
 **Nota:** os três finais foram testados por estados válidos preparados; isso não equivale a 8 missões jogadas integralmente. [Guia técnico M4b](../docs/M4B_RETRY_ENDINGS.md).
