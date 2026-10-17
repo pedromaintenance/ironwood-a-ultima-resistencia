@@ -6,6 +6,19 @@
 **Planejamento:** 15/10/2026  
 **Estado:** execução sequencial; não substituir o jogo publicado antes de validar a nova versão.
 
+## M4b — Derrota e epílogos canônicos (16/10/2026)
+
+**Em validação:** [PR #26](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/pull/26) · [Issue #27](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/issues/27) · [Guia técnico](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/blob/feat/phaser-retry-endings-m4b/docs/M4B_RETRY_ENDINGS.md).
+
+- [x] **Derrota persistente:** ao continuar um save com `phase=defeat`, a cena mantém o resultado em vez de iniciar uma partida automaticamente.
+- [x] **Nova tentativa consciente:** botão `TENTAR NOVAMENTE — MESMA MISSÃO` chama `engine.deployMission()` e preserva equipe, upgrades e derrotas acumuladas.
+- [x] **Três finais originais:** exibir títulos, parágrafos e estatísticas de `A Vitória das Cinzas` (mais de 25 árvores destruídas), `A Floresta de Todos` (ao menos cinco resgates e no máximo uma derrota, sem ultrapassar limiar de árvores) e `A Última Chama Livre` (restante).
+- [x] **Regressões escritas:** testes puros dos três finais, retry após derrota resolvida pelo motor e rodadas iniciais determinísticas de uma campanha nova; smoke Chromium de derrota, reload, retry e três epílogos por saves v1 válidos.
+- [ ] Confirmar **29/29 testes de core, build Vite e Chromium desktop/mobile**, publicando apenas SHA aprovado em `main/phaser-preview/`.
+- [ ] Testar em aparelhos reais e concluir integralmente as oito missões e três finais **sem fixtures**.
+
+**Limites:** este incremento valida o comportamento dos epílogos e do retry usando snapshots importados; os testes de turnos iniciais partem de campanha nova, mas ainda não provam que a primeira missão foi vencida em uma execução completa. A versão Canvas e seu save permanecem preservados.
+
 ## M4a — Ataques físicos a totens e objetivos legíveis (16/10/2026)
 
 **Implementado no [PR #24](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/pull/24), com CI 26/26 aprovada.** A M3g deixava uma lacuna frente ao Canvas original: tocar num totem sem magia tentava mover para a casa. A M4a reutiliza a função legada `attackStructure` por uma fachada validada `attackObjective`, recuperando o ataque básico a totens da missão 3, com as mesmas regras de PA, alcance, visão e dano. A ação inválida não grava save.
@@ -54,6 +67,7 @@ O artefato foi compilado do SHA **`bfffb911`**, aprovado em [25/25 testes de cor
 | **M3f — overlays/log incrementais e FPS** | **Publicado em beta:** cache de overlay, registro e upgrades, contagem passiva de FPS; core 24/24 e Chromium aprovados | [PR #20](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/pull/20) · [CI](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/actions/runs/38966907392) · [publicação](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/actions/runs/38967434066) |
 | **M3g — objetivos e fluxo até a próxima missão** | **25/25 testes e workflow de publicação aprovados:** sete tipos de objetivo, progresso acessível, vitória real por fixture e escolha de melhoria | [PR #22](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/pull/22) · [CI](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/actions/runs/38969025016) · [publicação](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/actions/runs/38969342926) |
 | **M4a — totems físicos e marcadores de objetivos** | **CI 26/26 e Chromium aprovados; publicação aguardando:** ataque físico a totem e símbolos de objetivos, com teste de dois golpes | [PR #24](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/pull/24) · [Issue #25](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/issues/25) |
+| **M4b — derrota, retry e três finais** | **Implementado, em CI:** derrota persistente ao recarregar, botão explícito de nova tentativa e três epílogos canônicos do Canvas com testes de regressão | [PR #26](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/pull/26) · [Issue #27](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/issues/27) |
 | Próximos M4–M5 — campanha integral, QA e distribuição | Pendente: jogar missão 1 sem fixture, oito missões e três finais, medir FPS/memória em hardware real, PWA instalável e offline | [Issue #23](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/issues/23) |
 
 ### M3e — HUD incremental e feedback (CI e publicação concluídas)
