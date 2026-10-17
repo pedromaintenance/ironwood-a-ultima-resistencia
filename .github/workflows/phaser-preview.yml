@@ -19,6 +19,7 @@ on:
       - feat/phaser-portable-ai-m4f
       - feat/phaser-survival-m4g
       - feat/phaser-cleanse-m4h
+      - feat/phaser-ashes-m4i
   pull_request:
     branches:
       - feat/ironwood-core-phase1
