@@ -15,6 +15,7 @@ on:
       - feat/phaser-retry-endings-m4b
       - feat/phaser-playthrough-m4c
       - feat/phaser-rescue-m4d
+      - feat/phaser-totem-playthrough-m4e
   pull_request:
     branches:
       - feat/ironwood-core-phase1
