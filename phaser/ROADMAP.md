@@ -1,8 +1,8 @@
 # Roadmap executivo — Ironwood Phaser
 
-**Atualização:** 16 de outubro de 2026 — M3g validada em CI (25/25) e compilada no Pages; QA físico pendente  
+**Atualização:** 16 de outubro de 2026 — M4a passou na CI (26/26) e está em publicação; M3g confirmada no Pages  
 **Jogo público:** `main` continua executando o Canvas legado.  
-**Ramo da prévia:** `feat/phaser-impact-preview-m3b` ([PR #13](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/pull/13)); publicação pública independente compilada do commit `9ffc7029`.  
+**Ramo de desenvolvimento:** `feat/phaser-objective-attacks-m4a`, dependente da M3g. **Release público confirmado:** M3g compilada do commit `bfffb911`; Canvas preservado na raiz.  
 **Roadmap do projeto inteiro:** [ROADMAP_IRONWOOD_PHASER.md](../ROADMAP_IRONWOOD_PHASER.md) (versão canônica publicada em `main`).
 
 Este roteiro diferencia funcionalidades **implementadas**, **validadas em CI**, **em revisão** e **ainda planejadas**. Os testes automatizados não substituem o playthrough humano em aparelho físico.
@@ -142,6 +142,17 @@ Este roteiro diferencia funcionalidades **implementadas**, **validadas em CI**, 
 - [ ] Jogar a missão 1 por inteiro sem fixture; avançar até a missão 8 e os três finais.
 
 **Limite:** teste de transição usa fixture próxima da vitória, não a resolução humana de todo o combate. [Guia técnico M3g](../docs/M3G_MISSION_GOALS.md).
+
+### M4a — Objetivos clicáveis e ataque físico a totens (**26/26 e navegador aprovados, beta em publicação**)
+- [x] Corrigir ausência do comando básico `attackStructure` do Canvas no Phaser: `engine.attackObjective` expõe a regra original sem alterar dano ou alcance.
+- [x] Identificar por formas distintas prisioneiro, totem, santuário corrompido e marco ancestral; totem tem barra de integridade.
+- [x] Inspeção contextual descreve o comando correspondente a cada objetivo.
+- [x] Smoke de dois cliques para atingir e destruir um totem adjacente sem magia, além de teste headless de validação, PA e progresso de 0/3 para 1/3.
+- [x] [26/26 testes, build e smoke Chromium desktop/mobile aprovados](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/actions/runs/38984312201), SHA `8e1fdf77`.
+- [ ] Confirmar workflow de publicação e implantação Pages do pacote exato; QA físico posterior.
+- [ ] Jogar do começo ao fim a missão 1 sem preparar save, depois demais objetivos e finais.
+
+**Critério importante:** a missão 3 agora aceita ataques de aliados sem magia ofensiva; a UI não deve gastar PA em clique fora de alcance ou em totem concluído. [Relatório técnico M4a](../docs/M4A_OBJECTIVE_ATTACKS.md).
 
 ### M4 — Campanha 8 missões
 - [ ] Telas de briefing, vitória, derrota, retry e progressão.

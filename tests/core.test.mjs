@@ -273,3 +273,41 @@ test('mission goal tracker follows every core missionOutcome gate without mutati
   assert.equal(missionOutcome('boss', [], defeatedBoss, 1), 'victory');
   assert.deepEqual({ actors, goal }, original, 'progress read cannot modify caller objects');
 });
+
+test('physical totem attacks use the original combat rules and unblock mission 3', async () => {
+  const e = deployed(506);
+  const ready = e.snapshot();
+  ready.mission = 2;
+  ready.phase = 'brief';
+  ready.actors = null;
+  ready.board = null;
+  e.restoreSave(ready);
+  e.deployMission();
+  const state = e.snapshot();
+  const originalTotem = state.board.find(t => t.objective === 'totem');
+  assert.ok(originalTotem);
+  originalTotem.objective = '';
+  const nearby = tile(state.board, 2, 9);
+  Object.assign(nearby, {
+    base: 'grass', wall: 0, fire: 0, corrupt: 0, objective: 'totem',
+    objhp: 18, cleared: false,
+  });
+  e.restoreSave(state);
+  const untouched = e.snapshot();
+  assert.equal(e.attackObjective('a0', -1, 9), false);
+  assert.equal(e.attackObjective('a0', 9, 0), false);
+  assert.equal(e.attackObjective('e0', 2, 9), false, 'enemies cannot use ally objective commands');
+  assert.deepEqual(e.snapshot(), untouched, 'invalid structure attacks cannot mutate game or RNG');
+  assert.equal(e.attackObjective('a0', 2, 9), true);
+  assert.equal(tile(e.snapshot().board, 2, 9).objhp, 9, 'uses legacy guardian damage: atk 5 + 4');
+  assert.equal(e.snapshot().actors[0].ap, 1);
+  assert.equal(e.attackObjective('a0', 2, 9), true);
+  const destroyed = e.snapshot();
+  assert.equal(tile(destroyed.board, 2, 9).cleared, true);
+  assert.equal(tile(destroyed.board, 2, 9).objhp, 0);
+  assert.equal(destroyed.actors[0].ap, 0);
+  assert.equal(destroyed.phase, 'player', 'other two totems still need destruction');
+  assert.equal(e.attackObjective('a0', 2, 9), false, 'destroyed totems cannot be hit again');
+  const { missionProgress } = await import('../src/core/objectives.js');
+  assert.equal(missionProgress('totem', destroyed.board, destroyed.actors).completed, 1);
+});

@@ -239,6 +239,17 @@ function victory(){if(G.phase==='between'||G.phase==='ending')return;G.wins++;lo
     if (!actor || !target || actor.side !== 'ally' || target.side !== 'enemy') return false;
     return basicAttack(actor, target);
   }
+  function attackObjective(actorId, x, y) {
+    ensureGame();
+    if (G.phase !== 'player' || !Number.isInteger(x) || !Number.isInteger(y) || !at(x, y)) return false;
+    const actor = getActor(actorId);
+    const tile = cell(x, y);
+    if (!actor || actor.side !== 'ally' || actor.hp <= 0 ||
+        !tile || tile.objective !== 'totem' || tile.cleared || tile.objhp <= 0) return false;
+    // Reuse the legacy Canvas calculation (attackStructure): range, LOS,
+    // one AP, structure damage and authoritative objective/victory resolution.
+    return attackStructure(actor, tile);
+  }
   function useSkill(actorId, skillId, x, y) {
     ensureGame();
     if (G.phase !== 'player') return false;
@@ -313,7 +324,7 @@ function victory(){if(G.phase==='between'||G.phase==='ending')return;G.wins++;lo
     return snapshot();
   }
   return {
-    startCampaign, deployMission, move, attack, useSkill, previewSkill, previewImpact, endTurn,
+    startCampaign, deployMission, move, attack, attackObjective, useSkill, previewSkill, previewImpact, endTurn,
     reachable, getOutcome, advanceMission, restoreSave,
     snapshot, drainEvents, getActor: id => structuredClone(getActor(id)),
     lineOfSight: (a,b) => { ensureGame(); return los(a,b); },
