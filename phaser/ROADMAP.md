@@ -1,11 +1,30 @@
 # Roadmap executivo — Ironwood Phaser
 
-**Atualização:** 17 de outubro de 2026 — M4d publicada; M4e em validação com três missões completas  
+**Atualização:** 17 de outubro de 2026 — M4f publicada; M4g em validação com quatro missões legítimas  
 **Jogo público:** `main` continua executando o Canvas legado.  
-**Ramo de desenvolvimento:** `feat/phaser-totem-playthrough-m4e`, baseado na M4d publicada (`73883e70`); Canvas preservado na raiz.  
+**Ramo de desenvolvimento:** `feat/phaser-survival-m4g`, baseado na M4f publicada (`00db07d4`); Canvas preservado na raiz.  
 **Roadmap do projeto inteiro:** [ROADMAP_IRONWOOD_PHASER.md](../ROADMAP_IRONWOOD_PHASER.md) (versão canônica publicada em `main`).
 
 Este roteiro diferencia funcionalidades **implementadas**, **validadas em CI**, **em revisão** e **ainda planejadas**. Os testes automatizados não substituem o playthrough humano em aparelho físico.
+
+## M4g — Defesa do comboio e duas ondas genuínas (17/10/2026)
+
+- [x] Campanha **sem saves manipulados** vence operações 1, 2, 3 e 4.
+- [x] Na operação 4, vencer **somente após seis rodadas completas**
+  (entrada na rodada 7), mesmo que inimigos ainda estejam vivos.
+- [x] Comprovar duas ondas reais: Lobo e Arqueiro na rodada 4,
+  Lanceiro e Lobo na rodada 6; `wins=4`, `losses=0`, upgrade e
+  início de *A Seiva Corrompida* com três focos de corrupção.
+- [x] Interface mostra rodadas defendidas e chegada de reforços
+  a partir do estado do motor, sem alterar as regras.
+- [x] Teste Chromium por cliques reais preparado com replay das seis rodadas
+  da quarta missão, importando apenas sua abertura legítima após três vitórias;
+  conferência exata dos checkpoints.
+- [ ] Confirmar build/Chromium e promover SHA imutável ao GitHub Pages.
+- [ ] QA físico; Normal/Implacável; operações 5–8 e três finais
+  alcançados sem preparar estado.
+
+[Documentação M4g](../docs/M4G_NATURAL_SURVIVAL.md).
 
 ## M4e — Três operações reais, totens rastreáveis e missão 4 (17/10/2026)
 
