@@ -40,4 +40,4 @@ Os parágrafos narrativos são os originais do Canvas, não alternativas novas. 
 - Revisão dos objetivos contextuais de todas as missões, especialmente interação com reféns e reinício após derrota real.
 - Perfil de FPS e memória em dispositivos físicos.
 
-**Nota de entrega:** workflow de compilação/publicação e CI concluídos; o job final do Pages e QA humano são etapas independentes. O teste de epílogos usa saves v1 válidos, não campanha integral jogada.
+**Nota de entrega:** workflow de compilação/publicação e [implantação final do GitHub Pages](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/actions/runs/38989168527) concluídos com sucesso; QA humano em hardware físico é uma etapa independente. O teste de epílogos usa saves v1 válidos, não campanha integral jogada.
