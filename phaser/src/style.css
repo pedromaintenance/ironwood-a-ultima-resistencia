@@ -64,3 +64,9 @@
 .resultPanel[data-result="defeat"]{border-color:#c27875}
 .resultPanel[data-result="ending"]{border-color:#a2c49c}
 #retryMission:not([hidden]){border:2px solid #dfbb75;min-height:48px}
+
+/* M4c — reproducible playtest seed. Usable on narrow mobile viewports. */
+.seedLabel{margin-top:13px}
+#campaignSeed{display:block;width:100%;background:#182c2b;color:#f0ddbb;border:1px solid #a38a65;padding:12px;font:13px system-ui,sans-serif;min-height:44px}
+#campaignSeed:focus-visible{outline:3px solid #c8d997;outline-offset:2px}
+.seedDisplay{font:11px/1.4 system-ui,sans-serif!important;color:#a7bbab!important;overflow-wrap:anywhere}
