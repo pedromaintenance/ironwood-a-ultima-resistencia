@@ -857,6 +857,25 @@ export class BattleScene extends Phaser.Scene {
         delete defenseStatus.dataset.nextWave;
       }
     }
+    // M4h: authoritative shrine coordinates, remaining corruption and cleared
+    // state; no independent damage or mission rules in the UI.
+    const cleanseStatus=document.getElementById('cleanseStatus');
+    if(cleanseStatus){
+      cleanseStatus.hidden=mission.kind!=='cleanse';
+      if(mission.kind==='cleanse'){
+        const shrines=(state.board as Tile[]).filter(t=>t.objective==='shrine')
+          .sort((a,b)=>a.y-b.y||a.x-b.x);
+        cleanseStatus.textContent=shrines.map((t,i)=>
+          `Foco ${i+1} (${t.x+1},${t.y+1}): ${t.cleared?'PURIFICADO':`corrupção ${t.corrupt}`}`
+        ).join(' · ');
+        cleanseStatus.dataset.remaining=String(shrines.filter(t=>!t.cleared).length);
+        cleanseStatus.dataset.completed=String(shrines.filter(t=>t.cleared).length);
+      }else{
+        cleanseStatus.textContent='';
+        delete cleanseStatus.dataset.remaining;
+        delete cleanseStatus.dataset.completed;
+      }
+    }
     setText('goalDetail', objective.status === 'victory'
       ? (state.phase === 'ending' ? 'CAMPANHA CONCLUÍDA — o destino de Ironwood foi decidido.' : 'OBJETIVO CONCLUÍDO — escolha uma melhoria para prosseguir.')
       : objective.status === 'defeat' ? 'MISSÃO PERDIDA — use TENTAR NOVAMENTE para recomeçar sem perder melhorias.'
