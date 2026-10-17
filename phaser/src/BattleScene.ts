@@ -402,7 +402,7 @@ export class BattleScene extends Phaser.Scene {
     const supplied = rawSeed !== '' ? Number(rawSeed) : null;
     // Explicit seed only changes the random map's starting state. Blank keeps
     // the existing Date.now() default, and invalid values never replace a save.
-    if (rawSeed && (!/^\\d+$/.test(rawSeed) || !Number.isSafeInteger(supplied) ||
+    if (rawSeed && (!/^\d+$/.test(rawSeed) || !Number.isSafeInteger(supplied) ||
       (supplied as number) < 1 || (supplied as number) > 0xFFFFFFFF)) {
       this.setLobbyError('A semente deve ser um inteiro entre 1 e 4294967295.');
       return;
