@@ -27,8 +27,8 @@ O modo de inspeção apresenta o nome e a instrução em português; para o tote
 - [x] Teste de core para dano de Morna (5 + 4) e 1 PA por acerto: totem de 18 integridade cai em dois golpes; `missionProgress` passa de 0/3 para 1/3.
 - [x] Teste Phaser por **dois cliques no próprio totem** após importar um save v1 válido da operação 3, com aliado em posição adjacente; verifica logs, dano, save, progressão e integridade.
 - [x] Atualização do guia in-game com instruções de objetivos.
-- [ ] 26 testes de core, build Vite/Phaser e navegador Chromium desktop/mobile aprovados na CI.
-- [ ] Publicar SHA imutável aprovado em `main/phaser-preview/`; confirmar Actions e Pages.
+- [x] [26/26 testes do core, build Vite/Phaser e Chromium desktop/mobile aprovados](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/actions/runs/38984312201), commit `8e1fdf77`.
+- [ ] Workflow M4a acionado com SHA imutável `8e1fdf77`; confirmar conclusão da cópia e implantação Pages.
 - [ ] QA humano em celular e playthrough normal da operação 3 desde o primeiro turno.
 
 **Limite do teste:** a prova de clique usa uma fixture válida com um totem adjacente, para isolar a correção da ação. Não significa que a missão 3 ou a campanha inteira já tenham sido concluídas sem preparação.
