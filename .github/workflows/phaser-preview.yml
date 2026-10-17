@@ -17,6 +17,7 @@ on:
       - feat/phaser-rescue-m4d
       - feat/phaser-totem-playthrough-m4e
       - feat/phaser-portable-ai-m4f
+      - feat/phaser-survival-m4g
   pull_request:
     branches:
       - feat/ironwood-core-phase1
