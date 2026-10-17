@@ -1,0 +1,22 @@
+name: Ironwood M4j seven natural operations
+on:
+  push:
+    branches: [feat/phaser-beacons-m4j]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  seven-genuine-victories:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Preserve old core and portable saves
+        run: npm test && node --test tests/portable-order.test.mjs
+      - name: Preserve first six legitimate missions
+        run: node --test tests/playthrough.test.mjs tests/rescue.test.mjs tests/totem.test.mjs tests/survival.test.mjs tests/cleanse.test.mjs tests/ashes.test.mjs
+      - name: Activate real beacons and enter final mission
+        run: node --test tests/beacons.test.mjs
