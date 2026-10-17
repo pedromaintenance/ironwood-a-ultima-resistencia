@@ -6,6 +6,18 @@
 **Planejamento:** 15/10/2026  
 **Estado:** execução sequencial; não substituir o jogo publicado antes de validar a nova versão.
 
+## M4i — A Marcha das Cinzas e combate contra incêndio (17/10/2026)
+
+**Status:** [PR #34](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/pull/34) em validação. **M4h permanece pública** até a confirmação dos testes de navegador e implantação da M4i. [Guia técnico M4i](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/blob/feat/phaser-ashes-m4i/docs/M4I_NATURAL_ASHES.md).
+
+- [x] **Seis vitórias consecutivas sem fixtures**, com semente `1`, Aprendiz, Morna/Arven/Vaelis e IA `portable-v2`. A sexta operação termina na rodada 4, com sete inimigos derrotados e três heróis sobreviventes.
+- [x] **Incêndio real:** três casas incendiadas no início e 18 ao encerrar a batalha, após turnos ambientais e magias; derrotar todos os inimigos termina a missão mesmo com a floresta ainda em chamas.
+- [x] **Missão 7 desbloqueada naturalmente no motor:** `Os Faróis do Crepúsculo` com três marcos para ativação, `wins=6`, `losses=0`.
+- [x] **Indicador de incêndio na interface:** casas incendiadas, inimigos vivos, heróis expostos e árvores destruídas na campanha. Leitura direta do estado do core, sem alterar propagação do fogo nem regras de dano.
+- [x] **Smoke Chromium implementado:** replay integral dos comandos da sexta missão a partir de abertura legítima após cinco vitórias, comparando estados Node/Phaser a cada ação, ondas de fogo/IA/RNG, e transição à sétima missão.
+- [ ] Gate Chromium + build Vite para o mesmo SHA do teste headless; publicar isoladamente na pasta `phaser-preview/` apenas se ambos aprovarem.
+- [ ] QA em Android/iOS físicos, dificuldade Normal/Implacável, sétima/oitava missões e finais alcançados sem estados forçados.
+
 ## M4h — A Seiva Corrompida e acesso à operação 6 (17/10/2026)
 
 **[JOGAR IRONWOOD — BETA M4h NO GITHUB PAGES](https://pedromaintenance.github.io/ironwood-a-ultima-resistencia/phaser-preview/)** — commit imutável `92284b1517cf086ad9cc0780df24b67212acfd72`. [CI de cinco vitórias naturais](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/actions/runs/39035280267), [build e Chromium com replay completo da quinta missão](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/actions/runs/39035280274), [publicação segura](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/actions/runs/39035589684), [implantação GitHub Pages concluída](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/actions/runs/39035805814). [PR #33](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/pull/33) permanece draft até QA físico. [Guia M4h](https://github.com/pedromaintenance/ironwood-a-ultima-resistencia/blob/feat/phaser-cleanse-m4h/docs/M4H_NATURAL_CLEANSING.md).
